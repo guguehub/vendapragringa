@@ -27,7 +27,10 @@ export default class CustomersController {
   public async create(request: Request, response: Response): Promise<Response> {
     const { name, email } = request.body;
 
-    const createCustomer = new CreateCustomerService();
+    //medida temporaria abaixo
+    const customersRepository = new CustomersRepository();
+
+    const createCustomer = new CreateCustomerService(customersRepository);
 
     const customer = await createCustomer.execute({
       name,

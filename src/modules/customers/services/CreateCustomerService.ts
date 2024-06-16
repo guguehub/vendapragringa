@@ -1,28 +1,22 @@
-import { getCustomRepository } from 'typeorm';
 import AppError from '@shared/errors/AppError';
-import Customer from '../infra/typeorm/entities/Customer';
-import CustomersRepository from '../infra/typeorm/repositories/CustomersRepository';
-
-interface IRequest {
-  name: string;
-  email: string;
-}
+import { ICustomersRepository } from '../domain/repositories/ICustomersRepository';
+import { ICreateCustomer } from '../infra/typeorm/entities/ICreateCustomer';
+import { ICustomer } from '../domain/models/iCustomer';
 
 class CreateCustomerService {
-  public async execute({ name, email }: IRequest): Promise<Customer> {
-    const customersRepository = getCustomRepository(CustomersRepository);
-    const emailExists = await customersRepository.findByEmail(email);
+  constructor(private customersRepository: ICustomersRepository) {}
+
+  public async execute({ name, email }: ICreateCustomer): Promise<ICustomer> {
+    const emailExists = await this.customersRepository.findByEmail(email);
 
     if (emailExists) {
       throw new AppError('Email already taken');
     }
 
-    const customer = customersRepository.create({
+    const customer = await this.customersRepository.create({
       name,
       email,
     });
-
-    await customersRepository.save(customer);
 
     return customer;
   }
