@@ -9,6 +9,7 @@ import routes from './routes';
 //import AppError from '../errors/AppError';
 import AppError from '@shared/errors/AppError';
 import '@shared/infra/typeorm';
+import '@shared/container';
 import uploadConfig from '@config/upload';
 import rateLimiter from './middlewares/rateLimiter';
 
