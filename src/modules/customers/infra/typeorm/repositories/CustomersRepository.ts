@@ -2,11 +2,16 @@ import { getRepository, Repository } from 'typeorm';
 import Customer from '../entities/Customer';
 import { ICustomersRepository } from '@modules/customers/domain/repositories/ICustomersRepository';
 import { ICreateCustomer } from '../../../domain/models/ICreateCustomer';
+import { ICustomer } from '@modules/customers/domain/models/iCustomer';
+import { ICustomerPaginate } from '@modules/customers/domain/models/ICustomerPaginate';
 
 class CustomersRepository implements ICustomersRepository {
   private ormRepository: Repository<Customer>;
   constructor() {
     this.ormRepository = getRepository(Customer);
+  }
+  public async remove(customer: Customer): Promise<void> {
+    await this.ormRepository.remove(customer);
   }
 
   public async create({ name, email }: ICreateCustomer): Promise<Customer> {
@@ -50,6 +55,12 @@ class CustomersRepository implements ICustomersRepository {
     });
 
     return customer;
+  }
+
+  public async findAll(): Promise<ICustomer[] | undefined> {
+    const customers = await this.ormRepository.find();
+
+    return customers;
   }
 }
 

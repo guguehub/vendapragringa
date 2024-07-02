@@ -1,0 +1,3 @@
+interface IDeleteCustomer {
+  id: string;
+}
