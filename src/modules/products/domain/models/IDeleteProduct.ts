@@ -1,0 +1,3 @@
+interface IDeleteProduct {
+  id: string;
+}

@@ -3,6 +3,7 @@ import { inject, injectable } from 'tsyringe';
 import { ICustomersRepository } from '../domain/repositories/ICustomersRepository';
 import { IUpdateCustomer } from '../domain/models/IUpdateCustomer';
 import Customer from '../infra/typeorm/entities/Customer';
+
 @injectable()
 class UpdateCustomerService {
   constructor(

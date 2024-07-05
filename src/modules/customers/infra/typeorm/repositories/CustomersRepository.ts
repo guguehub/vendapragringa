@@ -3,7 +3,7 @@ import Customer from '../entities/Customer';
 import { ICustomersRepository } from '@modules/customers/domain/repositories/ICustomersRepository';
 import { ICreateCustomer } from '../../../domain/models/ICreateCustomer';
 import { ICustomer } from '@modules/customers/domain/models/iCustomer';
-import { ICustomerPaginate } from '@modules/customers/domain/models/ICustomerPaginate';
+//import { ICustomerPaginate } from '@modules/customers/domain/models/ICustomerPaginate';
 
 class CustomersRepository implements ICustomersRepository {
   private ormRepository: Repository<Customer>;
