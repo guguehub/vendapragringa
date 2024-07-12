@@ -1,14 +1,24 @@
 import { Repository, In, getRepository } from 'typeorm';
-
 import Product from '../entities/Product';
 import { IProductsRepository } from '@modules/products/domain/repositories/IProductsRepository';
 import { ICreateProduct } from '@modules/products/domain/models/ICreateProduct';
 import { IProduct } from '@modules/products/domain/models/IProduct';
+import { IProductPaginate } from '@modules/products/domain/models/IProductPaginate';
+import { IUpdateStockProduct } from '@modules/products/domain/models/IUpdateStockProduct';
+
+type SearchParams = {
+  page: number;
+  skip: number;
+  take: number;
+};
 
 class ProductsRepository implements IProductsRepository {
   private ormRepository: Repository<Product>;
   constructor() {
     this.ormRepository = getRepository(Product);
+  }
+  async updateStock(product: IUpdateStockProduct[]): Promise<void> {
+    await this.ormRepository.save(product);
   }
 
   async create({ name, price, quantity }: ICreateProduct): Promise<Product> {
@@ -18,7 +28,7 @@ class ProductsRepository implements IProductsRepository {
 
     return product;
   }
-  async remove(product: Product): Promise<void | undefined> {
+  public async remove(product: Product): Promise<void | undefined> {
     await this.ormRepository.remove(product);
   }
 
@@ -42,9 +52,25 @@ class ProductsRepository implements IProductsRepository {
     //throw new Error('Method not implemented.');
   }
 
-  public async findAll(): Promise<IProduct[] | undefined> {
-    const products = await this.ormRepository.find();
-    return products;
+  public async findAll({
+    page,
+    skip,
+    take,
+  }: SearchParams): Promise<IProductPaginate> {
+    const [products, count] = await this.ormRepository
+      .createQueryBuilder()
+      .skip(skip)
+      .take(take)
+      .getManyAndCount();
+
+    const result = {
+      per_page: take,
+      total: count,
+      current_page: page,
+      data: products,
+    };
+    return result;
+
     //throw new Error('Method not implemented.');
   }
 

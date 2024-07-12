@@ -1,3 +1,3 @@
-interface IDeleteProduct {
+export interface IDeleteProduct {
   id: string;
 }

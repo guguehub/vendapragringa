@@ -27,9 +27,6 @@ export default class CustomersController {
   public async create(request: Request, response: Response): Promise<Response> {
     const { name, email } = request.body;
 
-    //medida prov abaixo
-    //const customersRepository = new CustomersRepository();
-
     const createCustomer = container.resolve(CreateCustomerService);
 
     const customer = await createCustomer.execute({

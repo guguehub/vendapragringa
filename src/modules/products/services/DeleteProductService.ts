@@ -3,6 +3,8 @@ import redisCache from '../../../shared/cache/RedisCache';
 import AppError from '@shared/errors/AppError';
 import { IProductsRepository } from '../domain/repositories/IProductsRepository';
 import { inject, injectable } from 'tsyringe';
+import { ICreateOrder } from '@modules/orders/domain/models/ICreateOrder';
+import { IDeleteOrder } from '@modules/orders/domain/models/IDeleteOrder';
 
 @injectable()
 class DeleteProductService {
@@ -11,7 +13,7 @@ class DeleteProductService {
     private ProductsRepository: IProductsRepository,
   ) {}
 
-  public async execute({ id }: IDeleteProduct): Promise<void> {
+  public async execute({ id }: IDeleteOrder): Promise<void> {
     const product = await this.ProductsRepository.findById(id);
 
     if (!product) {

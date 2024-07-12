@@ -3,7 +3,6 @@ import { ICustomersRepository } from '../domain/repositories/ICustomersRepositor
 import { ICreateCustomer } from '../domain/models/ICreateCustomer';
 import { ICustomer } from '../domain/models/iCustomer';
 import { inject, injectable } from 'tsyringe';
-import customersRepository
 
 @injectable()
 class CreateCustomerService {

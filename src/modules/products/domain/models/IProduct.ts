@@ -5,7 +5,6 @@ export interface IProduct {
   name: string;
   price: number;
   order_products: OrdersProducts[];
-
   quantity: number;
   created_at: Date;
   updated_at: Date;
