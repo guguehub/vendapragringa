@@ -34,7 +34,7 @@ class User implements IUser {
   updated_at: Date;
 
   @Expose({ name: 'avatar_url' })
-  getAvatarUrl(): string | null {
+  getAvatarUrl?(): string | null {
     if (!this.avatar) {
       return null;
     }

@@ -11,13 +11,13 @@ class UsersRepository implements IUsersRepository {
   }
 
   public async create({ name, email, password }: ICreateUser): Promise<User> {
-    const user = this.ormRepository.create();
+    const user = this.ormRepository.create({ name, email, password });
 
     await this.ormRepository.save(user);
     return user;
   }
 
-  async save(user: User): Promise<User> {
+  async save(user: User): Promise<IUser> {
     await this.ormRepository.save(user);
 
     return user;
@@ -37,7 +37,7 @@ class UsersRepository implements IUsersRepository {
     return user;
   }
 
-  public async findById(id: string): Promise<User | undefined> {
+  public async findById(id: string): Promise<IUser | undefined> {
     const user = await this.ormRepository.findOne({
       where: {
         id,
@@ -57,16 +57,10 @@ class UsersRepository implements IUsersRepository {
     return user;
   }
 
-  public async findAll(): Promise<User[] | undefined> {
+  public async findAll(): Promise<IUser[]> {
     const users = await this.ormRepository.find();
 
     return users;
-  }
-
-  public async findOne(): Promise<User | undefined> {
-    const user = await this.ormRepository.findOne();
-
-    return user;
   }
 }
 

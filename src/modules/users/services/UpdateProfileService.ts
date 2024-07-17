@@ -3,24 +3,25 @@ import UsersRepository from '../infra/typeorm/repositories/UsersRepository';
 import User from '../infra/typeorm/entities/User';
 import AppError from '@shared/errors/AppError';
 import { compare, hash } from 'bcryptjs';
+import { container, inject, injectable } from 'tsyringe';
+import { IUsersRepository } from '../domain/repositories/IUsersRepository';
+import { IUser } from '../domain/models/IUser';
 
-interface IRequest {
-  user_id: string;
-  name: string;
-  email: string;
-  password?: string;
-  old_password?: string;
-}
-
+@injectable()
 class UpdateProfileService {
+  constructor(
+    @inject('UsersRepository')
+    private usersRepository: IUsersRepository,
+  ) {}
+
   public async execute({
     user_id,
     name,
     email,
     password,
     old_password,
-  }: IRequest): Promise<User> {
-    const usersRepository = getCustomRepository(UsersRepository);
+  }: IUpdateProfile): Promise<IUser> {
+    const usersRepository = container.resolve(UsersRepository);
 
     const user = await usersRepository.findById(user_id);
 
