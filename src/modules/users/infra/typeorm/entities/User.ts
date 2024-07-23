@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 
 import { Exclude, Expose } from 'class-transformer';
-import { IUser } from '@modules/users/domain/models/IUser';
+import { IUser } from '../../../domain/models/IUser';
 
 @Entity('users')
 class User implements IUser {

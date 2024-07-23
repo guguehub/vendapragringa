@@ -5,7 +5,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ICustomer } from '@modules/customers/domain/models/iCustomer';
+import { ICustomer } from '../../../domain/models/iCustomer';
 
 @Entity('customers')
 class Customer implements ICustomer {

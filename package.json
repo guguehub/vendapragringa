@@ -10,7 +10,9 @@
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
     "typeorm": "ts-node-dev ./node_modules/typeorm/cli.js",
-    "test": "jest"
+    "test": "jest",
+    "dev:watch": "docker compose down && docker compose up",
+    "pgcli": "pgcli -h localhost -U postgres -d apivendas"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.5",

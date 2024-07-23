@@ -8,9 +8,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import Customer from '@modules/customers/infra/typeorm/entities/Customer';
+import Customer from '../../../../customers/infra/typeorm/entities/Customer';
 import OrdersProducts from './OrdersProducts';
-import { IOrder } from '@modules/orders/domain/models/IOrder';
+import { IOrder } from '../../../domain/models/IOrder';
 
 @Entity('orders')
 class Order implements IOrder {
