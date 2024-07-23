@@ -3,6 +3,7 @@ import User from '@modules/users/infra/typeorm/entities/User';
 import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
 import { ICreateUser } from '@modules/users/domain/models/ICreateUser';
 import { IUser } from '@modules/users/domain/models/IUser';
+import { v4 as uuidv4 } from 'uuid';
 
 class FakeUsersRepository
   implements Omit<IUsersRepository, 'remove' | 'findAll'>
@@ -11,7 +12,7 @@ class FakeUsersRepository
 
   public async create({ name, email, password }: ICreateUser): Promise<IUser> {
     const user = new User();
-    user.id = '1234';
+    user.id = uuidv4();
     user.name = name;
     user.email = email;
     user.password = password;

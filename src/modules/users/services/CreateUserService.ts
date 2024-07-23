@@ -1,5 +1,4 @@
 import AppError from '@shared/errors/AppError';
-
 import { inject, injectable } from 'tsyringe';
 import { IUsersRepository } from '../domain/repositories/IUsersRepository';
 import { ICreateUser } from '../domain/models/ICreateUser';

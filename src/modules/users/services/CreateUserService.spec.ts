@@ -14,6 +14,7 @@ describe('CreateUser', () => {
     fakeHashProvider = new FakeHashProvider();
     createUser = new CreateUserService(fakeUsersRepository, fakeHashProvider);
   });
+
   it('should be able to create a new user', async () => {
     const user = await createUser.execute({
       name: 'John Silva',
@@ -21,5 +22,20 @@ describe('CreateUser', () => {
       password: '123456',
     });
     expect(user).toHaveProperty('id');
+  });
+
+  it('should NOT be able to create new user if email already taken', async () => {
+    const user = await createUser.execute({
+      name: 'John silva',
+      email: 'test@tester',
+      password: '123456',
+    });
+    expect(
+      createUser.execute({
+        name: 'John silva',
+        email: 'test@tester',
+        password: '123456',
+      }),
+    ).rejects.toBeInstanceOf(AppError);
   });
 });
