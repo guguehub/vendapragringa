@@ -12,7 +12,7 @@ class DeleteUserService {
   public async execute({ id }: IRequest): Promise<void> {
     const usersRepository = getCustomRepository(UsersRepository);
 
-    const user = await usersRepository.findOne(id);
+    const user = await usersRepository.findById(id);
 
     if (!user) {
       throw new AppError('Product not found');
