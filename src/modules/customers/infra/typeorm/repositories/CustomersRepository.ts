@@ -2,8 +2,6 @@ import { Repository } from 'typeorm';
 import Customer from '../entities/Customer';
 import { ICustomersRepository } from '@modules/customers/domain/repositories/ICustomersRepository';
 import { ICreateCustomer } from '../../../domain/models/ICreateCustomer';
-import { ICustomer } from '@modules/customers/domain/models/iCustomer';
-//import { ICustomerPaginate } from '@modules/customers/domain/models/ICustomerPaginate';
 import { dataSource } from '../../../../../shared/infra/typeorm';
 import { SearchParams } from '../../../domain/repositories/ICustomersRepository';
 import { ICustomerPaginate } from '@modules/customers/domain/models/ICustomerPaginate';
