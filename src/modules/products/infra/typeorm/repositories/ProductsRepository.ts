@@ -6,7 +6,7 @@ import { IProduct } from '@modules/products/domain/models/IProduct';
 import { IProductPaginate } from '@modules/products/domain/models/IProductPaginate';
 import { IUpdateStockProduct } from '@modules/products/domain/models/IUpdateStockProduct';
 
-type SearchParams = {
+export type SearchParams = {
   page: number;
   skip: number;
   take: number;

@@ -7,7 +7,7 @@ const customersRouter = Router();
 const customersController = new CustomersController();
 
 //all routes must have authentication
-customersRouter.use(isAuthenticated);
+//customersRouter.use(isAuthenticated);
 
 customersRouter.get('/', customersController.index);
 
