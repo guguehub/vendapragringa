@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import ListProductService from '@modules/products/services/ListProductService';
-import ShowProductService from '@modules/products/services/ShowProductService';
-import CreateProductService from '@modules/products/services/CreateProductService';
+import ListProductService from '../../../../products/services/ListProductService';
+import ShowProductService from '../../../../products/services/ShowProductService';
+import CreateProductService from '../../../../products/services/CreateProductService';
 import UpdateProductService from '@modules/products/services/UpdateProductService';
-import DeleteProductService from '@modules/products/services/DeleteProductService';
+import DeleteProductService from '../../../../products/services/DeleteProductService';
 import { container } from 'tsyringe';
 
 export default class ProductsController {

@@ -1,7 +1,7 @@
-import Product from '../infra/typeorm/entities/Product';
 import { IProductsRepository } from '../domain/repositories/IProductsRepository';
 import { inject, injectable } from 'tsyringe';
-import { IProductPaginate } from '../domain/models/IProductPaginate';
+import redisCache from '../../../shared/cache/RedisCache';
+import { IProduct } from '../domain/models/IProduct';
 
 interface SearchParams {
   page: number;
@@ -15,30 +15,15 @@ class ListProductService {
     private productsRepository: IProductsRepository,
   ) {}
 
-  public async execute({
-    page,
-    limit,
-  }: SearchParams): Promise<IProductPaginate> {
-    const take = limit;
-    const skip = (Number(page) - 1) * take;
-
-    const products = await this.productsRepository.findAll({
-      page,
-      skip,
-      take,
-    });
-
-    //const redisCache = new RedisCache();
+  public async execute(): Promise<IProduct[]> {
+    let products = await redisCache.recover<IProduct[]>(
+      'api-vendas-PRODUCT_LIST',
+    );
 
     if (!products) {
-      let products = await this.productsRepository.findAll({
-        page,
-        skip,
-        take,
-      });
-      return products;
+      products = await this.productsRepository.findAll();
 
-      //await redisCache.save('api-vendas-PRODUCT-LIST', products);
+      await redisCache.save('api-vendas-PRODUCT_LIST', products);
     }
 
     return products;

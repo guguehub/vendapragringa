@@ -40,7 +40,7 @@ export default class CustomersController {
   }
 
   public async update(request: Request, response: Response): Promise<Response> {
-    const { name, price, quantity } = request.body;
+    const { name } = request.body;
     const { id } = request.params;
     const { email } = request.params;
 
