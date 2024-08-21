@@ -1,4 +1,3 @@
-import { getCustomRepository } from 'typeorm';
 import UsersRepository from '../infra/typeorm/repositories/UsersRepository';
 import { IUser } from '../domain/models/IUser';
 import User from '../infra/typeorm/entities/User';
@@ -12,7 +11,7 @@ class ListUserService {
     private usersRepository: IUsersRepository,
   ) {}
 
-  public async execute(): Promise<IUser[] | undefined> {
+  public async execute(): Promise<IUser[] | null> {
     const users = await this.usersRepository.findAll();
 
     return users;

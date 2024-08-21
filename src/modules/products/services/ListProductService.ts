@@ -3,11 +3,6 @@ import { inject, injectable } from 'tsyringe';
 import redisCache from '../../../shared/cache/RedisCache';
 import { IProduct } from '../domain/models/IProduct';
 
-interface SearchParams {
-  page: number;
-  limit: number;
-}
-
 @injectable()
 class ListProductService {
   constructor(
