@@ -1,4 +1,4 @@
-interface IUpdateProfile {
+export interface IUpdateProfile {
   user_id: string;
   name: string;
   email: string;

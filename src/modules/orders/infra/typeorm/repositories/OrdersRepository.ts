@@ -4,15 +4,17 @@ import { IOrdersRepository } from '@modules/orders/domain/repositories/IOrdersRe
 import { ICreateOrder } from '@modules/orders/domain/models/ICreateOrder';
 import { IOrder } from '@modules/orders/domain/models/IOrder';
 import { IDeleteOrder } from '@modules/orders/domain/models/IDeleteOrder';
+import { dataSource } from '../../../../../shared/infra/typeorm';
 
 class OrdersRepository implements IOrdersRepository {
   private ormRepository: Repository<Order>;
   constructor() {
-    this.ormRepository = getRepository(Order);
+    this.ormRepository = dataSource.getRepository(Order);
   }
 
-  public async findById(id: string): Promise<Order | undefined> {
-    const order = this.ormRepository.findOne(id, {
+  public async findById(id: string): Promise<Order | null> {
+    const order = this.ormRepository.findOne({
+      where: { id },
       relations: ['order_products', 'customer'],
     });
     return order;

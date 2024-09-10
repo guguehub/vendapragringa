@@ -1,6 +1,4 @@
-import UsersRepository from '../infra/typeorm/repositories/UsersRepository';
 import { IUser } from '../domain/models/IUser';
-import User from '../infra/typeorm/entities/User';
 import { injectable, inject } from 'tsyringe';
 import { IUsersRepository } from '../domain/repositories/IUsersRepository';
 

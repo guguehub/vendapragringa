@@ -5,25 +5,24 @@ import { compare, hash } from 'bcryptjs';
 import { container, inject, injectable } from 'tsyringe';
 import { IUsersRepository } from '../domain/repositories/IUsersRepository';
 import { IUser } from '../domain/models/IUser';
-import { IUpdateProfile } from '../domain/models/IUpdateProfile';
+import { IUpdateUser } from '../domain/models/IUpdateUser';
 
 @injectable()
-class UpdateProfileService {
+class UpdateUserService {
   constructor(
     @inject('UsersRepository')
     private usersRepository: IUsersRepository,
   ) {}
 
   public async execute({
-    user_id,
+    id,
     name,
     email,
-    password,
-    old_password,
-  }: IUpdateProfile): Promise<IUser> {
+    password, // old_password,
+  }: IUpdateUser): Promise<IUser> {
     const usersRepository = container.resolve(UsersRepository);
 
-    const user = await usersRepository.findById(user_id);
+    const user = await usersRepository.findById(id);
 
     if (!user) {
       throw new AppError('User not found');
@@ -31,9 +30,10 @@ class UpdateProfileService {
 
     const userUpdateEmail = await usersRepository.findByEmail(email);
 
-    if (userUpdateEmail && userUpdateEmail.id != user_id) {
+    if (userUpdateEmail && userUpdateEmail.id == id) {
       throw new AppError('there is already one user with this email.');
     }
+    /*
 
     if (password && !old_password) {
       throw new AppError('old password is required');
@@ -47,7 +47,7 @@ class UpdateProfileService {
       }
 
       user.password = await hash(password, 8);
-    }
+    } */
 
     user.name = name;
     user.email = email;
@@ -57,4 +57,4 @@ class UpdateProfileService {
   }
 }
 
-export default UpdateProfileService;
+export default UpdateUserService;

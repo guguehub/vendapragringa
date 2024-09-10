@@ -41,4 +41,15 @@ ordersRouter.delete(
   ordersController.delete,
 );
 
+ordersRouter.put(
+  '/:id',
+  celebrate({
+    [Segments.BODY]: {
+      customer_id: Joi.string().required(),
+      products: Joi.string().required(),
+    },
+  }),
+  ordersController.update,
+);
+
 export default ordersRouter;

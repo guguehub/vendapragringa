@@ -3,7 +3,6 @@ import redisCache from '../../../shared/cache/RedisCache';
 import AppError from '@shared/errors/AppError';
 import { IProductsRepository } from '../domain/repositories/IProductsRepository';
 import { inject, injectable } from 'tsyringe';
-import { ICreateOrder } from '@modules/orders/domain/models/ICreateOrder';
 import { IDeleteOrder } from '@modules/orders/domain/models/IDeleteOrder';
 
 @injectable()

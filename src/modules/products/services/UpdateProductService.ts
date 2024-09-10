@@ -1,13 +1,9 @@
-// import 'reflect-metadata';
+import 'reflect-metadata';
 import redisCache from '../../../shared/cache/RedisCache';
 import AppError from '../../../shared/errors/AppError';
-import { getCustomRepository } from 'typeorm';
-import Product from '../infra/typeorm/entities/Product';
-import ProductRepository from '../infra/typeorm/repositories/ProductsRepository';
 import { injectable, inject } from 'tsyringe';
 import { IProductsRepository } from '../domain/repositories/IProductsRepository';
 import { IUpdateProduct } from '../domain/models/IUpdateProduct';
-import CustomersRepository from '@modules/customers/infra/typeorm/repositories/CustomersRepository';
 import { IProduct } from '../domain/models/IProduct';
 
 @injectable()

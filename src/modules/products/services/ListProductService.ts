@@ -18,7 +18,7 @@ class ListProductService {
     if (!products) {
       products = await this.productsRepository.findAll();
 
-      await redisCache.save('api-vendas-PRODUCT_LIST', products);
+      //await redisCache.save('api-vendas-PRODUCT_LIST', products);
     }
 
     return products;

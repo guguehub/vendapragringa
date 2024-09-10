@@ -23,10 +23,6 @@ class UpdateCustomerService {
 
     const customerExists = await this.customersRepository.findByEmail(email);
 
-    if (customerExists && email != customer.email) {
-      throw new AppError('there is already one user with this email.');
-    }
-
     customer.name = name;
     customer.email = email;
 

@@ -10,6 +10,13 @@ class UsersRepository implements IUsersRepository {
   constructor() {
     this.ormRepository = dataSource.getRepository(User);
   }
+  /*
+  public async find(): Promise<IUser | void> {
+    //throw new Error('Method not implemented.');
+    const user = await this.ormRepository.findOneBy(id);
+
+    return user
+  } */
 
   public async create({ name, email, password }: ICreateUser): Promise<User> {
     const user = this.ormRepository.create({ name, email, password });

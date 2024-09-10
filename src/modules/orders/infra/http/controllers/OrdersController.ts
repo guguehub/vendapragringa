@@ -5,6 +5,7 @@ import { container } from 'tsyringe';
 import ListOrderService from '@modules/orders/services/ListOrderService';
 import { IOrder } from '@modules/orders/domain/models/IOrder';
 import DeleteOrderService from '@modules/orders/services/DeleteOrderService';
+import UpdateOrderService from '@modules/orders/services/UpdateOrderService';
 
 export default class OrdersController {
   public async index(request: Request, response: Response): Promise<Response> {
@@ -47,5 +48,16 @@ export default class OrdersController {
     await deleteOrder.execute({ id });
 
     return response.json([]);
+  }
+
+  public async update(request: Request, response: Response): Promise<Response> {
+    const { id } = request.params;
+    const { customer_id, products } = request.body;
+
+    const updateOrder = container.resolve(UpdateOrderService);
+
+    await updateOrder.execute({ id, customer_id, products });
+
+    return response.json(order);
   }
 }

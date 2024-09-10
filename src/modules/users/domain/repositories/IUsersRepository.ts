@@ -9,5 +9,5 @@ export interface IUsersRepository {
   save(user: IUser): Promise<IUser>;
   remove(user: IUser): Promise<IUser | void>;
   findAll(): Promise<IUser[] | null>;
-  find(): Promise<IUser[] | null>;
+  //find(): Promise<IUser | void>;
 }

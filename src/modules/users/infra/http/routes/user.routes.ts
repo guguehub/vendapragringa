@@ -13,7 +13,16 @@ const usersAvatarController = new UserAvatarController();
 const upload = multer(uploadConfig);
 
 usersRouter.get('/', isAuthenticated, usersController.index);
-//usersRouter.get('/', usersController.index);
+
+usersRouter.get(
+  '/:id',
+  celebrate({
+    [Segments.PARAMS]: {
+      id: Joi.string().uuid().required(),
+    },
+  }),
+  usersController.show,
+);
 
 usersRouter.post(
   '/',
@@ -44,6 +53,16 @@ usersRouter.delete(
     },
   }),
   usersController.delete,
+);
+
+usersRouter.put(
+  '/:id',
+  celebrate({
+    [Segments.PARAMS]: {
+      id: Joi.string().uuid().required(),
+    },
+  }),
+  usersController.update,
 );
 
 export default usersRouter;

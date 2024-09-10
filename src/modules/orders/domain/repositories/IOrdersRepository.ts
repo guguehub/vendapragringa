@@ -9,7 +9,7 @@ type SearchParams = {
 };
 
 export interface IOrdersRepository {
-  findById(id: string): Promise<IOrder | undefined>;
+  findById(id: string): Promise<IOrder | null>;
   //createOrder({ customer, products }: ICreateOrder): Promise<IOrder>;
   create(data: ICreateOrder): Promise<IOrder>;
   findAll(): Promise<IOrder[] | undefined>;
