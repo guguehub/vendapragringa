@@ -45,8 +45,8 @@ ordersRouter.put(
   '/:id',
   celebrate({
     [Segments.BODY]: {
-      customer_id: Joi.string().required(),
       products: Joi.string().required(),
+      quantity: Joi.string().required(),
     },
   }),
   ordersController.update,

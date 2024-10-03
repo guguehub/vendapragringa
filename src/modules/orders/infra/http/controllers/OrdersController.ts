@@ -47,17 +47,17 @@ export default class OrdersController {
 
     await deleteOrder.execute({ id });
 
-    return response.json([]);
+    return response.json([console.log('pedido deletado')]);
   }
 
   public async update(request: Request, response: Response): Promise<Response> {
     const { id } = request.params;
-    const { customer_id, products } = request.body;
+    const { products, quantity } = request.body;
 
     const updateOrder = container.resolve(UpdateOrderService);
 
-    await updateOrder.execute({ id, customer_id, products });
+    await updateOrder.execute({ products, quantity });
 
-    return response.json(order);
+    return response.json();
   }
 }
