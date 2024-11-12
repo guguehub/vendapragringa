@@ -9,7 +9,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { IProduct } from '../../../domain/models/IProduct';
-import Supplier from '@modules/suppliers/infra/typeorm/entities/Supplier';
 
 @Entity('products')
 class Product implements IProduct {
@@ -18,9 +17,6 @@ class Product implements IProduct {
 
   @OneToMany(() => OrdersProducts, order_products => order_products.product)
   order_products: OrdersProducts[];
-
-  @ManyToOne(() => Supplier, supplier => supplier.products)
-  supplier: Supplier;
 
   @Column()
   name: string;
