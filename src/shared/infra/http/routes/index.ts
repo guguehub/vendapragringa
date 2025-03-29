@@ -6,6 +6,11 @@ import passwordRouter from '@modules/users/infra/http/routes/password.routes';
 import profileRouter from '@modules/users/infra/http/routes/profile.routes';
 import customersRouter from '@modules/customers/infra/http/routes/customers.routes';
 import ordersRouter from '@modules/orders/infra/http/routes/orders.routes';
+import fetchTestRouter from './fetchR.routes';
+import postTestRouter from './fetchPost.routes';
+import fetchTestRouter2 from './fetchRANTIGA.routes';
+import authPostRouter from './authMl.routes';
+import postTestRouter_fet from './scrappML.routes';
 
 const routes = Router();
 
@@ -16,5 +21,10 @@ routes.use('/password', passwordRouter);
 routes.use('/profile', profileRouter);
 routes.use('/customers', customersRouter);
 routes.use('/orders', ordersRouter);
+routes.use('/api', fetchTestRouter2);
+routes.use('/api', postTestRouter);
+routes.use('/api', fetchTestRouter);
+routes.use('/auth', authPostRouter);
+routes.use('/scrap', postTestRouter_fet);
 
 export default routes;

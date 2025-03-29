@@ -10,13 +10,13 @@ class UsersRepository implements IUsersRepository {
   constructor() {
     this.ormRepository = dataSource.getRepository(User);
   }
-  /*
-  public async find(): Promise<IUser | void> {
-    //throw new Error('Method not implemented.');
-    const user = await this.ormRepository.findOneBy(id);
+  findOne(id: IUser): Promise<IUser | null> {
+    throw new Error('Method not implemented.');
+  }
 
-    return user
-  } */
+  public async findAllByOwner(userId: string): Promise<IUser[]> {
+    throw new Error('Method not implemented.');
+  }
 
   public async create({ name, email, password }: ICreateUser): Promise<User> {
     const user = this.ormRepository.create({ name, email, password });
@@ -31,11 +31,15 @@ class UsersRepository implements IUsersRepository {
     return user;
   }
 
+  public async findByEmail(email: string): Promise<User | null> {
+    return this.ormRepository.findOne({ where: { email } });
+  }
+
   public async remove(user: User): Promise<void> {
     await this.ormRepository.remove(user);
   }
 
-  public async findByName(name: string): Promise<User | null> {
+  public async findByName(name: string): Promise<IUser | null> {
     const user = await this.ormRepository.findOne({
       where: {
         name,
@@ -47,19 +51,8 @@ class UsersRepository implements IUsersRepository {
 
   public async findById(id: string): Promise<IUser | null> {
     const user = await this.ormRepository.findOne({
-      where: {
-        id,
-      },
-    });
-
-    return user;
-  }
-
-  public async findByEmail(email: string): Promise<User | null> {
-    const user = await this.ormRepository.findOne({
-      where: {
-        email,
-      },
+      where: { id },
+      relations: ['suppliers'], // Load the user's suppliers
     });
 
     return user;

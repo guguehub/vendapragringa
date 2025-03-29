@@ -6,11 +6,10 @@ import {
   UpdateDateColumn,
   ManyToOne,
 } from 'typeorm';
-//import Supplier from '@modules/suppliers/infra/typeorm/entities/Supplier';
 import Supplier from '../../../../suppliers/infra/typeorm/entities/Supplier';
 
-@Entity('products')
-class Product {
+@Entity('items')
+class Item {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -35,6 +34,9 @@ class Product {
   @Column({ nullable: true })
   status: string; // 'available' | 'unavailable' | 'out_of_stock'
 
+  @Column({ type: 'boolean', nullable: true })
+  is_listed_on_ebay: boolean | null; // Nullable boolean field
+
   @ManyToOne(() => Supplier, supplier => supplier.products, { nullable: true })
   supplier: Supplier;
 
@@ -45,4 +47,4 @@ class Product {
   updated_at: Date;
 }
 
-export default Product;
+export default Item;

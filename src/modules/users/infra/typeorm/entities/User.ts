@@ -1,45 +1,36 @@
 import {
-  Column,
-  CreateDateColumn,
   Entity,
+  Column,
   PrimaryGeneratedColumn,
+  CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 
-import { Exclude, Expose } from 'class-transformer';
-import { IUser } from '../../../domain/models/IUser';
+import Supplier from '../../../../suppliers/infra/typeorm/entities/Supplier';
 
 @Entity('users')
-class User implements IUser {
+class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   name: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Column()
-  @Exclude()
   password: string;
 
-  @Column()
-  avatar: string;
+  @OneToMany(() => Supplier, supplier => supplier.user, { cascade: true })
+  suppliers: Supplier[];
 
   @CreateDateColumn()
   created_at: Date;
 
   @UpdateDateColumn()
   updated_at: Date;
-
-  @Expose({ name: 'avatar_url' })
-  getAvatarUrl?(): string | null {
-    if (!this.avatar) {
-      return null;
-    }
-    return `${process.env.APP_API_UR}/files/${this.avatar}`;
-  }
 }
 
 export default User;

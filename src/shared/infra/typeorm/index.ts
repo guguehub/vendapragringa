@@ -6,6 +6,8 @@ import Customer from '../../../modules/customers/infra/typeorm/entities/Customer
 import Order from '../../../modules/orders/infra/typeorm/entities/Order';
 import OrdersProducts from '../../../modules/orders/infra/typeorm/entities/OrdersProducts';
 import Product from '../../../modules/products/infra/typeorm/entities/Product';
+import Supplier from '../../../modules/suppliers/infra/typeorm/entities/Supplier';
+import Item from '../../../modules/item/infra/typeorm/entities/Item';
 
 import { CreateProducts1698109674954 } from './migrations/1698109674954-CreateProducts';
 import { CreateUsers1698346943647 } from './migrations/1698346943647-CreateUsers';
@@ -16,6 +18,11 @@ import { CreateOrdersProducts1706758221558 } from './migrations/1706758221558-Cr
 import { AddOrderIdToOrdersProducts1706759321101 } from './migrations/1706759321101-AddOrderIdToOrdersProducts';
 import { AddProductIdToOrdersProducts1706760048960 } from './migrations/1706760048960-AddProductIdToOrdersProducts';
 import { AddCustomerIdToOrders1706757078633 } from './migrations/1706757078633-AddCustomerIdToOrders';
+import { ItemFetch1741736196658 } from './migrations/1741736196658-ItemFetch';
+
+import { Item1741760757817 } from './migrations/1741760757817-Item';
+
+import { Suppliers1741816763627 } from './migrations/1741816763627-Suppliers';
 
 export const dataSource = new DataSource({
   type: 'postgres',
@@ -24,7 +31,16 @@ export const dataSource = new DataSource({
   username: 'postgres',
   password: 'docker',
   database: 'apivendas',
-  entities: [User, UserToken, Customer, Order, OrdersProducts, Product],
+  entities: [
+    User,
+    UserToken,
+    Customer,
+    Order,
+    OrdersProducts,
+    Product,
+    Item,
+    Supplier,
+  ],
 
   migrations: [
     CreateProducts1698109674954,
@@ -36,5 +52,8 @@ export const dataSource = new DataSource({
     CreateOrdersProducts1706758221558,
     AddOrderIdToOrdersProducts1706759321101,
     AddProductIdToOrdersProducts1706760048960,
+    ItemFetch1741736196658,
+    Item1741760757817,
+    Suppliers1741816763627,
   ],
 });
