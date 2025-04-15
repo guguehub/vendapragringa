@@ -4,10 +4,11 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
   ManyToOne,
 } from 'typeorm';
-//import Supplier from '@modules/suppliers/infra/typeorm/entities/Supplier';
-import Supplier from '../../../../suppliers/infra/typeorm/entities/Supplier';
+//import { UserSubscription } from './UserSubscription';
+import { Subscription } from '../../../../subscriptions/infra/typeorm/entities/Subscription';
 
 @Entity('products')
 class Product {
@@ -15,34 +16,25 @@ class Product {
   id: string;
 
   @Column()
-  name: string;
-
-  @Column('decimal', { precision: 10, scale: 2 })
-  price: number;
+  name: string; // e.g., 'Free', 'Pro', 'Premium'
 
   @Column({ nullable: true })
   description: string;
 
-  @Column({ nullable: true })
-  marketplace: string; // e.g., 'mercado_livre', 'olx', 'custom'
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  price: number;
 
-  @Column({ nullable: true })
-  external_id: string; // If from a marketplace
+  @Column({ default: true })
+  isActive: boolean;
 
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  shipping_price: number;
-
-  @Column({ nullable: true })
-  status: string; // 'available' | 'unavailable' | 'out_of_stock'
-
-  @ManyToOne(() => Supplier, supplier => supplier.products, { nullable: true })
-  supplier: Supplier;
+  @OneToMany(() => Subscription, subscription => subscription.product)
+  subscriptions: Subscription[];
 
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updated_at: Date;
+  updatedAt: Date;
 }
 
 export default Product;

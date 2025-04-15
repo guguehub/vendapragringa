@@ -15,14 +15,14 @@ class SuppliersRepository implements ISuppliersRepository {
   public async create({
     name,
     email,
-    phone,
+    link,
     address,
     type,
   }: ICreateSupplier): Promise<Supplier> {
     const supplier = this.ormRepository.create({
       name,
       email,
-      phone,
+      link,
       address,
       type,
     });

@@ -36,7 +36,7 @@
     "ts-jest": "^26.5.4",
     "ts-node-dev": "1.0.0",
     "tsconfig-paths": "3.9.0",
-    "typescript": "4.1.2"
+    "typescript": "^5.8.0-dev.20250218"
   },
   "dependencies": {
     "abort-controller": "^3.0.0",
@@ -46,6 +46,7 @@
     "celebrate": "^15.0.1",
     "cheerio": "1.0.0-rc.10",
     "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
     "cors": "^2.8.5",
     "date-fns": "^3.3.0",
     "dotenv": "8.2.0",

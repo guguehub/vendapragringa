@@ -10,7 +10,6 @@ import Supplier from '../../../modules/suppliers/infra/typeorm/entities/Supplier
 import Item from '../../../modules/item/infra/typeorm/entities/Item';
 
 import { CreateProducts1698109674954 } from './migrations/1698109674954-CreateProducts';
-import { CreateUsers1698346943647 } from './migrations/1698346943647-CreateUsers';
 import { CreateUserTokens1698463024050 } from './migrations/1698463024050-CreateUserTokens';
 import { CreateCustomers1705979140252 } from './migrations/1705979140252-CreateCustomers';
 import { CreateOrders1706756486885 } from './migrations/1706756486885-CreateOrders';
@@ -20,9 +19,11 @@ import { AddProductIdToOrdersProducts1706760048960 } from './migrations/17067600
 import { AddCustomerIdToOrders1706757078633 } from './migrations/1706757078633-AddCustomerIdToOrders';
 import { ItemFetch1741736196658 } from './migrations/1741736196658-ItemFetch';
 
+import { CreateUsers1744503913972 } from './migrations/1744503913972-CreateUsers';
 import { Item1741760757817 } from './migrations/1741760757817-Item';
 
-import { Suppliers1741816763627 } from './migrations/1741816763627-Suppliers';
+//import { Suppliers1741816763627 } from './migrations/1741816763627-Suppliers';
+import { Suppliers1744743397400 } from './migrations/1744743397400-Suppliers';
 
 export const dataSource = new DataSource({
   type: 'postgres',
@@ -44,7 +45,7 @@ export const dataSource = new DataSource({
 
   migrations: [
     CreateProducts1698109674954,
-    CreateUsers1698346943647,
+    CreateUsers1744503913972,
     CreateUserTokens1698463024050,
     CreateCustomers1705979140252,
     CreateOrders1706756486885,
@@ -54,6 +55,8 @@ export const dataSource = new DataSource({
     AddProductIdToOrdersProducts1706760048960,
     ItemFetch1741736196658,
     Item1741760757817,
-    Suppliers1741816763627,
+    Suppliers1744743397400,
   ],
 });
+
+//yarn typeorm migration:create migrations/

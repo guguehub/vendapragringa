@@ -8,6 +8,8 @@ import ProductsRepository from '@modules/products/infra/typeorm/repositories/Pro
 import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
 import UsersRepository from '@modules/users/infra/typeorm/repositories/UsersRepository';
 import '@modules/users/providers';
+import SubscriptionRepository from '@modules/subscriptions/infra/typeorm/repositories/SubscriptionRepository';
+import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositories/ICreateSubscription';
 
 container.registerSingleton<ICustomersRepository>(
   'CustomersRepository',
@@ -27,4 +29,9 @@ container.registerSingleton<IOrdersRepository>(
 container.registerSingleton<IUsersRepository>(
   'UsersRepository',
   UsersRepository,
+);
+
+container.registerSingleton<ISubscriptionRepository>(
+  'SubscriptionRepository',
+  SubscriptionRepository,
 );

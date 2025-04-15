@@ -37,7 +37,7 @@ class Item {
   @Column({ type: 'boolean', nullable: true })
   is_listed_on_ebay: boolean | null; // Nullable boolean field
 
-  @ManyToOne(() => Supplier, supplier => supplier.products, { nullable: true })
+  @ManyToOne(() => Supplier, supplier => supplier.items)
   supplier: Supplier;
 
   @CreateDateColumn()

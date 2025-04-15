@@ -10,7 +10,8 @@ import fetchTestRouter from './fetchR.routes';
 import postTestRouter from './fetchPost.routes';
 import fetchTestRouter2 from './fetchRANTIGA.routes';
 import authPostRouter from './authMl.routes';
-import postTestRouter_fet from './scrappML.routes';
+
+import scrapyRouter from './scrapy.routes';
 
 const routes = Router();
 
@@ -25,6 +26,6 @@ routes.use('/api', fetchTestRouter2);
 routes.use('/api', postTestRouter);
 routes.use('/api', fetchTestRouter);
 routes.use('/auth', authPostRouter);
-routes.use('/scrap', postTestRouter_fet);
+routes.use('scrapy', scrapyRouter);
 
 export default routes;

@@ -1,3 +1,4 @@
+/*
 import { Router, Request, Response } from 'express';
 //import * as cheerio from 'cheerio';
 const cheerio = require('cheerio');
@@ -45,3 +46,4 @@ scrapTestRouter_fet.post('/scrap', async (req: Request, res: Response) => {
 });
 
 export default scrapTestRouter_fet;
+*/

@@ -11,6 +11,8 @@ import {
 import Product from '../../../../products/infra/typeorm/entities/Product';
 //import User from '@modules/users/infra/typeorm/entities/User';
 import User from '../../../../users/infra/typeorm/entities/User';
+//import Item from '@modules/item/infra/typeorm/entities/Item';
+import Item from '../../../../item/infra/typeorm/entities/Item';
 
 @Entity('suppliers')
 class Supplier {
@@ -30,7 +32,7 @@ class Supplier {
   email: string;
 
   @Column({ nullable: true })
-  phone: string;
+  link: string;
 
   @Column({ nullable: true })
   website: string;
@@ -59,8 +61,8 @@ class Supplier {
   @Column()
   userId: string; // Ensures only the owner can access
 
-  @OneToMany(() => Product, product => product.supplier)
-  products: Product[];
+  @OneToMany(() => Item, item => item.supplier)
+  items: Item[];
 
   @CreateDateColumn()
   created_at: Date;

@@ -11,8 +11,13 @@ import '../../../shared/infra/typeorm';
 import '../../../shared/container';
 import uploadConfig from '@config/upload';
 import rateLimiter from './middlewares/rateLimiter';
+import scrapyRouter from './routes/scrapy.routes';
 
 const app = express();
+
+// Routes
+const scrapRoutes = require('../../../shared/infra/http/routes/scrapy.routes');
+app.use('/api', scrapyRouter);
 
 app.use(cors());
 app.use(express.json());

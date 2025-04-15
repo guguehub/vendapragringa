@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 
+import { Subscription } from '../../../../subscriptions/infra/typeorm/entities/Subscription';
 import Supplier from '../../../../suppliers/infra/typeorm/entities/Supplier';
 
 @Entity('users')
@@ -25,6 +26,9 @@ class User {
 
   @OneToMany(() => Supplier, supplier => supplier.user, { cascade: true })
   suppliers: Supplier[];
+
+  @OneToMany(() => Subscription, subscription => subscription.user)
+  subscriptions: Subscription[];
 
   @CreateDateColumn()
   created_at: Date;

@@ -12,7 +12,7 @@
       "@modules/*": ["src/modules/*"],
       "@shared/*": ["src/shared/*"]
     },
-    "typeRoots": ["@types", "./node_modules/@types"],
+    "typeRoots": ["@types", "./node_modules/@types", "./src/@types"],
     "resolveJsonModule": true,
     "allowJs": true,
     "outDir": "build",
@@ -20,6 +20,8 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitAny": true,
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+
+    "skipLibCheck": true // Desativa a verificação de bibliotecas para melhorar
   }
 }

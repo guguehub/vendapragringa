@@ -3,7 +3,7 @@ export interface ICreateSupplier {
   marketplace?: 'mercado_livre' | 'olx' | 'custom';
   external_id?: string;
   email?: string;
-  phone?: string;
+  link?: string;
   website?: string;
   address?: string;
   city?: string;

@@ -8,7 +8,7 @@ export interface ISupplier {
   items?: IItem[]; // Items associated with the supplier
 
   email?: string;
-  phone?: string;
+  link?: string;
   website?: string;
   address?: string;
   city?: string;

@@ -2,7 +2,7 @@ export interface IUpdateSupplier {
   id: string;
   name?: string;
   email?: string;
-  phone?: string;
+  link?: string;
   website?: string;
   address?: string;
   city?: string;
