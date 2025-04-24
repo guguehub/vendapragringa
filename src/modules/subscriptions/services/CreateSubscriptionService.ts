@@ -5,7 +5,8 @@ import AppError from '@shared/errors/AppError';
 
 import { ICreateSubscription } from '@modules/subscriptions/domain/models/ICreateSubscription';
 import { ISubscription } from '@modules/subscriptions/domain/models/ISubscription';
-import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositories/ISubscriptionRepository';
+//import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositories/ISubscriptionRepository';
+import { ISubscriptionRepository } from '../domain/repositories/ICreateSubscription';
 
 @injectable()
 class CreateSubscriptionService {

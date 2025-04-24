@@ -1,4 +1,4 @@
-import Item from '@modules/items/infra/typeorm/entities/Item';
+import Item from 'src/modules/item/infra/typeorm/entities/Item';
 
 interface ICreateItemDTO {
   name: string;

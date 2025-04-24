@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 
 import { Subscription } from '../../../../subscriptions/infra/typeorm/entities/Subscription';
-import Supplier from '../../../../suppliers/infra/typeorm/entities/Supplier';
+import { SavedItem } from '../../../../item/infra/typeorm/entities/SavedItem';
 
 @Entity('users')
 class User {
@@ -24,11 +24,11 @@ class User {
   @Column()
   password: string;
 
-  @OneToMany(() => Supplier, supplier => supplier.user, { cascade: true })
-  suppliers: Supplier[];
-
   @OneToMany(() => Subscription, subscription => subscription.user)
-  subscriptions: Subscription[];
+  subscriptions?: Subscription[];
+
+  @OneToMany(() => SavedItem, item => item.user)
+  savedItems?: SavedItem[];
 
   @CreateDateColumn()
   created_at: Date;

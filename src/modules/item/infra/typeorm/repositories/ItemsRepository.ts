@@ -2,7 +2,7 @@ import { Repository, DataSource } from 'typeorm';
 import {
   IItemsRepository,
   ICreateItemDTO,
-} from '@modules/item/domain/repositories/IItemsRepository';
+} from 'src/modules/item/domain/repositories/IItemsRepository';
 import Item from '../entities/Item';
 
 class ItemsRepository implements IItemsRepository {
@@ -23,6 +23,7 @@ class ItemsRepository implements IItemsRepository {
       where: { id },
       relations: ['supplier'],
     });
+  } // <-- Aqui estava faltando o fechamento!
 
   public async findById(id: string): Promise<Item | undefined> {
     return this.ormRepository.findOne({

@@ -3,8 +3,8 @@ import AppError from '@shared/errors/AppError';
 import {
   IItemsRepository,
   ICreateItemDTO,
-} from '@modules/items/domain/repositories/IItemsRepository';
-import Item from '@modules/items/infra/typeorm/entities/Item';
+} from '@modules/item/domain/repositories/IItemsRepository';
+import Item from '@modules/item/infra/typeorm/entities/Item';
 import { IUser } from '@modules/users/domain/models/IUser';
 
 @injectable()

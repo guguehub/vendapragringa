@@ -1,11 +1,11 @@
 import { Repository } from 'typeorm';
 import Supplier from '@modules/suppliers/infra/typeorm/entities/Supplier';
-import { ISuppliersRepository } from '@modules/suppliers/domain/repositories/ISuppliersRepository';
+import { ISupplierRepository } from '@modules/suppliers/domain/repositories/ISupplierRepository';
 import { ICreateSupplier } from '@modules/suppliers/domain/models/ICreateSupplier';
 import { IUpdateSupplier } from '@modules/suppliers/domain/models/IUpdateSupplier';
-import { dataSource } from '@shared/infra/typeorm';
+import dataSource from '@shared/infra/typeorm';
 
-class SuppliersRepository implements ISuppliersRepository {
+class SuppliersRepository implements ISupplierRepository {
   private ormRepository: Repository<Supplier>;
 
   constructor() {

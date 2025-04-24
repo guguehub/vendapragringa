@@ -1,3 +1,0 @@
-interface IDeleteCustomer {
-  id: string;
-}

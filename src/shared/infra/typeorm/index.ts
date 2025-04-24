@@ -1,62 +1,61 @@
 import { DataSource } from 'typeorm';
 
 import User from '../../../modules/users/infra/typeorm/entities/User';
-import UserToken from '../../../modules/users/infra/typeorm/entities/UserToken';
-import Customer from '../../../modules/customers/infra/typeorm/entities/Customer';
-import Order from '../../../modules/orders/infra/typeorm/entities/Order';
-import OrdersProducts from '../../../modules/orders/infra/typeorm/entities/OrdersProducts';
 import Product from '../../../modules/products/infra/typeorm/entities/Product';
 import Supplier from '../../../modules/suppliers/infra/typeorm/entities/Supplier';
 import Item from '../../../modules/item/infra/typeorm/entities/Item';
+import UserToken from '../../../modules/users/infra/typeorm/entities/UserToken';
 
-import { CreateProducts1698109674954 } from './migrations/1698109674954-CreateProducts';
+import { CreateUser1698463000000 } from './migrations/1698463000000-CreateUser';
 import { CreateUserTokens1698463024050 } from './migrations/1698463024050-CreateUserTokens';
-import { CreateCustomers1705979140252 } from './migrations/1705979140252-CreateCustomers';
-import { CreateOrders1706756486885 } from './migrations/1706756486885-CreateOrders';
-import { CreateOrdersProducts1706758221558 } from './migrations/1706758221558-CreateOrdersProducts';
-import { AddOrderIdToOrdersProducts1706759321101 } from './migrations/1706759321101-AddOrderIdToOrdersProducts';
-import { AddProductIdToOrdersProducts1706760048960 } from './migrations/1706760048960-AddProductIdToOrdersProducts';
-import { AddCustomerIdToOrders1706757078633 } from './migrations/1706757078633-AddCustomerIdToOrders';
-import { ItemFetch1741736196658 } from './migrations/1741736196658-ItemFetch';
-
-import { CreateUsers1744503913972 } from './migrations/1744503913972-CreateUsers';
-import { Item1741760757817 } from './migrations/1741760757817-Item';
-
-//import { Suppliers1741816763627 } from './migrations/1741816763627-Suppliers';
+import { Subscription } from '../../../modules/subscriptions/infra/typeorm/entities/Subscription';
+import { CreateProduct1744866040113 } from './migrations/1744866040113-CreateProduct';
+import { Item1744743397410 } from './migrations/1744743397410-Item';
 import { Suppliers1744743397400 } from './migrations/1744743397400-Suppliers';
+import { Subscriptions1744865128156 } from './migrations/1744865128156-Subscriptions';
+import { SavedItem } from '../../../modules/item/infra/typeorm/entities/SavedItem';
+import { CreateSavedItems1745380787016 } from './migrations/1745380787016-CreateSavedItems';
+import { AddRelationSavedItemsToUser1745512345678 } from './migrations/1745512345678-AddRelationSavedItemsToUser';
 
-export const dataSource = new DataSource({
+const dataSource = new DataSource({
   type: 'postgres',
   host: 'db',
   port: 5432,
   username: 'postgres',
   password: 'docker',
   database: 'apivendas',
-  entities: [
-    User,
-    UserToken,
-    Customer,
-    Order,
-    OrdersProducts,
-    Product,
-    Item,
-    Supplier,
-  ],
+  entities: [User, UserToken, SavedItem, Product, Item, Supplier, Subscription],
 
   migrations: [
-    CreateProducts1698109674954,
-    CreateUsers1744503913972,
+    CreateUser1698463000000,
     CreateUserTokens1698463024050,
-    CreateCustomers1705979140252,
-    CreateOrders1706756486885,
-    AddCustomerIdToOrders1706757078633,
-    CreateOrdersProducts1706758221558,
-    AddOrderIdToOrdersProducts1706759321101,
-    AddProductIdToOrdersProducts1706760048960,
-    ItemFetch1741736196658,
-    Item1741760757817,
+    CreateProduct1744866040113,
+    Item1744743397410,
     Suppliers1744743397400,
+    Subscriptions1744865128156,
+    CreateSavedItems1745380787016,
+
+    AddRelationSavedItemsToUser1745512345678,
   ],
+
+  synchronize: false,
+  migrationsRun: false,
+  logging: false,
 });
 
 //yarn typeorm migration:create migrations/
+
+// Test the database connection when this file is executed directly
+if (require.main === module) {
+  dataSource
+    .initialize()
+    .then(() => {
+      console.log('✅ DataSource has been initialized!');
+      return dataSource.destroy();
+    })
+    .catch(err => {
+      console.error('❌ Error during Data Source initialization:', err);
+    });
+}
+
+export default dataSource;

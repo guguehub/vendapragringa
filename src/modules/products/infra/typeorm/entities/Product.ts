@@ -4,8 +4,6 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
-  ManyToOne,
 } from 'typeorm';
 //import { UserSubscription } from './UserSubscription';
 import { Subscription } from '../../../../subscriptions/infra/typeorm/entities/Subscription';
@@ -26,9 +24,6 @@ class Product {
 
   @Column({ default: true })
   isActive: boolean;
-
-  @OneToMany(() => Subscription, subscription => subscription.product)
-  subscriptions: Subscription[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -1,35 +1,45 @@
 import {
   MigrationInterface,
   QueryRunner,
-  Table,
   TableForeignKey,
+  Table,
 } from 'typeorm';
 
-export class CreateUserTokens1698463024050 implements MigrationInterface {
+export class AddRelationSavedItemsToUser1745512345678
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'user_tokens',
+        name: 'saved_items',
         columns: [
           {
             name: 'id',
             type: 'uuid',
             isPrimary: true,
-            isGenerated: true,
             generationStrategy: 'uuid',
             default: 'uuid_generate_v4()',
           },
           {
-            name: 'token',
-            type: 'uuid',
-            isGenerated: true,
-            generationStrategy: 'uuid',
-            default: 'uuid_generate_v4()',
+            name: 'title',
+            type: 'varchar',
+          },
+          {
+            name: 'price',
+            type: 'decimal',
+          },
+          {
+            name: 'link',
+            type: 'varchar',
+          },
+          {
+            name: 'image_url',
+            type: 'varchar',
+            isNullable: true,
           },
           {
             name: 'user_id',
             type: 'uuid',
-            isNullable: false,
           },
           {
             name: 'created_at',
@@ -43,23 +53,23 @@ export class CreateUserTokens1698463024050 implements MigrationInterface {
           },
         ],
       }),
+      true, // Use ifNotExist = true to avoid errors if the table already exists
     );
 
     await queryRunner.createForeignKey(
-      'user_tokens',
+      'saved_items',
       new TableForeignKey({
-        name: 'TokenUser',
+        name: 'FK_SavedItems_User',
         columnNames: ['user_id'],
-        referencedTableName: 'users',
         referencedColumnNames: ['id'],
+        referencedTableName: 'users',
         onDelete: 'CASCADE',
-        onUpdate: 'CASCADE',
       }),
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropForeignKey('user_tokens', 'TokenUser');
-    await queryRunner.dropTable('user_tokens');
+    await queryRunner.dropForeignKey('saved_items', 'FK_SavedItems_User');
+    await queryRunner.dropTable('saved_items');
   }
 }
