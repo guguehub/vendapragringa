@@ -1,13 +1,13 @@
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
-//import ISubscriptionsRepository from '../domain/repositories/ISubscriptionsRepository';
 import ISubscriptionsRepository from '../infra/typeorm/repositories/SubscriptionRepository';
+import { SubscriptionTier } from '../enums/subscription-tier.enum';
 
-type Tier = 'free' | 'bronze' | 'silver' | 'gold';
+type Tier = SubscriptionTier;
 
 interface IRequest {
   userId: string;
-  newPlan: Tier;
+  newTier: Tier;
 }
 
 @injectable()
@@ -17,7 +17,7 @@ class UpgradeSubscriptionService {
     private subscriptionsRepository: ISubscriptionsRepository,
   ) {}
 
-  public async execute({ userId, newPlan }: IRequest): Promise<void> {
+  public async execute({ userId, newTier }: IRequest): Promise<void> {
     const subscription =
       await this.subscriptionsRepository.findByUserId(userId);
 
@@ -25,7 +25,7 @@ class UpgradeSubscriptionService {
       throw new AppError('Subscription not found for this user');
     }
 
-    subscription.plan = newPlan;
+    subscription.tier = newTier;
     subscription.updatedAt = new Date();
 
     await this.subscriptionsRepository.save(subscription);

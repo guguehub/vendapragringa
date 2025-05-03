@@ -1,7 +1,7 @@
 import { Repository } from 'typeorm';
 import UserToken from '../entities/UserToken';
 import { IUserTokensRepository } from '../../../domain/repositories/IUserTokensRepository';
-//import { dataSource } from '../../../../../shared/infra/typeorm';
+import { IUserToken } from '../../../domain/models/IUserToken';
 import dataSource from '@shared/infra/typeorm';
 
 class UserTokensRepository implements IUserTokensRepository {
@@ -10,24 +10,19 @@ class UserTokensRepository implements IUserTokensRepository {
   constructor() {
     this.ormRepository = dataSource.getRepository(UserToken);
   }
-  public async findByToken(token: string): Promise<UserToken | null> {
+
+  public async findByToken(token: string): Promise<IUserToken | null> {
     const userToken = await this.ormRepository.findOne({
-      where: {
-        token,
-      },
+      where: { token },
     });
 
-    return userToken;
+    return userToken as IUserToken | null;
   }
 
-  public async generate(user_id: string): Promise<UserToken> {
-    const userToken = this.ormRepository.create({
-      user_id,
-    });
-
+  public async generate(userId: string): Promise<IUserToken> {
+    const userToken = this.ormRepository.create({ userId });
     await this.ormRepository.save(userToken);
-
-    return userToken;
+    return userToken as IUserToken;
   }
 }
 

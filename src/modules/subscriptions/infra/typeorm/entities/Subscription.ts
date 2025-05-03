@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Unique,
 } from 'typeorm';
 import User from '../../../../users/infra/typeorm/entities/User';
 
@@ -21,6 +22,7 @@ export enum SubscriptionStatus {
 }
 
 @Entity('subscriptions')
+@Unique(['userId']) // 🟡 Opcional, redundante com o banco, mas bom para clareza
 export class Subscription {
   @PrimaryGeneratedColumn('uuid')
   id: string;

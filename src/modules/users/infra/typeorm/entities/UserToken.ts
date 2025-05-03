@@ -1,10 +1,10 @@
 import {
+  Entity,
+  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  Entity,
-  Generated,
-  PrimaryGeneratedColumn,
   UpdateDateColumn,
+  Generated,
 } from 'typeorm';
 
 @Entity('user_tokens')
@@ -17,13 +17,13 @@ class UserToken {
   token: string;
 
   @Column()
-  user_id: string;
+  userId: string;
 
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updated_at: Date;
+  updatedAt: Date;
 }
 
 export default UserToken;

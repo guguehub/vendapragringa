@@ -5,8 +5,7 @@ import AppError from '@shared/errors/AppError';
 
 import { ICreateSubscription } from '@modules/subscriptions/domain/models/ICreateSubscription';
 import { ISubscription } from '@modules/subscriptions/domain/models/ISubscription';
-//import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositories/ISubscriptionRepository';
-import { ISubscriptionRepository } from '../domain/repositories/ICreateSubscription';
+import { ISubscriptionRepository } from '../domain/repositories/ISubscriptionsRepository';
 
 @injectable()
 class CreateSubscriptionService {
@@ -16,12 +15,12 @@ class CreateSubscriptionService {
   ) {}
 
   public async execute({
-    user_id,
-    plan,
+    userId,
+    tier,
     status,
   }: ICreateSubscription): Promise<ISubscription> {
     const existingSubscription =
-      await this.subscriptionRepository.findByUserId(user_id);
+      await this.subscriptionRepository.findByUserId(userId);
 
     if (existingSubscription) {
       throw new AppError('This user already has a subscription');
@@ -31,8 +30,8 @@ class CreateSubscriptionService {
     // await redisCache.invalidate(`user-subscription-${user_id}`);
 
     const subscription = await this.subscriptionRepository.create({
-      user_id,
-      plan,
+      userId,
+      tier,
       status,
     });
 

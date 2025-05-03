@@ -5,7 +5,7 @@ import { ISavedItemsRepository } from '../domain/repositories/ISavedItemsReposit
 import { ICreateSavedItem } from '../domain/models/ICreateSavedItem';
 import { SavedItem } from '../infra/typeorm/entities/SavedItem';
 import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
-import { SubscriptionTier } from '@modules/subscriptions/domain/enums/SubscriptionTier';
+import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
 
 const tierLimits: Record<SubscriptionTier, number> = {
   free: 6,

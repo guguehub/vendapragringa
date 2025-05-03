@@ -1,8 +1,12 @@
+// domain/models/ISubscription.ts
 export interface ISubscription {
   id: string;
-  user_id: string;
-  plan: 'free' | 'bronze' | 'silver' | 'gold';
-  status: 'active' | 'inactive';
-  created_at: Date;
-  updated_at: Date;
+  userId: string;
+  tier: 'free' | 'bronze' | 'silver' | 'gold';
+  status: 'active' | 'cancelled' | 'expired';
+  startDate?: Date | null;
+  endDate?: Date | null;
+  expiresAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }

@@ -1,75 +1,39 @@
 import {
   MigrationInterface,
   QueryRunner,
+  TableColumn,
   TableForeignKey,
-  Table,
 } from 'typeorm';
 
 export class AddRelationSavedItemsToUser1745512345678
   implements MigrationInterface
 {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.createTable(
-      new Table({
-        name: 'saved_items',
-        columns: [
-          {
-            name: 'id',
-            type: 'uuid',
-            isPrimary: true,
-            generationStrategy: 'uuid',
-            default: 'uuid_generate_v4()',
-          },
-          {
-            name: 'title',
-            type: 'varchar',
-          },
-          {
-            name: 'price',
-            type: 'decimal',
-          },
-          {
-            name: 'link',
-            type: 'varchar',
-          },
-          {
-            name: 'image_url',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'user_id',
-            type: 'uuid',
-          },
-          {
-            name: 'created_at',
-            type: 'timestamp with time zone',
-            default: 'now()',
-          },
-          {
-            name: 'updated_at',
-            type: 'timestamp with time zone',
-            default: 'now()',
-          },
-        ],
+    // Adiciona a coluna item_id à tabela existente
+    await queryRunner.addColumn(
+      'saved_items',
+      new TableColumn({
+        name: 'item_id',
+        type: 'uuid',
+        isNullable: true, // Temporariamente true para evitar falhas se já houver dados
       }),
-      true, // Use ifNotExist = true to avoid errors if the table already exists
     );
 
+    // Cria foreign key para items
     await queryRunner.createForeignKey(
       'saved_items',
       new TableForeignKey({
-        name: 'FK_SavedItems_User',
-        columnNames: ['user_id'],
+        name: 'FK_SavedItems_Item',
+        columnNames: ['item_id'],
         referencedColumnNames: ['id'],
-        referencedTableName: 'users',
-        onDelete: 'CASCADE',
+        referencedTableName: 'items',
+        onDelete: 'SET NULL',
       }),
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropForeignKey('saved_items', 'FK_SavedItems_User');
-    await queryRunner.dropTable('saved_items');
+    await queryRunner.dropForeignKey('saved_items', 'FK_SavedItems_Item');
+    await queryRunner.dropColumn('saved_items', 'item_id');
   }
 }

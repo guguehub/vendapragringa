@@ -1,4 +1,4 @@
-import { IUserToken } from '../models/IUserToken';
+import { IUserToken } from '../../../users/domain/models/IUserToken';
 
 export interface IUserTokensRepository {
   findByToken(token: string): Promise<IUserToken | null>;

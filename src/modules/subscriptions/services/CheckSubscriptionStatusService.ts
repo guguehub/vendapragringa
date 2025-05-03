@@ -1,18 +1,17 @@
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 
-import Subscription from '../infra/typeorm/entities/Subscription';
-import ISubscriptionsRepository from '../domain/repositories/ISubscriptionsRepository';
-import {
-  SubscriptionTier,
-  SubscriptionStatus,
-} from '../enums/subscription-tier.enum';
+import { Subscription } from '../infra/typeorm/entities/Subscription';
+//import { ISubscriptionsRepository } from '../domain/repositories/ISubscriptionsRepository';
+import { SubscriptionTier } from '../enums/subscription-tier.enum';
+import { SubscriptionStatus } from '../infra/typeorm/entities/Subscription';
+import { ISubscriptionRepository } from '../domain/repositories/ISubscriptionsRepository';
 
 @injectable()
 class CheckSubscriptionStatusService {
   constructor(
     @inject('SubscriptionsRepository')
-    private subscriptionsRepository: ISubscriptionsRepository,
+    private subscriptionsRepository: ISubscriptionRepository,
   ) {}
 
   public async execute(userId: string): Promise<{
@@ -33,7 +32,8 @@ class CheckSubscriptionStatusService {
 
     const now = new Date();
 
-    const isExpired = subscription.expiresAt && subscription.expiresAt < now;
+    const isExpired =
+      subscription.expiresAt !== null && subscription.expiresAt < now;
     const isCancelled = subscription.status === SubscriptionStatus.CANCELLED;
 
     const isActive = !isExpired && !isCancelled;

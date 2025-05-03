@@ -51,6 +51,7 @@ export class Subscriptions1744865128156 implements MigrationInterface {
             name: 'userId',
             type: 'uuid',
             isNullable: false,
+            isUnique: true,
           },
           {
             name: 'createdAt',

@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import Supplier from '../../../../suppliers/infra/typeorm/entities/Supplier';
+import User from '../../../../users/infra/typeorm/entities/User';
 
 @Entity('items')
 class Item {
@@ -44,6 +45,23 @@ class Item {
   @ManyToOne(() => Supplier, supplier => supplier.items, { nullable: true })
   @JoinColumn({ name: 'supplier_id' })
   supplier?: Supplier;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_created_id' })
+  createdBy?: User;
+
+  @ManyToOne(() => User, user => user.items)
+  @JoinColumn({ name: 'user_id' })
+  user: User;
+
+  @Column()
+  user_id: string;
+
+  @Column({ name: 'user_created_id', nullable: true })
+  userCreatedId?: string;
+
+  @Column({ name: 'user_updated_id', nullable: true })
+  userUpdatedId?: string;
 
   @CreateDateColumn()
   created_at: Date;
