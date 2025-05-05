@@ -180,7 +180,7 @@ export async function processUrls(urls: string[]) {
   }
   console.log('Resultados:', JSON.stringify(results, null, 2));
 }
-/*
+
 // URLs para testar
 const urls = [
   'https://produto.mercadolivre.com.br/MLB-2197404989',
@@ -197,4 +197,3 @@ const urls = [
 
 // Processar os URLs
 processUrls(urls);
-*/

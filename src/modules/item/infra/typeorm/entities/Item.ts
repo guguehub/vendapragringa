@@ -46,10 +46,6 @@ class Item {
   @JoinColumn({ name: 'supplier_id' })
   supplier?: Supplier;
 
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'user_created_id' })
-  createdBy?: User;
-
   @ManyToOne(() => User, user => user.items)
   @JoinColumn({ name: 'user_id' })
   user: User;
@@ -57,11 +53,13 @@ class Item {
   @Column()
   user_id: string;
 
-  @Column({ name: 'user_created_id', nullable: true })
-  userCreatedId?: string;
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_created_id' })
+  createdBy?: User;
 
-  @Column({ name: 'user_updated_id', nullable: true })
-  userUpdatedId?: string;
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_updated_id' })
+  updatedBy?: User;
 
   @CreateDateColumn()
   created_at: Date;
