@@ -1,9 +1,7 @@
 import { Repository, DataSource } from 'typeorm';
-import {
-  IItemsRepository,
-  ICreateItemDTO,
-} from 'src/modules/item/domain/repositories/IItemsRepository';
+import { IItemsRepository } from 'src/modules/item/domain/repositories/IItemsRepository';
 import Item from '../entities/Item';
+import ICreateItem from '@modules/item/domain/models/ICreateItem';
 
 class ItemsRepository implements IItemsRepository {
   private ormRepository: Repository<Item>;
@@ -12,7 +10,7 @@ class ItemsRepository implements IItemsRepository {
     this.ormRepository = dataSource.getRepository(Item);
   }
 
-  public async create(data: ICreateItemDTO): Promise<Item> {
+  public async create(data: ICreateItem): Promise<Item> {
     const item = this.ormRepository.create(data);
     await this.ormRepository.save(item);
     return item;

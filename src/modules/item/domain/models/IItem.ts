@@ -4,11 +4,12 @@ import { IUser } from '@modules/users/domain/models/IUser';
 export interface IItem {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   price: number;
-  supplier: ISupplier; // Supplier associated with the item
-  // Additional item-specific properties
-  user: IUser; // User associated with the item
+  supplier?: ISupplier;
+  supplierId?: string;
+  user: IUser;
+  user_id: string;
   created_at: Date;
   updated_at: Date;
 }

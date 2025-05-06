@@ -1,11 +1,9 @@
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
-import {
-  IItemsRepository,
-  ICreateItemDTO,
-} from '@modules/item/domain/repositories/IItemsRepository';
+import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
 import Item from '@modules/item/infra/typeorm/entities/Item';
 import { IUser } from '@modules/users/domain/models/IUser';
+import ICreateItem from '../domain/models/ICreateItem';
 
 @injectable()
 class ItemService {
@@ -14,7 +12,7 @@ class ItemService {
     private itemsRepository: IItemsRepository,
   ) {}
 
-  public async create(user: IUser, data: ICreateItemDTO): Promise<Item> {
+  public async create(user: IUser, data: ICreateItem): Promise<Item> {
     const item = await this.itemsRepository.create({
       ...data,
       user_id: user.id,
@@ -40,7 +38,7 @@ class ItemService {
   public async update(
     user: IUser,
     id: string,
-    data: Partial<ICreateItemDTO>,
+    data: Partial<ICreateItem>,
   ): Promise<Item> {
     const item = await this.findById(user, id);
 

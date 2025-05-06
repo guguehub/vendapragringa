@@ -9,6 +9,7 @@ import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositor
 
 import { ISavedItemsRepository } from '@modules/item/domain/repositories/ISavedItemsRepository';
 import { SavedItemsRepository } from '@modules/item/infra/typeorm/repositories/SavedItemsRepository';
+import ItemsRepository from '@modules/item/infra/typeorm/repositories/ItemsRepository';
 
 container.registerSingleton<IProductsRepository>(
   'ProductsRepository',
@@ -25,7 +26,4 @@ container.registerSingleton<ISubscriptionRepository>(
   SubscriptionRepository,
 );
 
-container.registerSingleton<ISavedItemsRepository>(
-  'SavedItemsRepository',
-  SavedItemsRepository,
-);
+container.registerSingleton<ItemsRepository>('ItemRepository', ItemsRepository);
