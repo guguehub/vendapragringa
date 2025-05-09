@@ -1,8 +1,8 @@
-import Item from 'src/modules/item/infra/typeorm/entities/Item';
-import ICreateItemDTO from '../dtos/ICreateItemDTO';
+import { ICreateItem } from '../models/ICreateItem';
+import Item from '@modules/item/infra/typeorm/entities/Item';
 
 interface IItemsRepository {
-  create(data: ICreateItemDTO): Promise<Item>;
+  create(data: ICreateItem): Promise<Item>;
   findById(id: string): Promise<Item | undefined>;
   findByUserId(userId: string): Promise<Item[]>;
   save(item: Item): Promise<Item>;
