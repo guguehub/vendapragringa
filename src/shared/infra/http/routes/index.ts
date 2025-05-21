@@ -8,6 +8,7 @@ import profileRouter from '@modules/users/infra/http/routes/profile.routes';
 import { ensureTier } from '../middlewares/ensureTier';
 import scrapyRouter from './scrapy.routes';
 import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
+import shippingRoutes from '@modules/shipping/infra/http/routes/shipping.routes';
 
 const routes = Router();
 
@@ -17,6 +18,7 @@ routes.use('/sessions', sessionsRouter);
 routes.use('/password', passwordRouter);
 routes.use('/profile', profileRouter);
 routes.use('scrapy', scrapyRouter);
+routes.use('/shipping', shippingRoutes);
 
 routes.get('/area-prata', ensureTier(SubscriptionTier.SILVER), (req, res) => {
   res.json({ message: 'Conteúdo disponível para usuários SILVER ou superior' });

@@ -13,7 +13,8 @@
     "test": "jest",
     "dev:watch": "docker compose down && docker compose up",
     "pgcli": "pgcli -h localhost -U postgres -d apivendas",
-    "typeorm:migration:container": "PG_HOST=db REDIS_HOST=redis APP_API_URL=localhost:3333 ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/shared/infra/typeorm/index.ts migration:run"
+    "typeorm:migration:container": "PG_HOST=db REDIS_HOST=redis APP_API_URL=localhost:3333 ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/shared/infra/typeorm/index.ts migration:run",
+    "seed:shipping": "ts-node-dev -r tsconfig-paths/register src/shared/infra/typeorm/seed/index.ts"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.5",
