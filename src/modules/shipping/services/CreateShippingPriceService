@@ -1,5 +1,6 @@
 import { ICreateShippingPriceDTO } from '../dtos/ICreateShippingPriceDTO';
-import { IShippingPriceRepository } from '../repositories/IShippingPriceRepository';
+import { IShippingPriceRepository } from '../../shipping/domain/repositories/IShippingPriceRepository';
+import AppError from '../../../shared/errors/AppError'
 
 class CreateShippingPriceService {
   constructor(private shippingPriceRepository: IShippingPriceRepository) {}

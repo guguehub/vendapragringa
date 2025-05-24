@@ -8,6 +8,10 @@ class ShippingType {
   @Column()
   name: string; // exemplo: 'Documento', 'Produto'
 
+    @Column()
+  code: 'document' | 'product';
+
+
   @CreateDateColumn()
   created_at: Date;
 }

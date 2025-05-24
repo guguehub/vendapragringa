@@ -1,3 +1,5 @@
+import { IShippingTypeRepository } from "../domain/repositories/IShippingTypeRepository";
+
 class ListShippingTypesService {
   constructor(private typeRepository: IShippingTypeRepository) {}
 

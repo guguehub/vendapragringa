@@ -1,14 +1,14 @@
 import AppError from '@shared/errors/AppError';
-import { ICalculateShippingDTO } from '../dtos/ICalculateShippingDTO';
-import { IShippingTypeRepository } from '../repositories/IShippingTypeRepository';
-import { IShippingZoneRepository } from '../repositories/IShippingZoneRepository';
-import { IShippingWeightRepository } from '../repositories/IShippingWeightRepository';
-import { IShippingPriceRepository } from '../repositories/IShippingPriceRepository';
+import { ICalculateShippingDTO } from '../../shipping/dtos/ICalculateShippingDTO';
+import { IShippingTypeRepository } from '../../shipping/domain/repositories/IShippingTypeRepository';
+import { IShippingZonesRepository } from '../../shipping/domain/repositories/IShippingZonesRepository';
+import { IShippingWeightRepository } from '../../shipping/domain/repositories/IShippingWeightRepository';
+import { IShippingPriceRepository } from '../../shipping/domain/repositories/IShippingPriceRepository';
 
 class CalculateShippingService {
   constructor(
     private shippingTypeRepository: IShippingTypeRepository,
-    private shippingZoneRepository: IShippingZoneRepository,
+    private shippingZoneRepository: IShippingZonesRepository,
     private shippingWeightRepository: IShippingWeightRepository,
     private shippingPriceRepository: IShippingPriceRepository
   ) {}

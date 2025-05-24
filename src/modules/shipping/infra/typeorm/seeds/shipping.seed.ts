@@ -2,10 +2,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { Repository } from 'typeorm';
 import dataSource from '@shared/infra/typeorm';
 
-import ShippingType from '../../entities/ShippingType';
-import ShippingZone from '../../entities/ShippingZone';
-import ShippingWeight from '../../entities/ShippingWeight';
-import ShippingPrice from '../../entities/ShippingPrice';
+import ShippingType from '../../typeorm/entities/ShippingType';
+import ShippingZone from '../../typeorm/entities/ShippingZone';
+import ShippingWeight from '../../typeorm/entities/ShippingWeight';
+import ShippingPrice from '../../typeorm/entities/ShippingPrice';
 
 export default async function runShippingSeed(): Promise<void> {
   const shippingTypeRepo = dataSource.getRepository(ShippingType);

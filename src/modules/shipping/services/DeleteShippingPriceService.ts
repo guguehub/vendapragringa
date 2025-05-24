@@ -1,4 +1,4 @@
-import { IShippingPriceRepository } from '../repositories/IShippingPriceRepository';
+import { IShippingPriceRepository } from '../../shipping/domain/repositories/IShippingPriceRepository';
 import AppError from '@shared/errors/AppError';
 
 class DeleteShippingPriceService {

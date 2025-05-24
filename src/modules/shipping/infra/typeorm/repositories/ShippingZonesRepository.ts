@@ -19,6 +19,6 @@ export class ShippingZonesRepository implements IShippingZonesRepository {
   }
 
   async findByCountryCode(countryCode: string) {
-    return this.ormRepo.findOneBy({ country_code: countryCode });
+    return this.ormRepo.findOneBy({ countryCode: countryCode });
   }
 }

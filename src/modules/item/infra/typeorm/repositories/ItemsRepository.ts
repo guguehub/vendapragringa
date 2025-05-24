@@ -1,7 +1,7 @@
 import { Repository, DataSource } from 'typeorm';
 import { IItemsRepository } from 'src/modules/item/domain/repositories/IItemsRepository';
 import Item from '../entities/Item';
-import ICreateItem from '@modules/item/domain/models/ICreateItem';
+import { ICreateItem } from '@modules/item/domain/models/ICreateItem';
 
 class ItemsRepository implements IItemsRepository {
   private ormRepository: Repository<Item>;
