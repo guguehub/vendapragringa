@@ -1,18 +1,18 @@
 // scraper.ts
 
 import axios from 'axios';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';;
 
 // Utility function to pause execution for a given duration
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Function to extract the product title
-function extractTitle($: cheerio.Root): string {
+function extractTitle($: cheerio.CheerioAPI): string {
   return $('h1.ui-pdp-title').text().trim();
 }
 
 // Function to extract the product price
-function extractPrice($: cheerio.Root): string | null {
+function extractPrice($: cheerio.CheerioAPI): string | null {
   const priceContainer = $('.ui-pdp-price__second-line');
   if (priceContainer.length > 0) {
     const priceParts = priceContainer.text().trim().split(',');
@@ -29,7 +29,7 @@ function extractPrice($: cheerio.Root): string | null {
 }
 
 // Function to extract the product description
-function extractDescription($: cheerio.Root): string {
+function extractDescription($: cheerio.CheerioAPI): string {
   let description = $('.ui-pdp-description__content').text().trim();
   if (!description) {
     description =
@@ -40,7 +40,7 @@ function extractDescription($: cheerio.Root): string {
 }
 
 // Function to extract shipping information
-function extractShippingInfo($: cheerio.Root): string {
+function extractShippingInfo($: cheerio.CheerioAPI): string {
   const freeShippingText = $('.ui-pdp-color--GREEN.ui-pdp-family--SEMIBOLD')
     .text()
     .toLowerCase();
@@ -57,7 +57,7 @@ function extractShippingInfo($: cheerio.Root): string {
 }
 
 // Function to determine the item status
-function extractItemStatus($: cheerio.Root): string {
+function extractItemStatus($: cheerio.CheerioAPI): string {
   const statusContainer = $('.ui-pdp-main-actions__status');
   if (statusContainer.length > 0) {
     return statusContainer.text().trim();
@@ -98,7 +98,7 @@ function extractItemStatus($: cheerio.Root): string {
 }
 
 // Function to extract the item ID
-function extractItemId(url: string, $: cheerio.Root): string | null {
+function extractItemId(url: string, $: cheerio.CheerioAPI): string | null {
   const urlPatterns = [
     /(MLB[A-Z]*-?\d+)/i,
     /\/up\/(MLB[A-Z]+\d+)/i,

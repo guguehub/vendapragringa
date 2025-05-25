@@ -1,5 +1,5 @@
 import { ICreateShippingPriceDTO } from '../dtos/ICreateShippingPriceDTO';
-import { IShippingPriceRepository } from '../../shipping/domain/repositories/IShippingPriceRepository';
+import { IShippingPriceRepository } from '../domain/repositories/IShippingPriceRepository';
 import AppError from '../../../shared/errors/AppError'
 
 class CreateShippingPriceService {

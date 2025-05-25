@@ -10,10 +10,26 @@ export class ShippingTypesRepository implements IShippingTypeRepository {
     this.ormRepo = dataSource.getRepository(ShippingType);
   }
 
-  async findByCode(code: 'document' | 'product') {
-    return this.ormRepo.findOneBy({ code });
-  }
-  async findAll() {
+  async findAll(): Promise<ShippingType[]> {
     return this.ormRepo.find();
   }
+
+  async findByCode(code: 'document' | 'product'): Promise<ShippingType | null> {
+    return this.ormRepo.findOneBy({ code });
+  }
+  async create(data: Partial<ShippingType>): Promise<ShippingType> {
+  const newType = this.ormRepo.create(data);
+  await this.ormRepo.save(newType);
+  return newType;
+}
+
+  async findById(id: string): Promise<ShippingType | null> {
+    return this.ormRepo.findOne({ where: { id } });
+  }
+
+  async createMany(types: Partial<ShippingType>[]): Promise<void> {
+    const newTypes = this.ormRepo.create(types);
+    await this.ormRepo.save(newTypes);
+  }
+
 }

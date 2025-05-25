@@ -1,30 +1,32 @@
 import dataSource from '@shared/infra/typeorm';
-import { ShippingZonesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingZonesRepository';
+import { ShippingZonesRepository } from '../repositories/ShippingZonesRepository';
 
 async function seedShippingZones() {
   await dataSource.initialize();
 
   const repository = new ShippingZonesRepository();
 
-  const existing = await repository.findAll();
-  if (existing.length > 0) {
-    console.log('[Seed] Zonas de frete já existem. Pulando...');
-    return;
+  const zones = [
+    { name: 'Estados Unidos', code: 'US' },
+    { name: 'Reino Unido', code: 'GB' },
+    { name: 'Alemanha', code: 'DE' },
+    { name: 'França', code: 'FR' },
+    { name: 'Holanda', code: 'NL' },
+    { name: 'Espanha', code: 'ES' },
+    { name: 'Itália', code: 'IT' },
+    { name: 'Europa (restante)', code: 'EU' },
+    { name: 'América Latina', code: 'LATAM' },
+    { name: 'Ásia', code: 'ASIA' },
+    { name: 'Oriente Médio', code: 'ME' },
+  ];
+
+  for (const zone of zones) {
+    const exists = await repository.findByCode(zone.code);
+    if (!exists) {
+      await repository.create(zone);
+      console.log(`[Seed] Zona '${zone.name}' criada`);
+    }
   }
-
-  await repository.createMany([
-    { name: 'Estados Unidos', country_code: 'US' },
-    { name: 'Canadá', country_code: 'CA' },
-    { name: 'Reino Unido', country_code: 'GB' },
-    { name: 'Alemanha', country_code: 'DE' },
-    { name: 'França', country_code: 'FR' },
-    { name: 'Itália', country_code: 'IT' },
-    { name: 'Espanha', country_code: 'ES' },
-    { name: 'Portugal', country_code: 'PT' },
-    { name: 'Outros', country_code: 'ZZ' }, // "ZZ" como país genérico para resto do mundo
-  ]);
-
-  console.log('[Seed] Zonas de frete inseridas com sucesso!');
 }
 
 export default seedShippingZones;

@@ -3,7 +3,7 @@ import AppError from '@shared/errors/AppError';
 import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
 import Item from '@modules/item/infra/typeorm/entities/Item';
 import { IUser } from '@modules/users/domain/models/IUser';
-import ICreateItem from '../domain/models/ICreateItem';
+import {ICreateItem} from '../domain/models/ICreateItem';
 
 @injectable()
 class ItemService {

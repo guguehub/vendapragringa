@@ -10,15 +10,24 @@ export class ShippingZonesRepository implements IShippingZonesRepository {
     this.ormRepo = dataSource.getRepository(ShippingZone);
   }
 
-  async findAll() {
+  async findAll(): Promise<ShippingZone[]> {
     return this.ormRepo.find();
   }
 
-  async findById(id: string) {
-    return this.ormRepo.findOneBy({ id });
+  async findById(id: string): Promise<ShippingZone | null> {
+    return this.ormRepo.findOne({ where: { id } });
   }
 
-  async findByCountryCode(countryCode: string) {
-    return this.ormRepo.findOneBy({ countryCode: countryCode });
+  async findByCountryCode(countryCode: string): Promise<ShippingZone | null> {
+    return this.ormRepo.findOne({ where: { countryCode } });
+  }
+
+  async findByName(name: string): Promise<ShippingZone | null> {
+    return this.ormRepo.findOne({ where: { name } });
+  }
+
+  async createMany(zones: Partial<ShippingZone>[]): Promise<void> {
+    const newZones = this.ormRepo.create(zones);
+    await this.ormRepo.save(newZones);
   }
 }

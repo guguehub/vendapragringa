@@ -4,14 +4,14 @@ import CalculateShippingService from '@modules/shipping/services/CalculateShippi
 
 export class CalculateShippingController {
   public async handle(req: Request, res: Response): Promise<Response> {
-    const { weight, zoneId, typeId } = req.body;
+    const { weightGrams, shippingType, countryCode } = req.body;
 
     const calculateShipping = container.resolve(CalculateShippingService);
 
     const price = await calculateShipping.execute({
-      weight,
-      zoneId,
-      typeId,
+      weightGrams,
+      shippingType,
+      countryCode,
     });
 
     return res.json({ price });

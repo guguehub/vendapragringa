@@ -1,3 +1,4 @@
+import { ICreateShippingPriceDTO } from '@modules/shipping/dtos/ICreateShippingPriceDTO';
 import ShippingPrice from '../../infra/typeorm/entities/ShippingPrice';
 
 export interface IShippingPriceRepository {
@@ -9,6 +10,6 @@ export interface IShippingPriceRepository {
 
   findById(id: string): Promise<ShippingPrice | null>;
   save(price: ShippingPrice): Promise<ShippingPrice | undefined>;
-  create(price: ShippingPrice): Promise<void>;
+  create(pricesData: ICreateShippingPriceDTO): Promise<ShippingPrice>;
   remove(price: ShippingPrice): Promise<void>;
 }
