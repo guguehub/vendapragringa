@@ -1,9 +1,9 @@
-import dataSource from '@shared/infra/typeorm';
+// ✅ Agora NÃO inicializa mais o dataSource aqui.
+// Ele já é inicializado no arquivo principal `shipping.seed.ts`.
+
 import { ShippingZonesRepository } from '../repositories/ShippingZonesRepository';
 
 async function seedShippingZones() {
-  await dataSource.initialize();
-
   const repository = new ShippingZonesRepository();
 
   const zones = [

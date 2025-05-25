@@ -3,7 +3,7 @@ import { ShippingPricesRepository } from '@modules/shipping/infra/typeorm/reposi
 import { ShippingZonesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingZonesRepository';
 import { ShippingTypesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingTypesRepository';
 import { ShippingWeightsRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingWeightsRepository';
-import { regionGroups,isRegionCode } from '@modules/shipping/utils/regionGroups';
+import { isRegionCode } from '@modules/shipping/utils/regionGroups';
 
 async function seedShippingPrices() {
   await dataSource.initialize();
@@ -27,63 +27,6 @@ async function seedShippingPrices() {
 
   const weights = await weightsRepository.findAll();
 
-  const zoneCountryCodesMap = {
-    // Grupo I
-    US: 'US',
-    // Grupo II
-    DE: 'DE', FR: 'FR', NL: 'NL', ES: 'ES', IT: 'IT',
-    // Grupo III
-    GB: 'GB', EU: 'EU',
-    // Grupo IV
-    LATAM: 'LATAM',
-    // Grupo V
-    ASIA: 'ASIA', ME: 'ME',
-  };
-
-  const regionGroupPrices = {
-    // Valores oficiais de 2024 com registro incluso
-    // Grupo I – EUA
-    I: [
-      { maxWeight: 100, price: 23.70 },
-      { maxWeight: 250, price: 35.25 },
-      { maxWeight: 500, price: 51.90 },
-      { maxWeight: 1000, price: 81.10 },
-      { maxWeight: 2000, price: 139.55 },
-    ],
-    // Grupo II – Alemanha, França, Holanda, Espanha, Itália
-    II: [
-      { maxWeight: 100, price: 28.15 },
-      { maxWeight: 250, price: 41.50 },
-      { maxWeight: 500, price: 61.10 },
-      { maxWeight: 1000, price: 92.10 },
-      { maxWeight: 2000, price: 155.55 },
-    ],
-    // Grupo III – Reino Unido + resto da Europa
-    III: [
-      { maxWeight: 100, price: 30.15 },
-      { maxWeight: 250, price: 45.00 },
-      { maxWeight: 500, price: 66.35 },
-      { maxWeight: 1000, price: 100.25 },
-      { maxWeight: 2000, price: 167.30 },
-    ],
-    // Grupo IV – América Latina
-    IV: [
-      { maxWeight: 100, price: 30.35 },
-      { maxWeight: 250, price: 47.05 },
-      { maxWeight: 500, price: 70.60 },
-      { maxWeight: 1000, price: 107.15 },
-      { maxWeight: 2000, price: 179.15 },
-    ],
-    // Grupo V – Ásia e Oriente Médio
-    V: [
-      { maxWeight: 100, price: 35.85 },
-      { maxWeight: 250, price: 56.10 },
-      { maxWeight: 500, price: 85.00 },
-      { maxWeight: 1000, price: 129.80 },
-      { maxWeight: 2000, price: 216.80 },
-    ],
-  };
-
   const regionGroups = {
     US: 'I',
     DE: 'II', FR: 'II', NL: 'II', ES: 'II', IT: 'II',
@@ -93,34 +36,70 @@ async function seedShippingPrices() {
     ME: 'V',
   } as const;
 
-  type RegionGroups= keyof typeof regionGroups;
-
-
-  const regionZoneCodes = Object.keys(regionGroups);
+  const regionGroupPrices = {
+    I: [
+      { maxWeight: 100, price: 23.70 },
+      { maxWeight: 250, price: 35.25 },
+      { maxWeight: 500, price: 51.90 },
+      { maxWeight: 1000, price: 81.10 },
+      { maxWeight: 2000, price: 139.55 },
+    ],
+    II: [
+      { maxWeight: 100, price: 28.15 },
+      { maxWeight: 250, price: 41.50 },
+      { maxWeight: 500, price: 61.10 },
+      { maxWeight: 1000, price: 92.10 },
+      { maxWeight: 2000, price: 155.55 },
+    ],
+    III: [
+      { maxWeight: 100, price: 30.15 },
+      { maxWeight: 250, price: 45.00 },
+      { maxWeight: 500, price: 66.35 },
+      { maxWeight: 1000, price: 100.25 },
+      { maxWeight: 2000, price: 167.30 },
+    ],
+    IV: [
+      { maxWeight: 100, price: 30.35 },
+      { maxWeight: 250, price: 47.05 },
+      { maxWeight: 500, price: 70.60 },
+      { maxWeight: 1000, price: 107.15 },
+      { maxWeight: 2000, price: 179.15 },
+    ],
+    V: [
+      { maxWeight: 100, price: 35.85 },
+      { maxWeight: 250, price: 56.10 },
+      { maxWeight: 500, price: 85.00 },
+      { maxWeight: 1000, price: 129.80 },
+      { maxWeight: 2000, price: 216.80 },
+    ],
+  };
 
   const pricesData = [];
 
-  for (const code of regionZoneCodes) {
-if (!isRegionCode(code)) {
-  throw new Error(`Código de região inválido: ${code}`);
-}   const group = regionGroups[code];
+  for (const regionCode of Object.keys(regionGroups)) {
+    if (!isRegionCode(regionCode)) {
+      throw new Error(`Código de região inválido: ${regionCode}`);
+    }
 
-const priceEntries = regionGroupPrices[group];
+    const groupKey = regionGroups[regionCode];
+    const priceEntries = regionGroupPrices[groupKey];
 
-    const zone = await zonesRepository.findByCountryCode(code);
+    const zone = await zonesRepository.findByCountryCode(regionCode);
     if (!zone) {
-      console.warn(`[Seed] Zona com código ${code} não encontrada`);
+      console.warn(`[Seed] Zona com código ${regionCode} não encontrada`);
       continue;
     }
 
     for (const entry of priceEntries) {
+      const weightInKg = entry.maxWeight / 1000;
+
       const weightRange = weights.find(
-        w => w.min_weight <= entry.maxWeight && w.max_weight >= entry.maxWeight,
+        w => w.min_kg <= weightInKg && w.max_kg >= weightInKg
       );
 
       if (!weightRange) {
         console.warn(
-          `[Seed] Faixa de peso não encontrada para ${entry.maxWeight}g (zona ${code})`,
+          `[Seed] Faixa de peso não encontrada para ${entry.maxWeight}g (zona ${regionCode})`
         );
         continue;
       }

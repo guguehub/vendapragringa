@@ -1,4 +1,12 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
+import ShippingZoneCountry from './ShippingZoneCountry';
 
 @Entity('shipping_zones')
 class ShippingZone {
@@ -6,12 +14,19 @@ class ShippingZone {
   id: string;
 
   @Column()
-  name: string; // exemplo: 'Estados Unidos', 'Reino Unido', 'Outros']
+  name: string;
 
-    @Column()
-  countryCode: string;
-  @CreateDateColumn()
+  @Column()
+  code: string;
+
+  @OneToMany(() => ShippingZoneCountry, zoneCountry => zoneCountry.zone)
+  countries: ShippingZoneCountry[];
+
+  @CreateDateColumn({ name: 'created_at' })
   created_at: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updated_at: Date;
 }
 
-export default ShippingZone
+export default ShippingZone;

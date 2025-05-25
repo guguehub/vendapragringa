@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('shipping_weights')
 class ShippingWeight {
@@ -6,13 +12,13 @@ class ShippingWeight {
   id: string;
 
   @Column('decimal')
-  min_weight: number; // ex: 0.0
+  min_kg: number;
 
   @Column('decimal')
-  max_weight: number; // ex: 0.1
+  max_kg: number;
 
   @CreateDateColumn()
   created_at: Date;
 }
 
-export default ShippingWeight
+export default ShippingWeight;

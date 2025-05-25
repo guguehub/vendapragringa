@@ -1,9 +1,6 @@
-import dataSource from '@shared/infra/typeorm';
-import { ShippingWeightsRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingWeightsRepository';
+import { ShippingWeightsRepository } from '../repositories/ShippingWeightsRepository';
 
-async function seedShippingWeights() {
-  await dataSource.initialize();
-
+async function seedShippingWeights(): Promise<void> {
   const repository = new ShippingWeightsRepository();
 
   const existing = await repository.findAll();

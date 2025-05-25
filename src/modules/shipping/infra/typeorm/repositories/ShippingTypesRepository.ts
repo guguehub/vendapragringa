@@ -1,35 +1,25 @@
-import { Repository } from 'typeorm';
-import dataSource from '@shared/infra/typeorm';
+import { Repository, DataSource } from 'typeorm';
 import ShippingType from '../entities/ShippingType';
 import { IShippingTypeRepository } from '@modules/shipping/domain/repositories/IShippingTypeRepository';
+import { ShippingTypeCode } from '@modules/shipping/enums/ShippingTypeCode';
 
 export class ShippingTypesRepository implements IShippingTypeRepository {
   private ormRepo: Repository<ShippingType>;
 
-  constructor() {
+  constructor(dataSource: DataSource) {
     this.ormRepo = dataSource.getRepository(ShippingType);
+  }
+
+  async findByCode(code: ShippingTypeCode): Promise<ShippingType | null> {
+    return this.ormRepo.findOne({ where: { code } });
+  }
+
+  async create(data: { name: string; code: ShippingTypeCode }): Promise<ShippingType> {
+    const type = this.ormRepo.create(data);
+    return this.ormRepo.save(type);
   }
 
   async findAll(): Promise<ShippingType[]> {
     return this.ormRepo.find();
   }
-
-  async findByCode(code: 'document' | 'product'): Promise<ShippingType | null> {
-    return this.ormRepo.findOneBy({ code });
-  }
-  async create(data: Partial<ShippingType>): Promise<ShippingType> {
-  const newType = this.ormRepo.create(data);
-  await this.ormRepo.save(newType);
-  return newType;
-}
-
-  async findById(id: string): Promise<ShippingType | null> {
-    return this.ormRepo.findOne({ where: { id } });
-  }
-
-  async createMany(types: Partial<ShippingType>[]): Promise<void> {
-    const newTypes = this.ormRepo.create(types);
-    await this.ormRepo.save(newTypes);
-  }
-
 }

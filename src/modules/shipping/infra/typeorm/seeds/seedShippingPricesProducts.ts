@@ -1,19 +1,18 @@
-import dataSource from '@shared/infra/typeorm';
+import { DataSource } from 'typeorm';
 import { ShippingPricesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingPricesRepository';
 import { ShippingZonesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingZonesRepository';
 import { ShippingTypesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingTypesRepository';
 import { ShippingWeightsRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingWeightsRepository';
 import { isRegionCode } from '@modules/shipping/utils/regionGroups';
+import { ShippingTypeCode } from '@modules/shipping/enums/ShippingTypeCode';
 
-async function seedShippingPricesProducts() {
-  await dataSource.initialize();
+async function seedShippingPricesProducts(dataSource: DataSource) {
+  const pricesRepository = new ShippingPricesRepository(dataSource);
+  const typesRepository = new ShippingTypesRepository(dataSource);
+  const zonesRepository = new ShippingZonesRepository(dataSource);
+  const weightsRepository = new ShippingWeightsRepository(dataSource);
 
-  const pricesRepository = new ShippingPricesRepository();
-  const typesRepository = new ShippingTypesRepository();
-  const zonesRepository = new ShippingZonesRepository();
-  const weightsRepository = new ShippingWeightsRepository();
-
-  const productType = await typesRepository.findByCode('product');
+  const productType = await typesRepository.findByCode(ShippingTypeCode.PRODUCT);
   if (!productType) {
     console.error('Tipo "product" não encontrado');
     return;
@@ -30,11 +29,7 @@ async function seedShippingPricesProducts() {
     ME: 'V',
   } as const;
 
-type RegionCode = keyof typeof regionGroups;
-
-
   const regionGroupPrices = {
-    // Valores de produto com rastreio 2024
     I: [
       { maxWeight: 100, price: 55.05 },
       { maxWeight: 250, price: 71.60 },
@@ -82,31 +77,33 @@ type RegionCode = keyof typeof regionGroups;
     ],
   };
 
-  const regionZoneCodes = Object.keys(regionGroups);
-
   const pricesData = [];
 
-  for (const code of regionZoneCodes) {
-if (!isRegionCode(code)) {
-  throw new Error(`Código de região inválido: ${code}`);
-}
-const group = regionGroups[code];
+  for (const regionCode of Object.keys(regionGroups)) {
+    if (!isRegionCode(regionCode)) {
+      throw new Error(`Código de região inválido: ${regionCode}`);
+    }
 
-    const priceEntries = regionGroupPrices[group];
+    const groupKey = regionGroups[regionCode];
+    const priceEntries = regionGroupPrices[groupKey];
 
-    const zone = await zonesRepository.findByCountryCode(code);
+    const zone = await zonesRepository.findByCountryCode(regionCode);
     if (!zone) {
-      console.warn(`[Seed] Zona com código ${code} não encontrada`);
+      console.warn(`[Seed] Zona com código ${regionCode} não encontrada`);
       continue;
     }
 
     for (const entry of priceEntries) {
+      const weightInKg = entry.maxWeight / 1000;
+
       const weightRange = weights.find(
-        w => w.min_weight <= entry.maxWeight && w.max_weight >= entry.maxWeight,
+        w => w.min_kg <= weightInKg && w.max_kg >= weightInKg
       );
 
       if (!weightRange) {
-        console.warn(`[Seed] Faixa de peso não encontrada para ${entry.maxWeight}g`);
+        console.warn(
+          `[Seed] Faixa de peso não encontrada para ${entry.maxWeight}g (zona ${regionCode})`
+        );
         continue;
       }
 

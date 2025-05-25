@@ -46,7 +46,7 @@ export class ShippingPricesRepository implements IShippingPriceRepository {
     return this.ormRepository.save(entries);
   }
 
-  async save(price: ShippingPrice): Promise<ShippingPrice | undefined> {
+  async save(price: ShippingPrice): Promise<ShippingPrice> {
     return this.ormRepository.save(price);
   }
 
