@@ -6,14 +6,16 @@
   "author": "guzz <dekmis@hotmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "ts-node-dev -r tsconfig-paths/register --inspect --transpile-only --ignore-watch node_modules src/shared/infra/http/server.ts",
-    "lint": "eslint . --ext .ts",
-    "lint-fix": "eslint . --ext .ts --fix",
-    "typeorm": "ts-node-dev ./node_modules/typeorm/cli.js",
-    "test": "jest",
+    "typeorm:migration:generate": "ts-node-dev ./node_modules/typeorm/cli.js migration:generate -d src/shared/infra/typeorm/data-source.ts",
+    "typeorm:migration:run": "ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/shared/infra/typeorm/data-source.ts migration:run",
+    "typeorm": "ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/shared/infra/typeorm/data-source.ts",
+    "typeorm:migration:container": "PG_HOST=db REDIS_HOST=redis APP_API_URL=localhost:3333 ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/shared/infra/typeorm/data-source.ts",
+    "dev": "ts-node -r tsconfig-paths/register --transpile-only src/shared/infra/http/server.ts",
     "dev:watch": "docker compose down && docker compose up",
     "pgcli": "pgcli -h localhost -U postgres -d apivendas",
-    "typeorm:migration:container": "PG_HOST=db REDIS_HOST=redis APP_API_URL=localhost:3333 ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/shared/infra/typeorm/index.ts migration:run",
+    "lint": "eslint . --ext .ts",
+    "lint-fix": "eslint . --ext .ts --fix",
+    "test": "jest",
     "seed:shipping": "ts-node-dev -r tsconfig-paths/register src/shared/infra/typeorm/seed/index.ts"
   },
   "devDependencies": {
@@ -34,9 +36,10 @@
     "eslint": "^8.51.0",
     "jest": "^26.6.3",
     "prettier": "^3.0.3",
-    "ts-jest": "^26.5.4",
+    "ts-jest": "^29",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "1.0.0",
-    "tsconfig-paths": "3.9.0",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.0-dev.20250218"
   },
   "dependencies": {

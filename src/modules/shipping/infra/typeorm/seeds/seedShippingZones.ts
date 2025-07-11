@@ -1,12 +1,15 @@
-// ✅ Agora NÃO inicializa mais o dataSource aqui.
-// Ele já é inicializado no arquivo principal `shipping.seed.ts`.
-
+import { DataSource } from 'typeorm';
 import { ShippingZonesRepository } from '../repositories/ShippingZonesRepository';
 
-async function seedShippingZones() {
-  const repository = new ShippingZonesRepository();
+interface ZoneSeed {
+  name: string;
+  code: string;
+}
 
-  const zones = [
+export default async function seedShippingZones(dataSource: DataSource): Promise<void> {
+  const repository = new ShippingZonesRepository(dataSource);
+
+  const zones: ZoneSeed[] = [
     { name: 'Estados Unidos', code: 'US' },
     { name: 'Reino Unido', code: 'GB' },
     { name: 'Alemanha', code: 'DE' },
@@ -20,13 +23,20 @@ async function seedShippingZones() {
     { name: 'Oriente Médio', code: 'ME' },
   ];
 
+  let createdCount = 0;
+
   for (const zone of zones) {
     const exists = await repository.findByCode(zone.code);
     if (!exists) {
       await repository.create(zone);
+      createdCount++;
       console.log(`[Seed] Zona '${zone.name}' criada`);
     }
   }
-}
 
-export default seedShippingZones;
+  if (createdCount > 0) {
+    console.log(`[Seed] ${createdCount} zona(s) criada(s)`);
+  } else {
+    console.log('[Seed] Nenhuma zona nova criada');
+  }
+}

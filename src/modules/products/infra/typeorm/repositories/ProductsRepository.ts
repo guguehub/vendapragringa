@@ -4,7 +4,7 @@ import { IProductsRepository } from '@modules/products/domain/repositories/IProd
 import { ICreateProduct } from '@modules/products/domain/models/ICreateProduct';
 import { IProduct } from '@modules/products/domain/models/IProduct';
 import { IUpdateStockProduct } from '@modules/products/domain/models/IUpdateStockProduct';
-import { dataSource } from '../../../../../shared/infra/typeorm';
+import { dataSource } from '../../../../../shared/infra/typeorm/data-source';
 
 class ProductsRepository implements IProductsRepository {
   private ormRepository: Repository<Product>;

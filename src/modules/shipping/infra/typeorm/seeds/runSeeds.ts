@@ -1,20 +1,19 @@
-// src/shared/infra/typeorm/seeds/runSeeds.ts
+import 'dotenv/config';
 
-import dataSource from '@shared/infra/typeorm';
-import seedShippingTypes from '@modules/shipping/infra/typeorm/seeds/seedShippingTypes';
-// importe aqui os outros seeds que quiser rodar, por exemplo:
-// import seedShippingWeights from '@modules/shipping/infra/typeorm/seeds/seedShippingWeights';
-// import seedShippingPricesProducts from '@modules/shipping/infra/typeorm/seeds/seedShippingPricesProducts';
+import dataSource from '../../../../../shared/infra/typeorm/data-source';
+import seedShippingPricesProducts from './seedShippingPricesProducts';
+import seedShippingTypes from './seedShippingTypes';
+import seedShippingWeights from './seedShippingWeights';
+
 
 async function runSeeds() {
   try {
     await dataSource.initialize();
-
     console.log('Banco inicializado');
 
-    await seedShippingTypes();
-    // await seedShippingWeights();
-    // await seedShippingPricesProducts();
+    await seedShippingTypes(dataSource); // passe dataSource aqui também se necessário
+    await seedShippingWeights(dataSource); // idem
+    await seedShippingPricesProducts(dataSource); // corrige erro de argumentos
 
     console.log('Seeds rodadas com sucesso!');
   } catch (error) {
@@ -24,5 +23,5 @@ async function runSeeds() {
     console.log('Conexão com banco finalizada');
   }
 }
-
+console.log('DATABASE ENV:',   "rodando seeds");
 runSeeds();

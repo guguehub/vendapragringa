@@ -3,7 +3,7 @@ import Supplier from '../entities/Supplier';
 import { ISuppliersRepository } from '@modules/suppliers/domain/repositories/ISuppliersRepository';
 import { ICreateSupplier } from '@modules/suppliers/domain/models/ICreateSupplier';
 import { ISupplierPaginate } from '@modules/suppliers/domain/models/ISupplierPaginate';
-import { dataSource } from '@shared/infra/typeorm';
+import { dataSource } from '@shared/infra/typeorm/data-source';
 import { SearchParams } from '@modules/suppliers/domain/repositories/ISuppliersRepository';
 
 class SuppliersRepository implements ISuppliersRepository {

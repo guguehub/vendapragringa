@@ -4,7 +4,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ShippingTypeCode } from '@modules/shipping/enums/ShippingTypeCode';
+import { ShippingTypeCode } from '../../../../../modules/shipping/enums/ShippingTypeCode';
 
 @Entity('shipping_types')
 class ShippingType {

@@ -3,7 +3,7 @@ import Supplier from '@modules/suppliers/infra/typeorm/entities/Supplier';
 import { ISupplierRepository } from '@modules/suppliers/domain/repositories/ISupplierRepository';
 import { ICreateSupplier } from '@modules/suppliers/domain/models/ICreateSupplier';
 import { IUpdateSupplier } from '@modules/suppliers/domain/models/IUpdateSupplier';
-import dataSource from '@shared/infra/typeorm';
+import dataSource from '@shared/infra/typeorm/data-source';
 
 class SuppliersRepository implements ISupplierRepository {
   private ormRepository: Repository<Supplier>;

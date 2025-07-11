@@ -22,6 +22,7 @@ class ShippingZone {
   @OneToMany(() => ShippingZoneCountry, zoneCountry => zoneCountry.zone)
   countries: ShippingZoneCountry[];
 
+
   @CreateDateColumn({ name: 'created_at' })
   created_at: Date;
 

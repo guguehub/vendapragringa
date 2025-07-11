@@ -1,6 +1,6 @@
 //import { AppDataSource } from '@shared/infra/typeorm';
 //import Supplier from '../entities/Supplier';
-import dataSource from '@shared/infra/typeorm';
+import dataSource from '@shared/infra/typeorm/data-source';
 import Supplier from '@modules/suppliers/infra/typeorm/entities/Supplier';
 
 async function createDefaultSuppliers() {

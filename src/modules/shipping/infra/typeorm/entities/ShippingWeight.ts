@@ -1,4 +1,3 @@
-
 import {
   Column,
   CreateDateColumn,
@@ -11,10 +10,10 @@ class ShippingWeight {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('decimal')
+  @Column('float')
   min_kg: number;
 
-  @Column('decimal')
+  @Column('float')
   max_kg: number;
 
   @CreateDateColumn()

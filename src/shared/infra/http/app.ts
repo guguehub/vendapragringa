@@ -6,7 +6,7 @@ import routes from './routes';
 //import AppError from '@shared/errors/AppError';
 import AppError from '../../../shared/errors/AppError';
 //import '@shared/infra/typeorm';
-import '../../../shared/infra/typeorm';
+import '../typeorm/data-source';
 //import '@shared/container';
 import '../../../shared/container';
 import uploadConfig from '@config/upload';

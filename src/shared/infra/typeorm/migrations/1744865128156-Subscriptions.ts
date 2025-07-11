@@ -8,6 +8,11 @@ import {
 
 export class Subscriptions1744865128156 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+
+    await queryRunner.query(`CREATE TYPE "subscriptions_status_enum" AS ENUM ('active', 'cancelled', 'expired')`);
+await queryRunner.query(`CREATE TYPE "subscriptions_tier_enum" AS ENUM ('free', 'bronze', 'silver', 'gold')`);
+
+
     // Create the subscriptions table
     await queryRunner.createTable(
       new Table({
@@ -22,13 +27,13 @@ export class Subscriptions1744865128156 implements MigrationInterface {
           },
           {
             name: 'status',
-            type: 'enum',
+            type: '"subscriptions_status_enum"',
             enum: ['active', 'cancelled', 'expired'],
             default: "'active'",
           },
           {
             name: 'tier',
-            type: 'enum',
+            type: '"subscriptions_tier_enum"',
             enum: ['free', 'bronze', 'silver', 'gold'],
             default: "'free'",
           },
@@ -109,5 +114,9 @@ export class Subscriptions1744865128156 implements MigrationInterface {
 
     // Drop the subscriptions table
     await queryRunner.dropTable('subscriptions');
+
+    await queryRunner.query(`DROP TYPE "subscriptions_status_enum"`);
+await queryRunner.query(`DROP TYPE "subscriptions_tier_enum"`);
+
   }
 }

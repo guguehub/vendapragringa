@@ -4,22 +4,22 @@ import { IShippingTypeRepository } from '@modules/shipping/domain/repositories/I
 import { ShippingTypeCode } from '@modules/shipping/enums/ShippingTypeCode';
 
 export class ShippingTypesRepository implements IShippingTypeRepository {
-  private ormRepo: Repository<ShippingType>;
+  private ormRepository: Repository<ShippingType>;
 
-  constructor(dataSource: DataSource) {
-    this.ormRepo = dataSource.getRepository(ShippingType);
+  constructor(private dataSource: DataSource) {
+    this.ormRepository = dataSource.getRepository(ShippingType);
   }
 
   async findByCode(code: ShippingTypeCode): Promise<ShippingType | null> {
-    return this.ormRepo.findOne({ where: { code } });
+    return this.ormRepository.findOne({ where: { code } });
   }
 
   async create(data: { name: string; code: ShippingTypeCode }): Promise<ShippingType> {
-    const type = this.ormRepo.create(data);
-    return this.ormRepo.save(type);
+    const type = this.ormRepository.create(data);
+    return this.ormRepository.save(type);
   }
 
   async findAll(): Promise<ShippingType[]> {
-    return this.ormRepo.find();
+    return this.ormRepository.find();
   }
 }

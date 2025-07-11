@@ -1,12 +1,13 @@
 import { DataSource } from 'typeorm';
-import { ShippingPricesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingPricesRepository';
-import { ShippingZonesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingZonesRepository';
-import { ShippingTypesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingTypesRepository';
-import { ShippingWeightsRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingWeightsRepository';
-import { isRegionCode } from '@modules/shipping/utils/regionGroups';
-import { ShippingTypeCode } from '@modules/shipping/enums/ShippingTypeCode';
+import { ShippingPricesRepository } from 'src/modules/shipping/infra/typeorm/repositories/ShippingPricesRepository';
+import { ShippingZonesRepository } from 'src/modules/shipping/infra/typeorm/repositories/ShippingZonesRepository';
+import { ShippingTypesRepository } from 'src/modules/shipping/infra/typeorm/repositories/ShippingTypesRepository';
+import { ShippingWeightsRepository } from 'src/modules/shipping/infra/typeorm/repositories/ShippingWeightsRepository';
+import { isRegionCode } from 'src/modules/shipping/utils/regionGroups';
+import { ShippingTypeCode } from 'src/modules/shipping/enums/ShippingTypeCode';
 
-async function seedShippingPricesProducts(dataSource: DataSource) {
+
+export default async function seedShippingPricesProducts(dataSource: DataSource): Promise<void> {
   const pricesRepository = new ShippingPricesRepository(dataSource);
   const typesRepository = new ShippingTypesRepository(dataSource);
   const zonesRepository = new ShippingZonesRepository(dataSource);
@@ -121,4 +122,3 @@ async function seedShippingPricesProducts(dataSource: DataSource) {
   console.log('[Seed] Preços de frete para produtos inseridos com sucesso!');
 }
 
-export default seedShippingPricesProducts;

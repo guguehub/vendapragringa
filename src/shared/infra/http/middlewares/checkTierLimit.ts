@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import AppDataSource from '@shared/infra/typeorm';
+import AppDataSource from '@shared/infra/typeorm/data-source';
 import Item from '../../../../modules/item/infra/typeorm/entities/Item';
 import { Subscription } from '@modules/subscriptions/infra/typeorm/entities/Subscription';
 

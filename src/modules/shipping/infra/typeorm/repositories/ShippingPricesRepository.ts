@@ -1,5 +1,4 @@
-import { Repository } from 'typeorm';
-import dataSource from '@shared/infra/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import ShippingPrice from '../entities/ShippingPrice';
 import { IShippingPriceRepository } from '@modules/shipping/domain/repositories/IShippingPriceRepository';
 import { ICreateShippingPriceDTO } from '@modules/shipping/dtos/ICreateShippingPriceDTO';
@@ -7,7 +6,7 @@ import { ICreateShippingPriceDTO } from '@modules/shipping/dtos/ICreateShippingP
 export class ShippingPricesRepository implements IShippingPriceRepository {
   private ormRepository: Repository<ShippingPrice>;
 
-  constructor() {
+  constructor(private dataSource: DataSource) {
     this.ormRepository = dataSource.getRepository(ShippingPrice);
   }
 
@@ -45,6 +44,7 @@ export class ShippingPricesRepository implements IShippingPriceRepository {
     const entries = this.ormRepository.create(data);
     return this.ormRepository.save(entries);
   }
+
 
   async save(price: ShippingPrice): Promise<ShippingPrice> {
     return this.ormRepository.save(price);

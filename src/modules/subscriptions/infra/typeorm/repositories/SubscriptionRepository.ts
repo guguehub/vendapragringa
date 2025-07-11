@@ -5,7 +5,7 @@ import { ICreateSubscription } from '@modules/subscriptions/domain/models/ICreat
 
 import { SubscriptionStatus } from '../entities/Subscription';
 import { Subscription } from '../entities/Subscription';
-import dataSource from '@shared/infra/typeorm';
+import dataSource from '@shared/infra/typeorm/data-source';
 
 class SubscriptionRepository implements ISubscriptionRepository {
   private ormRepository: Repository<Subscription>;

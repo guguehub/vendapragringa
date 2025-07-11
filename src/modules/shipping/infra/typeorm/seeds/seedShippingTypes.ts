@@ -1,22 +1,34 @@
+import { DataSource } from 'typeorm';
 import { ShippingTypesRepository } from '../repositories/ShippingTypesRepository';
 import { ShippingTypeCode } from '@modules/shipping/enums/ShippingTypeCode';
-import dataSource from '../../../../../shared/infra/typeorm/index'
 
-async function seedShippingTypes(): Promise<void> {
+interface ShippingTypeSeed {
+  name: string;
+  code: ShippingTypeCode;
+}
+
+export default async function seedShippingTypes(dataSource: DataSource): Promise<void> {
   const repository = new ShippingTypesRepository(dataSource);
 
-  const types: { name: string; code: ShippingTypeCode }[] = [
+  const types: ShippingTypeSeed[] = [
     { name: 'Documento', code: ShippingTypeCode.DOCUMENT },
     { name: 'Produto', code: ShippingTypeCode.PRODUCT },
   ];
 
+  let createdCount = 0;
+
   for (const type of types) {
     const exists = await repository.findByCode(type.code);
+
     if (!exists) {
       await repository.create(type);
-      console.log(`[Seed] Tipo de envio '${type.name}' criado`);
+      createdCount++;
     }
   }
-}
 
-export default seedShippingTypes;
+  if (createdCount > 0) {
+    console.log(`[Seed] Tipos de envio: ${createdCount} novo(s) inserido(s).`);
+  } else {
+    console.log(`[Seed] Tipos de envio: nenhum novo inserido.`);
+  }
+}

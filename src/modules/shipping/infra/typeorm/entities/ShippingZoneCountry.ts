@@ -18,6 +18,8 @@ class ShippingZoneCountry {
   @ManyToOne(() => ShippingZone, zone => zone.countries, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'zone_id' })
   zone: ShippingZone;
+
+
 }
 
 export default ShippingZoneCountry;

@@ -1,16 +1,24 @@
 import AppError from '@shared/errors/AppError';
 import { ICalculateShippingDTO } from '../../shipping/dtos/ICalculateShippingDTO';
 import { IShippingTypeRepository } from '../../shipping/domain/repositories/IShippingTypeRepository';
-import { IShippingZonesRepository } from '../../shipping/domain/repositories/IShippingZonesRepository';
 import { IShippingWeightRepository } from '../../shipping/domain/repositories/IShippingWeightRepository';
 import { IShippingPriceRepository } from '../../shipping/domain/repositories/IShippingPriceRepository';
+import { ShippingZoneCountryRepository } from '../../shipping/infra/typeorm/repositories/ShippingZoneCountryRepository';
+import { inject } from 'tsyringe';
 
 class CalculateShippingService {
   constructor(
+    @inject('ShippingTypeRepository')
     private shippingTypeRepository: IShippingTypeRepository,
-    private shippingZoneRepository: IShippingZonesRepository,
+
+    @inject('ShippingWeightRepository')
     private shippingWeightRepository: IShippingWeightRepository,
-    private shippingPriceRepository: IShippingPriceRepository
+
+    @inject('ShippingPriceRepository')
+    private shippingPriceRepository: IShippingPriceRepository,
+
+    @inject('ShippingZoneCountryRepository')
+    private shippingZoneCountryRepository: ShippingZoneCountryRepository // novo repositório
   ) {}
 
   public async execute({
@@ -25,7 +33,7 @@ class CalculateShippingService {
     }
 
     // 2. Encontrar a zona com base no código do país
-    const zone = await this.shippingZoneRepository.findByCountryCode(countryCode);
+    const zone = await this.shippingZoneCountryRepository.findByCountryCode(countryCode);
     if (!zone) {
       throw new AppError('Zona de frete não encontrada para este país');
     }
