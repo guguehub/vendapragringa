@@ -51,6 +51,9 @@ class UpdateUserService {
     }
 
     await this.usersRepository.save(user);
+
     return user;
   }
 }
+
+export default UpdateUserService

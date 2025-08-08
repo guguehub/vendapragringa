@@ -147,6 +147,11 @@ class Item {
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_updated_id' })
+
+  @Column({ type: 'boolean', default: false })
+is_favorite: boolean;
+
+
   updatedBy?: User;
 
   @CreateDateColumn()

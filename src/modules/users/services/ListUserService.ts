@@ -10,7 +10,7 @@ class ListUserService {
   ) {}
 
   public async execute(): Promise<IUser[] | null> {
-    const users = await this.usersRepository.findAll(id);
+    const users = await this.usersRepository.findAll();
 
     return users;
   }

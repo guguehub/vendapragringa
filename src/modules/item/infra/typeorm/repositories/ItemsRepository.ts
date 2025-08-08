@@ -16,14 +16,8 @@ class ItemsRepository implements IItemsRepository {
     return item;
   }
 
-  public async findByIdWithSupplier(id: string): Promise<Item | null> {
-    return this.ormRepository.findOne({
-      where: { id },
-      relations: ['supplier'],
-    });
-  } // <-- Aqui estava faltando o fechamento!
 
-  public async findById(id: string): Promise<Item | undefined> {
+  public async findById(id: string): Promise<Item | null> {
     return this.ormRepository.findOne({
       where: { id },
       relations: ['supplier'],
@@ -32,11 +26,25 @@ class ItemsRepository implements IItemsRepository {
 
   public async findByUserId(userId: string): Promise<Item[]> {
     return this.ormRepository.find({
-      where: { user: { id: userId } },
+      where: { user_id: userId },
+      relations: ['supplier'],
+    });
+  }
+// --- testar--
+  public async findByStatus(status?: string): Promise<Item[]> {
+  if (status) {
+    return this.ormRepository.find({
+      where: { status },
       relations: ['supplier'],
     });
   }
 
+  // Se status não for informado, retorna todos
+  return this.ormRepository.find({
+    relations: ['supplier'],
+  });
+}
+//-- testar se melhor implementar errors
   public async save(item: Item): Promise<Item> {
     return this.ormRepository.save(item);
   }

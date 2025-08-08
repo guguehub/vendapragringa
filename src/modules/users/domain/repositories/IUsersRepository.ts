@@ -10,5 +10,5 @@ export interface IUsersRepository {
   findByEmail(email: string): Promise<IUser | null>;
   findByName(name: string): Promise<IUser | null>;
   findAllByOwner(userId: string): Promise<IUser[]>; // Fetch only the logged-in user's data]
-  findAll(id: string): Promise<IUser[]>;
+  findAll(): Promise<IUser[]>;
 }
