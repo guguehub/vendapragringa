@@ -7,8 +7,8 @@ import '@modules/users/providers';
 import SubscriptionRepository from '@modules/subscriptions/infra/typeorm/repositories/SubscriptionRepository';
 import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositories/ICreateSubscription';
 
-import { ISavedItemsRepository } from '@modules/item/domain/repositories/ISavedItemsRepository';
-import { SavedItemsRepository } from '@modules/item/infra/typeorm/repositories/SavedItemsRepository';
+import { ISavedItemsRepository } from '@modules/saved-items/domain/repositories/ISavedItemsRepository';
+import { SavedItemsRepository } from '@modules/saved-items/infra/typeorm/repositories/SavedItemsRepository';
 import ItemsRepository from '@modules/item/infra/typeorm/repositories/ItemsRepository';
 
 container.registerSingleton<IProductsRepository>(

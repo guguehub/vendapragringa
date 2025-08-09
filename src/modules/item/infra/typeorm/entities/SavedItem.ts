@@ -1,5 +1,6 @@
 import {
   Entity,
+  Unique,
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
@@ -10,6 +11,7 @@ import User from '../../../../users/infra/typeorm/entities/User';
 import Item from '../../../../item/infra/typeorm/entities/Item';
 
 @Entity('saved_items')
+@Unique(['user_id', 'item_id'])
 class SavedItem {
   @PrimaryGeneratedColumn('uuid')
   id: string;

@@ -1,8 +1,8 @@
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 
-import { ISavedItemsRepository } from '../domain/repositories/ISavedItemsRepository';
-import { ICreateSavedItem } from '../domain/models/ICreateSavedItem';
+import { ISavedItemsRepository } from '../../saved-items/domain/repositories/ISavedItemsRepository';
+import { ICreateSavedItem } from '../../saved-items/domain/interfaces/ICreateSavedItem';
 import { SavedItem } from '../infra/typeorm/entities/SavedItem';
 import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
 import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
