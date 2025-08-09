@@ -12,7 +12,7 @@
     "typeorm:migration:container": "PG_HOST=db REDIS_HOST=redis APP_API_URL=localhost:3333 ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/shared/infra/typeorm/data-source.ts",
     "dev": "ts-node -r tsconfig-paths/register --transpile-only src/shared/infra/http/server.ts",
     "dev:watch": "docker compose down && docker compose up",
-    "pgcli": "pgcli -h localhost -U postgres -d apivendas",
+    "pgcli": "docker exec -it apivendas-db psql -U postgres -d apivendas",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
     "test": "jest",
