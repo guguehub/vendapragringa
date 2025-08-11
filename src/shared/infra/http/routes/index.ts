@@ -9,9 +9,11 @@ import { ensureTier } from '../middlewares/ensureTier';
 import scrapyRouter from './scrapy.routes';
 import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
 import shippingRoutes from '@modules/shipping/infra/http/routes/shipping.routes';
+import savedItemsRouter from '@modules/saved-items/infra/http/routes/saved-item.routes';
 
 const routes = Router();
 
+routes.use('/saved-items', savedItemsRouter);
 routes.use('/products', productsRouter);
 routes.use('/users', usersRouter);
 routes.use('/sessions', sessionsRouter);

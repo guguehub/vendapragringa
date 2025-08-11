@@ -3,7 +3,7 @@ import AppError from '@shared/errors/AppError';
 
 import { ISavedItemsRepository } from '../../saved-items/domain/repositories/ISavedItemsRepository';
 import { ICreateSavedItem } from '../../saved-items/domain/interfaces/ICreateSavedItem';
-import { SavedItem } from '../infra/typeorm/entities/SavedItem';
+import { SavedItem } from '../../saved-items/infra/typeorm/entities/SavedItem';
 import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
 import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
 

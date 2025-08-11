@@ -16,6 +16,11 @@
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
     "test": "jest",
+    "check:ts": "tsc --noEmit",
+    "tsc:watch": "tsc --noEmit --watch",
+
+
+    "check-schema": "ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js schema:log -d src/shared/infra/typeorm/data-source.ts",
     "seed:shipping": "ts-node-dev -r tsconfig-paths/register src/shared/infra/typeorm/seed/index.ts"
   },
   "devDependencies": {

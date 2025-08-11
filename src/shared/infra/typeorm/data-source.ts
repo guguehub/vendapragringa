@@ -7,7 +7,7 @@ import UserToken from '../../../modules/users/infra/typeorm/entities/UserToken';
 import Product from '../../../modules/products/infra/typeorm/entities/Product';
 import Supplier from '../../../modules/suppliers/infra/typeorm/entities/Supplier';
 import Item from '../../../modules/item/infra/typeorm/entities/Item';
-import { SavedItem } from '../../../modules/item/infra/typeorm/entities/SavedItem';
+import { SavedItem } from '../../../modules/saved-items/infra/typeorm/entities/SavedItem';
 import { Subscription } from '../../../modules/subscriptions/infra/typeorm/entities/Subscription';
 
 // Shipping entities
