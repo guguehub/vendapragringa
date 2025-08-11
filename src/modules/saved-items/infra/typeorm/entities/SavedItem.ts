@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import User from '../../../../users/infra/typeorm/entities/User';
 import Item from '../../../../item/infra/typeorm/entities/Item';
@@ -32,6 +33,9 @@ class SavedItem {
 
   @CreateDateColumn()
   created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
 }
 
 export { SavedItem };

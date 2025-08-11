@@ -26,4 +26,10 @@ container.registerSingleton<ISubscriptionRepository>(
   SubscriptionRepository,
 );
 
-container.registerSingleton<ItemsRepository>('ItemRepository', ItemsRepository);
+container.registerSingleton<ItemsRepository>(
+  'ItemRepository', ItemsRepository);
+
+container.registerSingleton<ISavedItemsRepository>(
+  'SavedItemsRepository',
+  SavedItemsRepository,
+);

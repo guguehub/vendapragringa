@@ -18,6 +18,8 @@
     "test": "jest",
     "check:ts": "tsc --noEmit",
     "tsc:watch": "tsc --noEmit --watch",
+      "dev:check": "tsc --noEmit && yarn dev:watch",
+
 
 
     "check-schema": "ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js schema:log -d src/shared/infra/typeorm/data-source.ts",

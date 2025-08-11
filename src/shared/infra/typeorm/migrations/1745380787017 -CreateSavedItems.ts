@@ -1,7 +1,10 @@
-import {MigrationInterface, QueryRunner, Table, TableForeignKey} from "typeorm";
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
-export class CreateSavedItemsTable1745380787017  implements MigrationInterface {
+export class CreateSavedItemsTable1745380787017 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Garante que a extensão para UUIDs exista
+    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
+
     // Cria a tabela saved_items
     await queryRunner.createTable(
       new Table({
@@ -37,7 +40,7 @@ export class CreateSavedItemsTable1745380787017  implements MigrationInterface {
       true,
     );
 
-    // Cria relationship FK para user_id
+    // FK para user_id
     await queryRunner.createForeignKey(
       'saved_items',
       new TableForeignKey({
@@ -48,7 +51,7 @@ export class CreateSavedItemsTable1745380787017  implements MigrationInterface {
       }),
     );
 
-    // Cria relationship FK para item_id
+    // FK para item_id
     await queryRunner.createForeignKey(
       'saved_items',
       new TableForeignKey({
@@ -61,7 +64,18 @@ export class CreateSavedItemsTable1745380787017  implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Drop tabelas e chaves
+    // Remove FKs antes de dropar a tabela
+    const table = await queryRunner.getTable('saved_items');
+    if (table) {
+      const foreignKeys = table.foreignKeys.filter(
+        fk => fk.columnNames.includes('user_id') || fk.columnNames.includes('item_id'),
+      );
+      for (const fk of foreignKeys) {
+        await queryRunner.dropForeignKey('saved_items', fk);
+      }
+    }
+
+    // Drop tabela
     await queryRunner.dropTable('saved_items');
   }
 }
