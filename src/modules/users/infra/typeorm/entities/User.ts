@@ -32,7 +32,7 @@ class User {
   savedItems?: SavedItem[];
 
   @OneToMany(() => Item, item => item.user)
-  items?: Item[]=[];
+  items?: Item[];
 
   @CreateDateColumn()
   created_at: Date;
