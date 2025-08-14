@@ -4,7 +4,9 @@ import { ISavedItemsRepository } from '@modules/saved-items/domain/repositories/
 
 import { SavedItem } from '../entities/SavedItem';
 import { ICreateSavedItem } from '@modules/saved-items/domain/interfaces/ICreateSavedItem';
+import { injectable } from 'tsyringe';
 
+@injectable()
 export class SavedItemsRepository implements ISavedItemsRepository {
   private ormRepository: Repository<SavedItem>;
 

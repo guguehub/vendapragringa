@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { container } from 'tsyringe';
 import { IProductsRepository } from '@modules/products/domain/repositories/IProductsRepository';
 import ProductsRepository from '@modules/products/infra/typeorm/repositories/ProductsRepository';
@@ -10,6 +11,7 @@ import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositor
 import { ISavedItemsRepository } from '@modules/saved-items/domain/repositories/ISavedItemsRepository';
 import { SavedItemsRepository } from '@modules/saved-items/infra/typeorm/repositories/SavedItemsRepository';
 import ItemsRepository from '@modules/item/infra/typeorm/repositories/ItemsRepository';
+import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
 
 container.registerSingleton<IProductsRepository>(
   'ProductsRepository',
@@ -26,8 +28,8 @@ container.registerSingleton<ISubscriptionRepository>(
   SubscriptionRepository,
 );
 
-container.registerSingleton<ItemsRepository>(
-  'ItemRepository', ItemsRepository);
+container.registerSingleton<IItemsRepository>(
+  'ItemsRepository', ItemsRepository);
 
 container.registerSingleton<ISavedItemsRepository>(
   'SavedItemsRepository',
