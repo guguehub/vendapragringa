@@ -2,7 +2,7 @@
 
 import { Router, Request, Response } from 'express';
 
-import identifyUser from '../../../../shared/infra/http/middlewares/identifyUser';
+import identifyUser from '../middlewares/identifyUser';
 import { scrapeMercadoLivre } from '@modules/scrap/scrapy';
 
 const scrapyRouter = Router();
