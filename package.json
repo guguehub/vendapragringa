@@ -13,7 +13,10 @@
 
   "dev:docker": "docker compose down && docker compose up",
 
+    "dev:getin" : "docker exec -it apivendas-app bash",
+
   "dev:container": "ts-node -r tsconfig-paths/register --transpile-only src/shared/infra/http/server.ts",
+
 
   "pgcli": "docker exec -it apivendas-db psql -U postgres -d apivendas",
     "lint": "eslint . --ext .ts",

@@ -7,7 +7,7 @@ export interface ICreateItem {
   shipping_price?: number;
   status?: string;
 
-  user_id: string;
+  user_id?: string;
   supplierId?: string;
 
   is_listed_on_ebay?: boolean;

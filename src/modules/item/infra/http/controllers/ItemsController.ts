@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
-import ListItemService from '@modules/item/infra/services/ListItemService';
+import ListItemService from '@modules/item/services/ListItemService';
 import ShowItemService from '@modules/item/services/ShowItemService';
 import CreateItemService from '@modules/item/services/CreateItemService';
+//import UpdateItemService from '@modules/item/services/UpdateItemService';
 import UpdateItemService from '@modules/item/services/UpdateItemService';
 import DeleteItemService from '@modules/item/services/DeleteItemService';
 
@@ -16,32 +17,33 @@ export default class ItemsController {
   }
 
   public async show(request: Request, response: Response): Promise<Response> {
-    const { id } = request.params;
+  const { id } = request.params;
 
-    const showItem = container.resolve(ShowItemService);
+  const showItem = container.resolve(ShowItemService);
 
-    const item = await showItem.execute({ id });
+  const item = await showItem.execute(id);
 
-    return response.json(item);
-  }
+  return response.json(item);
+}
 
   public async create(request: Request, response: Response): Promise<Response> {
-    const { name, description, price, quantity } = request.body;
+  const user_id = request.user.id;
+  const { name, description, price} = request.body;
 
-    const createItem = container.resolve(CreateItemService);
+  const createItem = container.resolve(CreateItemService);
 
-    const item = await createItem.execute({
-      name,
-      description,
-      price,
-      quantity,
-    });
+  const item = await createItem.execute(user_id, {
+    name,
+    description,
+    price
 
-    return response.json(item);
-  }
+  });
+
+  return response.status(201).json(item);
+}
 
   public async update(request: Request, response: Response): Promise<Response> {
-    const { name, description, price, quantity } = request.body;
+    const { name, description, price } = request.body;
     const { id } = request.params;
 
     const updateItem = container.resolve(UpdateItemService);
@@ -51,7 +53,7 @@ export default class ItemsController {
       name,
       description,
       price,
-      quantity,
+
     });
 
     return response.json(item);

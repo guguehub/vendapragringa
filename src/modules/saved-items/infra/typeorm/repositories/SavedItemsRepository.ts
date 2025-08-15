@@ -5,13 +5,14 @@ import { ISavedItemsRepository } from '@modules/saved-items/domain/repositories/
 import { SavedItem } from '../entities/SavedItem';
 import { ICreateSavedItem } from '@modules/saved-items/domain/interfaces/ICreateSavedItem';
 import { injectable } from 'tsyringe';
+import AppDataSource from '@shared/infra/typeorm/data-source'
 
 @injectable()
 export class SavedItemsRepository implements ISavedItemsRepository {
   private ormRepository: Repository<SavedItem>;
 
-  constructor(dataSource: DataSource) {
-    this.ormRepository = dataSource.getRepository(SavedItem);
+  constructor() {
+    this.ormRepository = AppDataSource.getRepository(SavedItem);
   }
 
   public async create(data: ICreateSavedItem): Promise<SavedItem> {

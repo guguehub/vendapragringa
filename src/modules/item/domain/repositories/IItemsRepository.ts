@@ -7,6 +7,8 @@ interface IItemsRepository {
   findByUserId(userId: string): Promise<Item[]>;
   save(item: Item): Promise<Item>;
   remove(item: Item): Promise<void>;
+    findAll(): Promise<Item[]>;
+
 }
 
 export { IItemsRepository };
