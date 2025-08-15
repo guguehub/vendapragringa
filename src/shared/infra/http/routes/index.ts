@@ -12,6 +12,7 @@ import shippingRoutes from '@modules/shipping/infra/http/routes/shipping.routes'
 import savedItemsRouter from '@modules/saved-items/infra/http/routes/saved-item.routes';
 import itemsRouter from '@modules/item/infra/http/routes/items.routes';
 import testRouter from '@modules/users/infra/http/routes/tester.routes';
+import { scrapRoutes } from '@modules/scrap/infra/http/routes/scrap.routes';
 
 const routes = Router();
 
@@ -24,7 +25,9 @@ routes.use('/password', passwordRouter);
 routes.use('/profile', profileRouter);
 routes.use('scrapy', scrapyRouter);
 routes.use('/shipping', shippingRoutes);
-routes.use('/items', itemsRouter)
+routes.use('/items', itemsRouter);
+routes.use("/scrap", scrapRoutes);
+
 
 routes.get('/area-prata', ensureTier(SubscriptionTier.SILVER), (req, res) => {
   res.json({ message: 'Conteúdo disponível para usuários SILVER ou superior' });
