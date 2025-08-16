@@ -1,12 +1,18 @@
 import { MercadoLivreScraper } from "../infra/scrapy/mercadoLivre.scraper";
 import { IScrapedItem } from "../domain/models/IScrapedItem";
-import { RedisCacheProvider } from "@shared/infra/cache/RedisCacheProvider";
+import { RedisCacheProvider } from "@shared/cache/RedisCacheProvider";
+import AppDataSource from "@shared/infra/typeorm/data-source";
+import Item from "@modules/item/infra/typeorm/entities/Item";
 
 export class ScrapOrchestratorService {
   private scraper = new MercadoLivreScraper();
   private cache = new RedisCacheProvider();
 
-  // Aqui poderia receber req.user.id futuramente para tiers
+  /**
+   * Processa uma ou mais URLs.
+   * - Se `userId` for fornecido → salva no banco e aplica limites via middleware.
+   * - Se anônimo → apenas retorna resultado (sem salvar no banco).
+   */
   async processUrls(urls: string[], userId?: string): Promise<IScrapedItem[]> {
     const results: IScrapedItem[] = [];
 
@@ -24,8 +30,28 @@ export class ScrapOrchestratorService {
         await this.cache.set(cacheKey, item, 12 * 60 * 60);
       }
 
-      // Aqui futuramente checaria o tier do userId e aplicaria limites
-      // ex: if (userExceededLimit(userId)) throw new Error("Limite de raspagem atingido");
+      // Se usuário está logado → salva no banco
+      if (userId) {
+        try {
+          const itemRepository = AppDataSource.getRepository(Item);
+
+          await itemRepository.save(
+            itemRepository.create({
+              title: item.title,
+              price: item.price,
+              url: item.url,
+              user: { id: userId },
+            })
+          );
+
+          console.log(`[DB SAVE] Item salvo para o usuário: ${userId}`);
+        } catch (err) {
+          console.error(
+            `[DB ERROR] Erro ao salvar item para usuário ${userId}:`,
+            err
+          );
+        }
+      }
 
       results.push(item);
     }

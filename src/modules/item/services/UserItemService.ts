@@ -12,8 +12,6 @@ class ItemService {
     private itemsRepository: IItemsRepository,
   ) {}
 
-
-
   public async findById(user: IUser, id: string): Promise<Item> {
     const item = await this.itemsRepository.findById(id);
 

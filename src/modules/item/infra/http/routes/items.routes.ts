@@ -1,13 +1,16 @@
 import { Router } from 'express';
 import { celebrate, Joi, Segments } from 'celebrate';
 import isAuthenticated from '@shared/infra/http/middlewares/isAuthenticated';
+import { CheckUserItemLimitMiddleware } from '@shared/infra/http/middlewares/CheckUserItemLimitMiddleware';
 import ItemsController from '../controllers/ItemsController';
 
 const itemsRouter = Router();
 const itemsController = new ItemsController();
 
+// Listar itens do usuário
 itemsRouter.get('/', isAuthenticated, itemsController.index);
 
+// Detalhes de um item específico
 itemsRouter.get(
   '/:id',
   celebrate({
@@ -18,8 +21,11 @@ itemsRouter.get(
   itemsController.show,
 );
 
+// Criar item (aplica limite do tier)
 itemsRouter.post(
   '/',
+  isAuthenticated,
+  CheckUserItemLimitMiddleware,
   celebrate({
     [Segments.BODY]: {
       name: Joi.string().required(),
@@ -27,11 +33,13 @@ itemsRouter.post(
       quantity: Joi.number().required(),
     },
   }),
-  itemsController.create,
+  itemsController.create
 );
 
+// Atualizar item
 itemsRouter.put(
   '/:id',
+  isAuthenticated,
   celebrate({
     [Segments.BODY]: {
       name: Joi.string().required(),
@@ -42,17 +50,19 @@ itemsRouter.put(
       id: Joi.string().uuid().required(),
     },
   }),
-  itemsController.update,
+  itemsController.update
 );
 
+// Deletar item
 itemsRouter.delete(
   '/:id',
+  isAuthenticated,
   celebrate({
     [Segments.PARAMS]: {
       id: Joi.string().uuid().required(),
     },
   }),
-  itemsController.delete,
+  itemsController.delete
 );
 
 export default itemsRouter;

@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import AppDataSource from "@shared/infra/typeorm/data-source";
-//import { UserItem } from "@modules/user_items/infra/typeorm/entities/UserItem";
+import Item from "@modules/item/infra/typeorm/entities/Item";
 import { Subscription } from "@modules/subscriptions/infra/typeorm/entities/Subscription";
 
-const tierLimits = {
+const tierLimits: Record<string, number> = {
   free: 4,
   bronze: 20,
   silver: 50,
@@ -15,36 +15,42 @@ export async function CheckUserItemLimitMiddleware(
   res: Response,
   next: NextFunction
 ): Promise<Response | void> {
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id; // precisa do identifyUser + isAuthenticated antes
 
   if (!userId) {
-    return res.status(401).json({ error: "Usuário não autenticado" });
+    return res.status(401).json({ message: "Usuário não autenticado." });
   }
 
-  const userItemsRepository = AppDataSource.getRepository(UserItem);
-  const subscriptionRepository = AppDataSource.getRepository(Subscription);
+  try {
+    const itemRepository = AppDataSource.getRepository(Item);
+    const subscriptionRepository = AppDataSource.getRepository(Subscription);
 
-  const subscription = await subscriptionRepository.findOne({
-    where: { user: { id: userId } },
-    relations: ["user"],
-  });
+    const subscription = await subscriptionRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ["user"],
+    });
 
-  const tier = subscription?.tier ?? "free";
-  const limit = tierLimits[tier];
+    const tier = subscription?.tier ?? "free";
+    const limit = tierLimits[tier] ?? tierLimits.free;
 
-  const savedCount = await userItemsRepository.count({
-    where: { user: { id: userId } },
-  });
+    const userItemsCount = await itemRepository.count({
+      where: { user: { id: userId } },
+    });
 
-  if (savedCount >= limit) {
-    console.log(
-      `[LIMIT REACHED] Usuário ${userId} atingiu limite de itens salvos (${savedCount}/${limit}). Delete algum item para continuar raspando.`
-    );
+    if (userItemsCount >= limit) {
+      console.warn(
+        `Usuário ${userId} atingiu o limite de ${limit} itens para o plano ${tier}`
+      );
+      return res.status(403).json({
+        message: `Limite de itens atingido no seu plano (${tier}). Exclua um item ou faça upgrade.`,
+      });
+    }
 
-    return res.status(403).json({
-      error: "Limite de itens salvos atingido. Delete algum item para continuar raspando.",
+    return next();
+  } catch (err) {
+    console.error("Erro ao verificar limite de itens:", err);
+    return res.status(500).json({
+      message: "Erro interno ao verificar limite de itens.",
     });
   }
-
-  return next();
 }
