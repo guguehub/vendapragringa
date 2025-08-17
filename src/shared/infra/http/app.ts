@@ -32,6 +32,7 @@ app.use(routes);
 // Errors do Celebrate
 app.use(errors());
 
+
 // Tratamento de erros
 app.use(
   (error: Error, request: Request, response: Response, next: NextFunction) => {

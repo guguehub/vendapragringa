@@ -34,6 +34,9 @@ class User {
   @OneToMany(() => Item, item => item.user)
   items?: Item[];
 
+  @Column({ default: false })
+  hasUsedFreeScrap: boolean;
+
   @CreateDateColumn()
   created_at: Date;
 

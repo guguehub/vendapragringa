@@ -13,6 +13,7 @@ import savedItemsRouter from '@modules/saved-items/infra/http/routes/saved-item.
 import itemsRouter from '@modules/item/infra/http/routes/items.routes';
 import testRouter from '@modules/users/infra/http/routes/tester.routes';
 import { scrapRoutes } from '@modules/scrap/infra/http/routes/scrap.routes';
+import scrapDevRouter from '@modules/scrap/infra/http/routes/scrapDev.routes';
 
 const routes = Router();
 
@@ -26,7 +27,12 @@ routes.use('/profile', profileRouter);
 routes.use('scrapy', scrapyRouter);
 routes.use('/shipping', shippingRoutes);
 routes.use('/items', itemsRouter);
-routes.use("/scrap", scrapRoutes);
+// ROTAS DE SCRAP
+// scrap/once -> pode ser usado sem login, mas outras rotas podem exigir auth
+routes.use('/scrap', scrapRoutes);
+
+// ROTAS DE DEV (não deve ir para prod)
+routes.use('/scrap-dev', scrapDevRouter);
 
 
 routes.get('/area-prata', ensureTier(SubscriptionTier.SILVER), (req, res) => {
