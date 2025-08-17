@@ -184,13 +184,13 @@ export async function processUrls(urls: string[]) {
 // URLs para testar
 const urls = [
   'https://produto.mercadolivre.com.br/MLB-2197404989',
+  'https://www.mercadolivre.com.br/cd-jonnata-doll-e-garotos-solventes-crocodilo-2016-sem-uso/up/MLBU1412331913#polycard_client=search-nordic&searchVariation=MLBU1412331913&wid=MLB1980905943&position=1&search_layout=grid&type=product&tracking_id=277d54e2-291e-4ae5-8b4f-cfafd14d3824&sid=search' ,
   'https://www.mercadolivre.com.br/lp-explorations-bill-evans-trio/up/MLBU1481610204',
   'https://produto.mercadolivre.com.br/MLB-4225368926',
   'https://www.mercadolivre.com.br/cd-tool--undertow--1993/up/MLBU1095682064?pdp_filters=item_id:MLB1615267043#position=16&search_layout=grid&type=item&tracking_id=1a1e374c-5d2d-46ac-8584-5935122b937b',
   'https://produto.mercadolivre.com.br/MLB-2138286985-boneco-transformers-estrela-antigo-saltman-1986-_JM#position=12&search_layout=grid&type=item&tracking_id=92d515e3-543a-4834-a125-666721600d16',
   'https://www.mercadolivre.com.br/cd-tool--undertow--1993/up/MLBU1095682064?pdp_filters=item_id:MLB1615267043#position=16&search_layout=grid&type=item&tracking_id=1a1e374c-5d2d-46ac-8584-5935122b937b',
   'https://produto.mercadolivre.com.br/MLB-2115545019-fonte-de-alimentaco-para-karaoke-vmp-3700-ou-3700-plus-_JM#polycard_client=recommendations_home_navigation-recommendations&reco_backend=machinalis-homes-univb-equivalent-offer&reco_client=home_navigation-recommendations&reco_item_pos=2&reco_backend_type=function&reco_id=fa9a43e9-9243-40b9-b1ac-41dacb7b2835&c_id=/home/navigation-recommendations/element&c_uid=621d89a6-1728-4d9a-99ff-796684ffe85b',
-  //neymar
   'https://produto.mercadolivre.com.br/MLB-5190895718-prizm-card-neymar-jr-copa-mundo-2014-psa-9-_JM?searchVariation=182308606698#polycard_client=search-nordic&searchVariation=182308606698&position=5&search_layout=grid&type=item&tracking_id=8fa41ef2-16fc-4aaf-8661-188bb6bcac0d',
   'https://produto.mercadolivre.com.br/MLB-2714357958-ckl-5112-lp-12-polegadas-musica-chinesa-vinil-colorido-18314-_JM#polycard_client=search-nordic&position=47&search_layout=grid&type=item&tracking_id=cca03f4e-c6c5-4149-9646-8c72fe8c7bec&wid=MLB2714357958&sid=search',
 ];

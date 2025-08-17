@@ -10,22 +10,16 @@
     "typeorm:migration:run": "ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/shared/infra/typeorm/data-source.ts migration:run",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/shared/infra/typeorm/data-source.ts",
     "typeorm:migration:container": "PG_HOST=db REDIS_HOST=redis APP_API_URL=localhost:3333 ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/shared/infra/typeorm/data-source.ts",
-
-  "dev:docker": "docker compose down && docker compose up",
-
-    "dev:getin" : "docker exec -it apivendas-app bash",
-
-  "dev:container": "ts-node -r tsconfig-paths/register --transpile-only src/shared/infra/http/server.ts",
-
-
-  "pgcli": "docker exec -it apivendas-db psql -U postgres -d apivendas",
+    "dev:docker": "docker compose down && docker compose up",
+    "dev:getin": "docker exec -it apivendas-app bash",
+    "dev:container": "ts-node -r tsconfig-paths/register --transpile-only src/shared/infra/http/server.ts",
+    "pgcli": "docker exec -it apivendas-db psql -U postgres -d apivendas",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
     "test": "jest",
     "check:ts": "tsc --noEmit",
     "tsc:watch": "tsc --noEmit --watch",
-      "dev:check": "tsc --noEmit && yarn dev:watch",
-
+    "dev:check": "tsc --noEmit && yarn dev:watch",
     "check-schema": "ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js schema:log -d src/shared/infra/typeorm/data-source.ts",
     "seed:shipping": "ts-node-dev -r tsconfig-paths/register src/shared/infra/typeorm/seed/index.ts"
   },
@@ -33,6 +27,7 @@
     "@types/bcryptjs": "^2.4.5",
     "@types/cors": "^2.8.15",
     "@types/express": "^4.17.20",
+    "@types/express-session": "^1.18.2",
     "@types/ioredis": "4.28.10",
     "@types/jest": "^29.5.12",
     "@types/joi": "^17.2.3",
@@ -67,6 +62,7 @@
     "dotenv": "8.2.0",
     "express": "4.17.1",
     "express-async-errors": "3.1.1",
+    "express-session": "^1.18.2",
     "handlebars": "^4.7.8",
     "ioredis": "^5.4.1",
     "jsonwebtoken": "^8.5.1",

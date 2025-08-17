@@ -51,7 +51,8 @@ export class MercadoLivreScraper implements IScraperService {
         "unknown";
 
       // ID do item extraído da URL
-      const itemId = url.match(/ML[B|A|M|U|C]\d+/)?.[0] || null;
+      const itemId = url.match(/ML[BUAMC]\d+/i)?.[0] || null;
+
 
       return {
         title,

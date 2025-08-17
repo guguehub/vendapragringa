@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { ScrapOrchestratorService } from '@modules/scrap/services/ScrapOrchestratorService';
 import identifyUser from '@shared/infra/http/middlewares/identifyUser';
 import isAuthenticated from '@shared/infra/http/middlewares/isAuthenticated';
-import CheckUserItemLimitMiddleware from '@shared/infra/http/middlewares/CheckUserItemLimitMiddleware';
+import { CheckUserItemLimitMiddleware } from '@shared/infra/http/middlewares/CheckUserItemLimitMiddleware';
 
 const scrapRoutes = Router();
 const orchestrator = new ScrapOrchestratorService();
