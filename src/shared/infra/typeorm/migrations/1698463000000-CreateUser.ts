@@ -29,6 +29,16 @@ export class CreateUser1698463000000 implements MigrationInterface {
             type: 'varchar',
           },
           {
+          name: 'hasUsedFreeScrap',
+          type: 'boolean',
+          default: false,
+          },
+          {
+          name: 'is_admin',
+          type: 'boolean',
+          default: false,
+          },
+          {
             name: 'created_at',
             type: 'timestamp with time zone',
             default: 'now()',

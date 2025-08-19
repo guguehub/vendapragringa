@@ -24,6 +24,8 @@ export class ScrapOrchestratorService {
         console.log(`[CACHE HIT] URL já raspada: ${url}`);
       } else {
         console.log(`[CACHE MISS] Raspando URL: ${url}`);
+            console.log("[SCRAP RESULT]", results[0]); // 🔥 aqui mostra no terminal
+
         item = await this.scraper.scrape(url);
 
         // Salva no cache com TTL 12h

@@ -56,8 +56,8 @@ class Item {
   @Column('int', { nullable: true })
   ebay_shipping_weight_grams: number;
 
-  @Column({ nullable: true })
-  ebay_category: string;
+ // @Column({ nullable: true })
+//ebay_category: string;
 
   // ----- Links -----
 

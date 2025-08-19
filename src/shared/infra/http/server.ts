@@ -1,5 +1,7 @@
 import 'reflect-metadata';
 import 'dotenv/config';
+import expressListEndpoints from 'express-list-endpoints';
+
 import { app } from './app';
 //import { dataSource } from '../typeorm/';
 import dataSource from '../typeorm/data-source';
@@ -11,4 +13,6 @@ dataSource.initialize().then(() => {
     );
   });
 });
+console.log(expressListEndpoints(app));
+
 export default dataSource;

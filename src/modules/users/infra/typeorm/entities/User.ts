@@ -9,8 +9,8 @@ import {
 
 import { Subscription } from '../../../../subscriptions/infra/typeorm/entities/Subscription';
 import { SavedItem } from '../../../../saved-items/infra/typeorm/entities/SavedItem';
-//import Item from '@modules/item/infra/typeorm/entities/Item';
 import Item from '../../../../item/infra/typeorm/entities/Item';
+
 @Entity('users')
 class User {
   @PrimaryGeneratedColumn('uuid')
@@ -34,8 +34,13 @@ class User {
   @OneToMany(() => Item, item => item.user)
   items?: Item[];
 
+  // 🔹 Flag dev/teste para controle de scrap gratuito
   @Column({ default: false })
   hasUsedFreeScrap: boolean;
+
+  // 🔹 Controle de administrador
+  @Column({ default: false })
+  is_admin: boolean;
 
   @CreateDateColumn()
   created_at: Date;

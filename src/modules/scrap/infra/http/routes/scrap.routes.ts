@@ -56,4 +56,4 @@ scrapRoutes.get(
   },
 );
 
-export { scrapRoutes };
+export default scrapRoutes ;
