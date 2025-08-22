@@ -2,7 +2,7 @@
 
 interface IUpdateItem {
   id: string;               // obrigatório para identificar qual item atualizar
-  name?: string;            // campos opcionais para atualização
+  title?: string;            // campos opcionais para atualização
   description?: string;
   price?: number;
   // outros campos que podem ser atualizados, todos opcionais

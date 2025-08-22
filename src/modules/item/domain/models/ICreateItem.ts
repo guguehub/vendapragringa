@@ -1,5 +1,5 @@
 export interface ICreateItem {
-  name: string;
+  title: string;
   price: number;
   description?: string;
   external_id?: string;

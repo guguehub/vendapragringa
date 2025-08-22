@@ -1,6 +1,6 @@
 export interface IListItem {
   id: string;
-  name: string;
+  title: string;
   description?: string;
   price: number;
   user_id: string;

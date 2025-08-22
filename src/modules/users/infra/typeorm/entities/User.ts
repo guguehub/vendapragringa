@@ -9,7 +9,7 @@ import {
 
 import { Subscription } from '../../../../subscriptions/infra/typeorm/entities/Subscription';
 import { SavedItem } from '../../../../saved-items/infra/typeorm/entities/SavedItem';
-import Item from '../../../../item/infra/typeorm/entities/Item';
+import UserItem from '@modules/user_items/infra/typeorm/entities/User_Items';
 
 @Entity('users')
 class User {
@@ -31,8 +31,8 @@ class User {
   @OneToMany(() => SavedItem, item => item.user)
   savedItems?: SavedItem[];
 
-  @OneToMany(() => Item, item => item.user)
-  items?: Item[];
+  @OneToMany(() => UserItem, userItem => userItem.user)
+  userItems?: UserItem[];
 
   // 🔹 Flag dev/teste para controle de scrap gratuito
   @Column({ default: false })

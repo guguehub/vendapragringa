@@ -28,12 +28,12 @@ export default class ItemsController {
 
   public async create(request: Request, response: Response): Promise<Response> {
   const user_id = request.user.id;
-  const { name, description, price} = request.body;
+  const { title, description, price} = request.body;
 
   const createItem = container.resolve(CreateItemService);
 
   const item = await createItem.execute(user_id, {
-    name,
+    title,
     description,
     price
 
@@ -43,14 +43,14 @@ export default class ItemsController {
 }
 
   public async update(request: Request, response: Response): Promise<Response> {
-    const { name, description, price } = request.body;
+    const { title, description, price } = request.body;
     const { id } = request.params;
 
     const updateItem = container.resolve(UpdateItemService);
 
     const item = await updateItem.execute({
       id,
-      name,
+      title,
       description,
       price,
 

@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import AppDataSource from "@shared/infra/typeorm/data-source";
-import Item from "@modules/item/infra/typeorm/entities/Item";
+import UserItem from "@modules/user_items/infra/typeorm/entities/User_Items";
 import { Subscription } from "@modules/subscriptions/infra/typeorm/entities/Subscription";
+import { In, IsNull } from "typeorm";
 
 const tierLimits: Record<string, number> = {
   free: 4,
@@ -10,19 +11,26 @@ const tierLimits: Record<string, number> = {
   gold: 150,
 };
 
+// Está assumindo que import_stage ativo = 'ready', 'listed', 'sold'
+const activeImportStages: ( 'ready' | 'listed' | 'sold')[] = [
+  "ready",
+  "listed",
+  "sold",
+];
+
 export async function CheckUserItemLimitMiddleware(
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<Response | void> {
-  const userId = req.user?.id; // precisa do identifyUser + isAuthenticated antes
+  const userId = req.user?.id;
 
   if (!userId) {
     return res.status(401).json({ message: "Usuário não autenticado." });
   }
 
   try {
-    const itemRepository = AppDataSource.getRepository(Item);
+    const userItemRepository = AppDataSource.getRepository(UserItem);
     const subscriptionRepository = AppDataSource.getRepository(Subscription);
 
     const subscription = await subscriptionRepository.findOne({
@@ -33,8 +41,12 @@ export async function CheckUserItemLimitMiddleware(
     const tier = subscription?.tier ?? "free";
     const limit = tierLimits[tier] ?? tierLimits.free;
 
-    const userItemsCount = await itemRepository.count({
-      where: { user: { id: userId } },
+    // Conta itens do usuário que estão em import_stage ativo e sync_status 'active' ou null
+    const userItemsCount = await userItemRepository.count({
+      where: [
+        { userId, import_stage: In(activeImportStages), sync_status: "active" },
+        { userId, import_stage: In(activeImportStages), sync_status: IsNull() },
+      ],
     });
 
     if (userItemsCount >= limit) {

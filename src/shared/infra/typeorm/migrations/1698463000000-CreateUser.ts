@@ -15,39 +15,13 @@ export class CreateUser1698463000000 implements MigrationInterface {
             generationStrategy: 'uuid',
             default: 'uuid_generate_v4()',
           },
-          {
-            name: 'name',
-            type: 'varchar',
-          },
-          {
-            name: 'email',
-            type: 'varchar',
-            isUnique: true,
-          },
-          {
-            name: 'password',
-            type: 'varchar',
-          },
-          {
-          name: 'hasUsedFreeScrap',
-          type: 'boolean',
-          default: false,
-          },
-          {
-          name: 'is_admin',
-          type: 'boolean',
-          default: false,
-          },
-          {
-            name: 'created_at',
-            type: 'timestamp with time zone',
-            default: 'now()',
-          },
-          {
-            name: 'updated_at',
-            type: 'timestamp with time zone',
-            default: 'now()',
-          },
+          { name: 'name', type: 'varchar' },
+          { name: 'email', type: 'varchar', isUnique: true },
+          { name: 'password', type: 'varchar' },
+          { name: 'hasUsedFreeScrap', type: 'boolean', default: false },
+          { name: 'is_admin', type: 'boolean', default: false },
+          { name: 'created_at', type: 'timestamp with time zone', default: 'now()' },
+          { name: 'updated_at', type: 'timestamp with time zone', default: 'now()' },
         ],
       }),
     );

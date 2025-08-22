@@ -28,7 +28,7 @@ itemsRouter.post(
   CheckUserItemLimitMiddleware,
   celebrate({
     [Segments.BODY]: {
-      name: Joi.string().required(),
+      title: Joi.string().required(),
       price: Joi.number().precision(2).required(),
       quantity: Joi.number().required(),
     },
@@ -40,17 +40,6 @@ itemsRouter.post(
 itemsRouter.put(
   '/:id',
   isAuthenticated,
-  celebrate({
-    [Segments.BODY]: {
-      name: Joi.string().required(),
-      price: Joi.number().precision(2).required(),
-      quantity: Joi.number().required(),
-    },
-    [Segments.PARAMS]: {
-      id: Joi.string().uuid().required(),
-    },
-  }),
-  itemsController.update
 );
 
 // Deletar item

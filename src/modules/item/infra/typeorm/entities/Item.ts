@@ -8,15 +8,16 @@ import {
   JoinColumn,
 } from 'typeorm';
 import Supplier from '../../../../suppliers/infra/typeorm/entities/Supplier';
-import User from '../../../../users/infra/typeorm/entities/User';
 
 @Entity('items')
 class Item {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  // ----- Campos Gerais do Item -----
+
   @Column()
-  name: string;
+  title: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
@@ -25,58 +26,26 @@ class Item {
   description: string;
 
   @Column({ nullable: true })
-  external_id: string;
+  external_id: string; // ID no marketplace (ML, OLX...)
 
   @Column({ nullable: true })
-  marketplace: string;
+  marketplace: string; // "mercadolivre" | "olx" | "shopee" ...
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   shipping_price: number;
 
   @Column({ nullable: true })
-  status: string;
-
-  @Column({ type: 'boolean', nullable: true })
-  is_listed_on_ebay: boolean | null;
-
-  // ----- eBay Specific Fields -----
-
-  @Column({ nullable: true })
-  ebay_title: string;
-
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  ebay_offer_value_usd: number;
-
-  @Column({ type: 'boolean', nullable: true, default: false })
-  is_offer_enabled: boolean;
-
-  @Column({ type: 'boolean', nullable: true, default: false })
-  is_campaign_enabled: boolean;
-
-  @Column('int', { nullable: true })
-  ebay_shipping_weight_grams: number;
-
- // @Column({ nullable: true })
-//ebay_category: string;
+  status: string; // ex: "active", "paused", "sold_out"
 
   // ----- Links -----
 
   @Column({ nullable: true })
-  ml_link: string;
-
-  @Column({ nullable: true })
-  ebay_link: string;
+  item_link: string;
 
   // ----- Metadata -----
 
-  @Column('text', { nullable: true })
-  notes: string;
-
   @Column({ type: 'timestamp', nullable: true })
   last_scraped_at: Date;
-
-  @Column({ nullable: true })
-  tags: string; // comma-separated tags
 
   @Column({ type: 'text', nullable: true })
   images: string; // JSON stringified array of URLs
@@ -88,36 +57,12 @@ class Item {
   })
   import_stage: 'draft' | 'pending' | 'ready' | 'listed' | 'sold';
 
-  // ----- Finance Fields -----
-
-  @Column('decimal', { precision: 5, scale: 2, default: 13.25 })
-  ebay_fee_percent: number;
-
-  @Column({ type: 'boolean', default: false })
-  use_custom_fee_percent: boolean;
-
-  @Column('decimal', { precision: 5, scale: 2, nullable: true })
-  custom_fee_percent: number;
+  // ----- Finance Básico -----
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  ebay_fees_usd: number;
+  item_shipping_cost_brl: number;
 
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  sale_value_usd: number;
-
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  exchange_rate: number;
-
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  received_brl: number;
-
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  item_profit_brl: number;
-
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  ml_shipping_cost_brl: number;
-
-  // ----- State / Control -----
+  // ----- Estado / Controle -----
 
   @Column({ type: 'boolean', default: true })
   is_draft: boolean;
@@ -134,31 +79,16 @@ class Item {
   @JoinColumn({ name: 'supplier_id' })
   supplier?: Supplier;
 
-  @ManyToOne(() => User, user => user.items)
-  @JoinColumn({ name: 'user_id' })
-  user: User;
-
-  @Column()
-  user_id: string;
-
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'user_created_id' })
-  createdBy?: User;
-
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'user_updated_id' })
-  updatedBy?: User;
-
-  @Column({ type: 'boolean', default: false })
-  is_favorite: boolean;
-
-
-
+  // ----- Metadata -----
 
   @CreateDateColumn()
   created_at: Date;
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @Column({ default: 'system' })
+  created_by: string;
 }
+
 export default Item;
