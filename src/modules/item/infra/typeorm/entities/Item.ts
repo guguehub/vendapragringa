@@ -5,17 +5,18 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
 import Supplier from '../../../../suppliers/infra/typeorm/entities/Supplier';
+import UserItem from '@modules/user_items/infra/typeorm/entities/UserItems';
 
 @Entity('items')
 class Item {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // ----- Campos Gerais do Item -----
-
+  // ----- Campos Gerais -----
   @Column()
   title: string;
 
@@ -23,64 +24,53 @@ class Item {
   price: number;
 
   @Column({ nullable: true })
-  description: string;
+  description?: string;
 
   @Column({ nullable: true })
-  external_id: string; // ID no marketplace (ML, OLX...)
+  external_id?: string; // ID no marketplace (ML, OLX...)
 
   @Column({ nullable: true })
-  marketplace: string; // "mercadolivre" | "olx" | "shopee" ...
+  marketplace?: string; // "mercadolivre" | "olx" | "shopee" ...
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  shipping_price: number;
+  shipping_price?: number;
+
+  @Column({ default: 'ready' })
+  status: string; // "ready" | "listed" | "sold"
 
   @Column({ nullable: true })
-  status: string; // ex: "active", "paused", "sold_out"
-
-  // ----- Links -----
-
-  @Column({ nullable: true })
-  item_link: string;
-
-  // ----- Metadata -----
+  item_link?: string;
 
   @Column({ type: 'timestamp', nullable: true })
-  last_scraped_at: Date;
+  last_scraped_at?: Date;
 
   @Column({ type: 'text', nullable: true })
-  images: string; // JSON stringified array of URLs
+  images?: string; // JSON string array
 
-  @Column({
-    type: 'varchar',
-    nullable: false,
-    default: 'draft',
-  })
+  @Column({ default: 'draft' })
   import_stage: 'draft' | 'pending' | 'ready' | 'listed' | 'sold';
 
-  // ----- Finance Básico -----
-
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  item_shipping_cost_brl: number;
+  item_shipping_cost_brl?: number;
 
-  // ----- Estado / Controle -----
-
-  @Column({ type: 'boolean', default: true })
+  @Column({ default: true })
   is_draft: boolean;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ default: false })
   is_synced: boolean;
 
   // ----- Relacionamentos -----
-
-  @Column({ name: 'supplier_id', nullable: true })
+  @Column({ name: 'supplier_id', type: 'uuid', nullable: true })
   supplierId?: string;
 
   @ManyToOne(() => Supplier, supplier => supplier.items, { nullable: true })
   @JoinColumn({ name: 'supplier_id' })
   supplier?: Supplier;
 
-  // ----- Metadata -----
+  @OneToMany(() => UserItem, userItem => userItem.item)
+  userItems?: UserItem[];
 
+  // ----- Metadata -----
   @CreateDateColumn()
   created_at: Date;
 

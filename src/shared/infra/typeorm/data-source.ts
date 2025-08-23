@@ -16,6 +16,7 @@ import ShippingZone from '../../../modules/shipping/infra/typeorm/entities/Shipp
 import ShippingWeight from '../../../modules/shipping/infra/typeorm/entities/ShippingWeight';
 import ShippingPrice from '../../../modules/shipping/infra/typeorm/entities/ShippingPrice';
 import ShippingZoneCountry from '../../../modules/shipping/infra/typeorm/entities/ShippingZoneCountry';
+import UserItem from '@modules/user_items/infra/typeorm/entities/UserItems';
 
 console.log('🌐 Env vars (verificação):', {
   host: process.env.TYPEORM_HOST,
@@ -37,6 +38,7 @@ const dataSource = new DataSource({
     User,
     UserToken,
     SavedItem,
+    UserItem,
     Product,
     Item,
     Supplier,

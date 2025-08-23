@@ -5,6 +5,7 @@ export interface IUserItem {
   import_stage: 'draft' | 'pending' | 'ready' | 'listed' | 'sold';
   sync_status?: 'active' | 'paused' | 'sold_out';
   notes?: string;
+  quantity: number;
 
   // Finance
   ebay_fee_percent?: number;

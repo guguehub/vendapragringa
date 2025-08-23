@@ -10,6 +10,7 @@ import {
 import Item from '@modules/item/infra/typeorm/entities/Item';
 import User from '../../../../users/infra/typeorm/entities/User';
 
+
 @Entity('user_items')
 class UserItem {
   @PrimaryGeneratedColumn('uuid')
@@ -29,6 +30,9 @@ class UserItem {
   @ManyToOne(() => Item)
   @JoinColumn({ name: 'item_id' })
   item: Item;
+
+  @Column({ type: 'int', default: 1 }) // ou nullable: false
+quantity: number;
 
   // ----- eBay Specific -----
   @Column({ nullable: true })

@@ -9,7 +9,7 @@ import {
 
 import { Subscription } from '../../../../subscriptions/infra/typeorm/entities/Subscription';
 import { SavedItem } from '../../../../saved-items/infra/typeorm/entities/SavedItem';
-import UserItem from '@modules/user_items/infra/typeorm/entities/User_Items';
+import UserItem from '@modules/user_items/infra/typeorm/entities/UserItems';
 
 @Entity('users')
 class User {
@@ -30,6 +30,7 @@ class User {
 
   @OneToMany(() => SavedItem, item => item.user)
   savedItems?: SavedItem[];
+  //considerado redundante abaixo
 
   @OneToMany(() => UserItem, userItem => userItem.user)
   userItems?: UserItem[];

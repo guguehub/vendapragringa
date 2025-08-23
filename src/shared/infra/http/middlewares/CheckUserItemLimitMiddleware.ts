@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import AppDataSource from "@shared/infra/typeorm/data-source";
-import UserItem from "@modules/user_items/infra/typeorm/entities/User_Items";
+import UserItem from "@modules/user_items/infra/typeorm/entities/UserItems";
 import { Subscription } from "@modules/subscriptions/infra/typeorm/entities/Subscription";
 import { In, IsNull } from "typeorm";
 

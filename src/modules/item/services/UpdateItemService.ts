@@ -2,7 +2,7 @@ import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
 import Item from '@modules/item/infra/typeorm/entities/Item';
-import { IUpdateItem } from '@modules/item/domain/models/IUpdateItem';
+import { IUpdateItem } from '../domain/models/IUpdateItems';
 
 @injectable()
 class UpdateItemService {
