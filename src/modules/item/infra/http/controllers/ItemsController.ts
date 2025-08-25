@@ -27,12 +27,15 @@ export default class ItemsController {
 }
 
   public async create(request: Request, response: Response): Promise<Response> {
-  const user_id = request.user.id;
-  const { title, description, price} = request.body;
+if (!request.user) {
+  return response.status(401).json({ error: 'Unauthorized' });
+}
+
+const userId = request.user.id;  const { title, description, price} = request.body;
 
   const createItem = container.resolve(CreateItemService);
 
-  const item = await createItem.execute(user_id, {
+  const item = await createItem.execute(userId, {
     title,
     description,
     price

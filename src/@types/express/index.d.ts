@@ -11,7 +11,8 @@ declare global {
       };
       session?: {
         scrapedOnce?: boolean;
-        // outras propriedades futuras
+        // outras propriedades que podemos adicionar futuramente
+        [key: string]: any; // flexibilidade controlada
       };
     }
   }

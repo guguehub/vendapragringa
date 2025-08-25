@@ -16,7 +16,7 @@ class Item {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // ----- Campos Gerais -----
+  // ----- Dados do Item (cru do scraper) -----
   @Column()
   title: string;
 
@@ -47,18 +47,6 @@ class Item {
   @Column({ type: 'text', nullable: true })
   images?: string; // JSON string array
 
-  @Column({ default: 'draft' })
-  import_stage: 'draft' | 'pending' | 'ready' | 'listed' | 'sold';
-
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  item_shipping_cost_brl?: number;
-
-  @Column({ default: true })
-  is_draft: boolean;
-
-  @Column({ default: false })
-  is_synced: boolean;
-
   // ----- Relacionamentos -----
   @Column({ name: 'supplier_id', type: 'uuid', nullable: true })
   supplierId?: string;
@@ -67,6 +55,9 @@ class Item {
   @JoinColumn({ name: 'supplier_id' })
   supplier?: Supplier;
 
+  // 🔹 Essa relação pode ficar ou sair, depende:
+  // - Se você vai precisar acessar userItems a partir de items → mantenha.
+  // - Se não, pode remover.
   @OneToMany(() => UserItem, userItem => userItem.item)
   userItems?: UserItem[];
 

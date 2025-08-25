@@ -25,7 +25,6 @@ class CreateItemService {
 
     const item = await this.itemsRepository.create({
       ...data,
-      user_id,
     });
 
     return item;
