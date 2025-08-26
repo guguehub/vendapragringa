@@ -28,7 +28,7 @@ class ItemsRepository implements IItemsRepository {
 
   public async findByUserId(userId: string): Promise<Item[]> {
   return this.ormRepository.find({
-    where: { user_id: userId }, // aqui usa o nome correto da coluna
+    where: { userId: userId }, // aqui usa o nome correto da coluna
     relations: ['supplier'],
   });
 }
