@@ -6,6 +6,8 @@ export interface IUser {
   email: string;
   password: string;
   avatar?: string;
+  hasUsedFreeScrap: boolean ;
+  is_admin: boolean | undefined;
 
   items?: IItem[]; // Items associated with the user
   created_at: Date;

@@ -12,6 +12,8 @@ import { ISavedItemsRepository } from '@modules/saved-items/domain/repositories/
 import { SavedItemsRepository } from '@modules/saved-items/infra/typeorm/repositories/SavedItemsRepository';
 import ItemsRepository from '@modules/item/infra/typeorm/repositories/ItemsRepository';
 import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
+import { ItemScrapeLogRepository } from '@modules/item_scrape_log/infra/typeorm/repositories/ItemScrapeLogRepository';
+import { IItemScrapeLogRepository } from '@modules/item_scrape_log/domain/repositories/IItemScrapeLogRepository';
 
 container.registerSingleton<IProductsRepository>(
   'ProductsRepository',
@@ -34,4 +36,9 @@ container.registerSingleton<IItemsRepository>(
 container.registerSingleton<ISavedItemsRepository>(
   'SavedItemsRepository',
   SavedItemsRepository,
+);
+
+container.registerSingleton<IItemScrapeLogRepository>(
+  'ItemScrapeLogRepository',
+  ItemScrapeLogRepository,
 );

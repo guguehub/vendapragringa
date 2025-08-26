@@ -15,6 +15,7 @@ import testRouter from '@modules/users/infra/http/routes/tester.routes';
 import scrapRoutes from '@modules/scrap/infra/http/routes/scrap.routes';
 import scrapDevRouter from '@modules/scrap/infra/http/routes/scrapDev.routes';
 import userAdminRouter from '@modules/users/infra/http/routes/user.admin.routes'
+import itemScrapeLogRoutes from '@modules/item_scrape_log/infra/http/routes/itemScrapeLog.routes';
 
 const routes = Router();
 
@@ -34,6 +35,10 @@ routes.use('/items', itemsRouter);
 //console.log('>>> scrapDevRouter:', scrapDevRouter);
 // scrap/once -> pode ser usado sem login, mas outras rotas podem exigir auth
 routes.use('/scrap', scrapRoutes);
+
+// log de scrap
+routes.use('/items-scrap-log', itemScrapeLogRoutes);
+
 
 // ROTAS DE DEV (não deve ir para prod)
 routes.use('/scrap-dev', scrapDevRouter);

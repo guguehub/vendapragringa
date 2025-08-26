@@ -1,5 +1,7 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
+//import '@modules/item_scrape_log/providers'; // importa o provider para registrar no container
+
 
 // Entities
 import User from '../../../modules/users/infra/typeorm/entities/User';
@@ -9,6 +11,9 @@ import Supplier from '../../../modules/suppliers/infra/typeorm/entities/Supplier
 import Item from '../../../modules/item/infra/typeorm/entities/Item';
 import { SavedItem } from '../../../modules/saved-items/infra/typeorm/entities/SavedItem';
 import { Subscription } from '../../../modules/subscriptions/infra/typeorm/entities/Subscription';
+
+//Log
+import ItemScrapeLog from '@modules/item_scrape_log/infra/typeorm/entities/ItemScrapeLog';
 
 // Shipping entities
 import ShippingType from '../../../modules/shipping/infra/typeorm/entities/ShippingType';
@@ -43,6 +48,8 @@ const dataSource = new DataSource({
     Item,
     Supplier,
     Subscription,
+
+    ItemScrapeLog,
 
     // Shipping
     ShippingType,
