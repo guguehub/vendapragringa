@@ -9,7 +9,6 @@ import {
   JoinColumn,
 } from 'typeorm';
 import Supplier from '../../../../suppliers/infra/typeorm/entities/Supplier';
-import UserItem from '@modules/user_items/infra/typeorm/entities/UserItems';
 
 @Entity('items')
 class Item {
@@ -54,12 +53,6 @@ class Item {
   @ManyToOne(() => Supplier, supplier => supplier.items, { nullable: true })
   @JoinColumn({ name: 'supplier_id' })
   supplier?: Supplier;
-
-  // 🔹 Essa relação pode ficar ou sair, depende:
-  // - Se você vai precisar acessar userItems a partir de items → mantenha.
-  // - Se não, pode remover.
-  @OneToMany(() => UserItem, userItem => userItem.item)
-  userItems?: UserItem[];
 
   // ----- Metadata -----
   @CreateDateColumn()
