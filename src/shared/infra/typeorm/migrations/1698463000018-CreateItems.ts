@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableUnique } from 'typeorm';
 
 export class CreateItems1698463000018 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -12,10 +12,6 @@ export class CreateItems1698463000018 implements MigrationInterface {
             isPrimary: true,
             generationStrategy: 'uuid',
             default: 'uuid_generate_v4()',
-          },
-          {
-            name: 'user_id',
-            type: 'uuid',
           },
           {
             name: 'title',
@@ -33,20 +29,14 @@ export class CreateItems1698463000018 implements MigrationInterface {
             scale: 2,
           },
           {
-            name: 'currency',
-            type: 'varchar',
-            length: '3',
-            default: `'USD'`,
-          },
-          {
             name: 'external_id',
             type: 'varchar',
-            isNullable: true, // ID do marketplace (ML, OLX, Shopee etc.)
+            isNullable: true,
           },
           {
             name: 'marketplace',
             type: 'varchar',
-            isNullable: true, // "mercadolivre" | "olx" | "shopee" ...
+            isNullable: true,
           },
           {
             name: 'shipping_price',
@@ -59,7 +49,7 @@ export class CreateItems1698463000018 implements MigrationInterface {
             name: 'status',
             type: 'varchar',
             isNullable: false,
-            default: `'draft'`, // ["ready", "listed", "sold"]
+            default: `'ready'`,
           },
           {
             name: 'item_link',
@@ -74,25 +64,19 @@ export class CreateItems1698463000018 implements MigrationInterface {
           {
             name: 'images',
             type: 'text',
-            isNullable: true, // JSON string com array de URLs
+            isNullable: true,
           },
           {
             name: 'import_stage',
             type: 'varchar',
-            default: `'draft'`, // "draft" | "pending" | "ready" | "listed" | "sold"
-          },
-          {
-            name: 'item_shipping_cost_brl',
-            type: 'decimal',
-            precision: 10,
-            scale: 2,
-            isNullable: true,
+            isNullable: false,
+            default: `'draft'`,
           },
           {
             name: 'is_draft',
             type: 'boolean',
             isNullable: false,
-            default: true,
+            default: false,
           },
           {
             name: 'is_synced',
@@ -108,6 +92,7 @@ export class CreateItems1698463000018 implements MigrationInterface {
           {
             name: 'created_by',
             type: 'varchar',
+            isNullable: false,
             default: `'system'`,
           },
           {
@@ -123,14 +108,6 @@ export class CreateItems1698463000018 implements MigrationInterface {
         ],
         foreignKeys: [
           {
-            name: 'FKItemsUser',
-            referencedTableName: 'users',
-            referencedColumnNames: ['id'],
-            columnNames: ['user_id'],
-            onDelete: 'CASCADE',
-            onUpdate: 'CASCADE',
-          },
-          {
             name: 'FKItemsSupplier',
             referencedTableName: 'suppliers',
             referencedColumnNames: ['id'],
@@ -141,9 +118,18 @@ export class CreateItems1698463000018 implements MigrationInterface {
         ],
       }),
     );
+
+    await queryRunner.createUniqueConstraint(
+      'items',
+      new TableUnique({
+        name: 'UQ_items_external_marketplace',
+        columnNames: ['external_id', 'marketplace'],
+      }),
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropUniqueConstraint('items', 'UQ_items_external_marketplace');
     await queryRunner.dropTable('items');
   }
 }

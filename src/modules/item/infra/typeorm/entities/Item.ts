@@ -1,68 +1,82 @@
+// src/modules/items/infra/typeorm/entities/Item.ts
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne,
-  OneToMany,
-  JoinColumn,
+  Unique,
 } from 'typeorm';
-import Supplier from '../../../../suppliers/infra/typeorm/entities/Supplier';
+
+import Supplier from '@modules/suppliers/infra/typeorm/entities/Supplier';
 
 @Entity('items')
+@Unique(['externalId', 'marketplace']) // Garantia: um mesmo item não será duplicado para o mesmo marketplace
 class Item {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // ----- Dados do Item (cru do scraper) -----
+  /** Dados do item cru do scraper */
   @Column()
   title: string;
+
+  @Column({ type: 'text', nullable: true })
+  description?: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
 
-  @Column({ nullable: true })
-  description?: string;
+  @Column({ name: 'external_id', nullable: true })
+  externalId?: string;
 
   @Column({ nullable: true })
-  external_id?: string; // ID no marketplace (ML, OLX...)
+  marketplace?: string; // "mercadolivre" | "olx" | "shopee"
 
-  @Column({ nullable: true })
-  marketplace?: string; // "mercadolivre" | "olx" | "shopee" ...
-
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  shipping_price?: number;
+  @Column({
+    name: 'shipping_price',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+  })
+  shippingPrice?: number;
 
   @Column({ default: 'ready' })
-  status: string; // "ready" | "listed" | "sold"
+  status: string; // ready | listed | sold
 
-  @Column({ nullable: true })
-  item_link?: string;
+  @Column({ name: 'item_link', nullable: true })
+  itemLink?: string;
 
-  @Column({ type: 'timestamp', nullable: true })
-  last_scraped_at?: Date;
+  @Column({ name: 'last_scraped_at', type: 'timestamp', nullable: true })
+  lastScrapedAt?: Date;
 
   @Column({ type: 'text', nullable: true })
-  images?: string; // JSON string array
+  images?: string; // JSON string (ex: ["url1","url2"])
 
-  // ----- Relacionamentos -----
-  @Column({ name: 'supplier_id', type: 'uuid', nullable: true })
-  supplierId?: string;
+  @Column({ name: 'import_stage', default: 'draft' })
+  importStage: string;
 
+  @Column({ name: 'is_draft', default: false })
+  isDraft: boolean;
+
+  @Column({ name: 'is_synced', default: false })
+  isSynced: boolean;
+
+  /** Relações */
   @ManyToOne(() => Supplier, supplier => supplier.items, { nullable: true })
   @JoinColumn({ name: 'supplier_id' })
   supplier?: Supplier;
 
-  // ----- Metadata -----
-  @CreateDateColumn()
-  created_at: Date;
+  /** Metadata */
+  @Column({ name: 'created_by', default: 'system' })
+  createdBy: string;
 
-  @UpdateDateColumn()
-  updated_at: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
-  @Column({ default: 'system' })
-  created_by: string;
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }
-
 export default Item;

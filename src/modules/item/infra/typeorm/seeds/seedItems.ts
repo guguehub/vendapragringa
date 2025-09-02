@@ -16,7 +16,7 @@ const itemsSeed = [
     import_stage: 'draft',
   },
   {
-    userId: 'COLOQUE_O_ID_DE_UM_USUARIO_EXISTENTE',
+    userId: '7fdbc4f4-e041-4a1c-b42c-f5601c3c7ffa',
     title: 'Exemplo de Item 2',
     description: 'Descrição do item 2',
     price: 20.5,
@@ -31,7 +31,7 @@ export default async function seedItems() {
   await dataSource.initialize();
   const repo = dataSource.getRepository(Item);
   for (const item of itemsSeed) {
-    const exists = await repo.findOne({ where: { external_id: item.external_id } });
+    const exists = await repo.findOne({ where: { externalId: item.external_id } });
     if (!exists) {
       const newItem = repo.create(item);
       await repo.save(newItem);

@@ -1,14 +1,10 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableUnique } from 'typeorm';
 
-export class CreateUserItems1698463000100 implements MigrationInterface {
+export class CreateItems1698463000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Garante a extensão para UUIDs
-    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
-
-    // Cria a tabela user_items
     await queryRunner.createTable(
       new Table({
-        name: 'user_items',
+        name: 'items',
         columns: [
           {
             name: 'id',
@@ -18,88 +14,93 @@ export class CreateUserItems1698463000100 implements MigrationInterface {
             default: 'uuid_generate_v4()',
           },
           {
-            name: 'user_id',
-            type: 'uuid',
+            name: 'title',
+            type: 'varchar',
           },
           {
-            name: 'item_id',
-            type: 'uuid',
+            name: 'description',
+            type: 'text',
+            isNullable: true,
           },
           {
-            name: 'quantity',          // nova coluna
-            type: 'int',
-            default: 1,
+            name: 'price',
+            type: 'decimal',
+            precision: 10,
+            scale: 2,
+          },
+          {
+            name: 'external_id',
+            type: 'varchar',
+            isNullable: true,
+          },
+          {
+            name: 'marketplace',
+            type: 'varchar',
+            isNullable: true,
+          },
+          {
+            name: 'shipping_price',
+            type: 'decimal',
+            precision: 10,
+            scale: 2,
+            isNullable: true,
+          },
+          {
+            name: 'status',
+            type: 'varchar',
             isNullable: false,
+            default: `'ready'`,
+          },
+          {
+            name: 'item_link',
+            type: 'varchar',
+            isNullable: true,
+          },
+          {
+            name: 'last_scraped_at',
+            type: 'timestamp',
+            isNullable: true,
+          },
+          {
+            name: 'images',
+            type: 'text',
+            isNullable: true,
           },
           {
             name: 'import_stage',
             type: 'varchar',
+            isNullable: false,
             default: `'draft'`,
           },
           {
-            name: 'sync_status',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'notes',
-            type: 'text',
-            isNullable: true,
-          },
-          // Campos financeiros opcionais
-          {
-            name: 'ebay_fee_percent',
+            name: 'item_shipping_cost_brl',
             type: 'decimal',
-            precision: 5,
+            precision: 10,
             scale: 2,
             isNullable: true,
           },
           {
-            name: 'use_custom_fee_percent',
+            name: 'is_draft',
             type: 'boolean',
+            isNullable: false,
+            default: false,
+          },
+          {
+            name: 'is_synced',
+            type: 'boolean',
+            isNullable: false,
+            default: false,
+          },
+          {
+            name: 'supplier_id',
+            type: 'uuid',
             isNullable: true,
           },
           {
-            name: 'custom_fee_percent',
-            type: 'decimal',
-            precision: 5,
-            scale: 2,
-            isNullable: true,
-          },
-          {
-            name: 'ebay_fees_usd',
-            type: 'decimal',
-            precision: 10,
-            scale: 2,
-            isNullable: true,
-          },
-          {
-            name: 'sale_value_usd',
-            type: 'decimal',
-            precision: 10,
-            scale: 2,
-            isNullable: true,
-          },
-          {
-            name: 'exchange_rate',
-            type: 'decimal',
-            precision: 10,
-            scale: 2,
-            isNullable: true,
-          },
-          {
-            name: 'received_brl',
-            type: 'decimal',
-            precision: 10,
-            scale: 2,
-            isNullable: true,
-          },
-          {
-            name: 'item_profit_brl',
-            type: 'decimal',
-            precision: 10,
-            scale: 2,
-            isNullable: true,
+            name: 'created_by',
+            type: 'varchar',
+            isNullable: false,
+            default: `'system'`,
           },
           {
             name: 'created_at',
@@ -112,46 +113,30 @@ export class CreateUserItems1698463000100 implements MigrationInterface {
             default: 'now()',
           },
         ],
-      }),
-      true,
-    );
-
-    // FK para users
-    await queryRunner.createForeignKey(
-      'user_items',
-      new TableForeignKey({
-        columnNames: ['user_id'],
-        referencedColumnNames: ['id'],
-        referencedTableName: 'users',
-        onDelete: 'CASCADE',
+        foreignKeys: [
+          {
+            name: 'FKItemsSupplier',
+            referencedTableName: 'suppliers',
+            referencedColumnNames: ['id'],
+            columnNames: ['supplier_id'],
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE',
+          },
+        ],
       }),
     );
 
-    // FK para items
-    await queryRunner.createForeignKey(
-      'user_items',
-      new TableForeignKey({
-        columnNames: ['item_id'],
-        referencedColumnNames: ['id'],
-        referencedTableName: 'items',
-        onDelete: 'CASCADE',
+    await queryRunner.createUniqueConstraint(
+      'items',
+      new TableUnique({
+        name: 'UQ_items_external_marketplace',
+        columnNames: ['external_id', 'marketplace'],
       }),
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Drop FKs primeiro
-    const table = await queryRunner.getTable('user_items');
-    if (table) {
-      const foreignKeys = table.foreignKeys.filter(
-        fk => fk.columnNames.includes('user_id') || fk.columnNames.includes('item_id'),
-      );
-      for (const fk of foreignKeys) {
-        await queryRunner.dropForeignKey('user_items', fk);
-      }
-    }
-
-    // Drop tabela
-    await queryRunner.dropTable('user_items');
+    await queryRunner.dropUniqueConstraint('items', 'UQ_items_external_marketplace');
+    await queryRunner.dropTable('items');
   }
 }
