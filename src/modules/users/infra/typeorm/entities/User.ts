@@ -10,6 +10,7 @@ import {
 import { Subscription } from '../../../../subscriptions/infra/typeorm/entities/Subscription';
 import { SavedItem } from '../../../../saved-items/infra/typeorm/entities/SavedItem';
 import UserItem from '@modules/user_items/infra/typeorm/entities/UserItems';
+import Supplier from '@modules/suppliers/infra/typeorm/entities/Supplier';
 
 @Entity('users')
 class User {
@@ -25,13 +26,19 @@ class User {
   @Column()
   password: string;
 
+  // 🔹 Relacionamento: cada usuário pode ter vários suppliers (inclusive custom)
+  @OneToMany(() => Supplier, supplier => supplier.user)
+  suppliers: Supplier[];
+
+  // 🔹 Relacionamento: cada usuário pode ter várias assinaturas
   @OneToMany(() => Subscription, subscription => subscription.user)
   subscriptions?: Subscription[];
 
+  // 🔹 Relacionamento: itens salvos/favoritos pelo usuário
   @OneToMany(() => SavedItem, item => item.user)
   savedItems?: SavedItem[];
-  //considerado redundante abaixo
 
+  // 🔹 Relacionamento: itens custom/criados manualmente pelo usuário
   @OneToMany(() => UserItem, userItem => userItem.user)
   userItems?: UserItem[];
 

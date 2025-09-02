@@ -1,13 +1,7 @@
-import {
-  MigrationInterface,
-  QueryRunner,
-  Table,
-  TableForeignKey,
-} from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
 export class Suppliers1698463000010 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Create the suppliers table
     await queryRunner.createTable(
       new Table({
         name: 'suppliers',
@@ -25,64 +19,14 @@ export class Suppliers1698463000010 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'marketplace',
+            name: 'url',
             type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'external_id',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'email',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'link',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'website',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'address',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'city',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'state',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'country',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'zip_code',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'is_active',
-            type: 'boolean',
-            default: true,
-          },
-          {
-            name: 'userId',
-            type: 'uuid',
             isNullable: false,
+          },
+          {
+            name: 'user_id',
+            type: 'uuid',
+            isNullable: true, // null = supplier global
           },
           {
             name: 'created_at',
@@ -99,11 +43,10 @@ export class Suppliers1698463000010 implements MigrationInterface {
       true,
     );
 
-    // Create foreign key for userId
     await queryRunner.createForeignKey(
       'suppliers',
       new TableForeignKey({
-        columnNames: ['userId'],
+        columnNames: ['user_id'],
         referencedTableName: 'users',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
@@ -112,7 +55,6 @@ export class Suppliers1698463000010 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Drop the suppliers table
     await queryRunner.dropTable('suppliers');
   }
 }

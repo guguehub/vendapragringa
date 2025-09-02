@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table, TableUnique } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableUnique } from 'typeorm';
 
 export class CreateItems1698463000018 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -106,19 +106,24 @@ export class CreateItems1698463000018 implements MigrationInterface {
             default: 'now()',
           },
         ],
-        foreignKeys: [
-          {
-            name: 'FKItemsSupplier',
-            referencedTableName: 'suppliers',
-            referencedColumnNames: ['id'],
-            columnNames: ['supplier_id'],
-            onDelete: 'SET NULL',
-            onUpdate: 'CASCADE',
-          },
-        ],
+      }),
+      true,
+    );
+
+    // Foreign Key para supplier_id
+    await queryRunner.createForeignKey(
+      'items',
+      new TableForeignKey({
+        name: 'FKItemsSupplier',
+        columnNames: ['supplier_id'],
+        referencedTableName: 'suppliers',
+        referencedColumnNames: ['id'],
+        onDelete: 'SET NULL',
+        onUpdate: 'CASCADE',
       }),
     );
 
+    // Unique constraint: external_id + marketplace
     await queryRunner.createUniqueConstraint(
       'items',
       new TableUnique({
@@ -129,7 +134,16 @@ export class CreateItems1698463000018 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropUniqueConstraint('items', 'UQ_items_external_marketplace');
-    await queryRunner.dropTable('items');
+  await queryRunner.dropUniqueConstraint('items', 'UQ_items_external_marketplace');
+
+  const table = await queryRunner.getTable('items');
+  if (table) {
+    const foreignKey = table.foreignKeys.find(fk => fk.name === 'FKItemsSupplier');
+    if (foreignKey) {
+      await queryRunner.dropForeignKey('items', foreignKey);
+    }
+  }
+
+  await queryRunner.dropTable('items');
   }
 }

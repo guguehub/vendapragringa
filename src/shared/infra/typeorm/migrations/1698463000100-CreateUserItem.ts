@@ -1,10 +1,10 @@
-import { MigrationInterface, QueryRunner, Table, TableUnique } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
-export class CreateItems1698463000000 implements MigrationInterface {
+export class CreateUserItem1698463000100 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'items',
+        name: 'user_items',
         columns: [
           {
             name: 'id',
@@ -14,129 +14,67 @@ export class CreateItems1698463000000 implements MigrationInterface {
             default: 'uuid_generate_v4()',
           },
           {
-            name: 'title',
-            type: 'varchar',
-          },
-          {
-            name: 'description',
-            type: 'text',
-            isNullable: true,
-          },
-          {
-            name: 'price',
-            type: 'decimal',
-            precision: 10,
-            scale: 2,
-          },
-          {
-            name: 'external_id',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'marketplace',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'shipping_price',
-            type: 'decimal',
-            precision: 10,
-            scale: 2,
-            isNullable: true,
-          },
-          {
-            name: 'status',
-            type: 'varchar',
-            isNullable: false,
-            default: `'ready'`,
-          },
-          {
-            name: 'item_link',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'last_scraped_at',
-            type: 'timestamp',
-            isNullable: true,
-          },
-          {
-            name: 'images',
-            type: 'text',
-            isNullable: true,
-          },
-          {
-            name: 'import_stage',
-            type: 'varchar',
-            isNullable: false,
-            default: `'draft'`,
-          },
-          {
-            name: 'item_shipping_cost_brl',
-            type: 'decimal',
-            precision: 10,
-            scale: 2,
-            isNullable: true,
-          },
-          {
-            name: 'is_draft',
-            type: 'boolean',
-            isNullable: false,
-            default: false,
-          },
-          {
-            name: 'is_synced',
-            type: 'boolean',
-            isNullable: false,
-            default: false,
-          },
-          {
-            name: 'supplier_id',
+            name: 'user_id',
             type: 'uuid',
-            isNullable: true,
-          },
-          {
-            name: 'created_by',
-            type: 'varchar',
             isNullable: false,
-            default: `'system'`,
           },
           {
-            name: 'created_at',
-            type: 'timestamp',
-            default: 'now()',
+            name: 'item_id',
+            type: 'uuid',
+            isNullable: false,
           },
           {
-            name: 'updated_at',
-            type: 'timestamp',
-            default: 'now()',
+            name: 'quantity',
+            type: 'int',
+            default: 1,
           },
-        ],
-        foreignKeys: [
-          {
-            name: 'FKItemsSupplier',
-            referencedTableName: 'suppliers',
-            referencedColumnNames: ['id'],
-            columnNames: ['supplier_id'],
-            onDelete: 'SET NULL',
-            onUpdate: 'CASCADE',
-          },
+          // eBay Specific
+          { name: 'ebay_title', type: 'varchar', isNullable: true },
+          { name: 'ebay_link', type: 'varchar', isNullable: true },
+          { name: 'ebay_price', type: 'decimal', precision: 10, scale: 2, isNullable: true },
+          { name: 'ebay_shipping_weight_grams', type: 'int', isNullable: true },
+          { name: 'is_listed_on_ebay', type: 'boolean', isNullable: true },
+          { name: 'is_offer_enabled', type: 'boolean', isNullable: true },
+          { name: 'is_campaign_enabled', type: 'boolean', isNullable: true },
+          // Finance Custom
+          { name: 'ebay_fee_percent', type: 'decimal', precision: 5, scale: 2, isNullable: true },
+          { name: 'use_custom_fee_percent', type: 'boolean', isNullable: true },
+          { name: 'custom_fee_percent', type: 'decimal', precision: 5, scale: 2, isNullable: true },
+          { name: 'ebay_fees_usd', type: 'decimal', precision: 10, scale: 2, isNullable: true },
+          { name: 'sale_value_usd', type: 'decimal', precision: 10, scale: 2, isNullable: true },
+          { name: 'exchange_rate', type: 'decimal', precision: 10, scale: 2, isNullable: true },
+          { name: 'received_brl', type: 'decimal', precision: 10, scale: 2, isNullable: true },
+          { name: 'item_profit_brl', type: 'decimal', precision: 10, scale: 2, isNullable: true },
+          // Controle
+          { name: 'sync_status', type: 'varchar', isNullable: true },
+          { name: 'notes', type: 'text', isNullable: true },
+          { name: 'import_stage', type: 'varchar', isNullable: false, default: `'draft'` },
+          // Metadata
+          { name: 'created_at', type: 'timestamp', default: 'now()' },
+          { name: 'updated_at', type: 'timestamp', default: 'now()' },
         ],
       }),
+      true,
     );
 
-    await queryRunner.createUniqueConstraint(
-      'items',
-      new TableUnique({
-        name: 'UQ_items_external_marketplace',
-        columnNames: ['external_id', 'marketplace'],
+    // Criação das foreign keys
+    await queryRunner.createForeignKeys('user_items', [
+      new TableForeignKey({
+        columnNames: ['user_id'],
+        referencedTableName: 'users',
+        referencedColumnNames: ['id'],
+        onDelete: 'CASCADE',
       }),
-    );
+      new TableForeignKey({
+        columnNames: ['item_id'],
+        referencedTableName: 'items',
+        referencedColumnNames: ['id'],
+        onDelete: 'CASCADE',
+      }),
+    ]);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropUniqueConstraint('items', 'UQ_items_external_marketplace');
-    await queryRunner.dropTable('items');
+    await queryRunner.dropTable('user_items');
   }
 }

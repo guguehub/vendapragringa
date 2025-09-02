@@ -1,26 +1,36 @@
 import {
   Entity,
-  Column,
   PrimaryGeneratedColumn,
-  OneToMany,
+  Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
-import Item from '../../../../item/infra/typeorm/entities/Item';
+
+import Item from '@modules/item/infra/typeorm/entities/Item';
+import  User  from '@modules/users/infra/typeorm/entities/User';
 
 @Entity('suppliers')
 class Supplier {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
-  name: string; // e.g., 'mercado_livre', 'olx'
+  @Column()
+  name: string;
+
+  @Column()
+  url: string;
+
+  // Se for null → supplier global
+  // Se tiver valor → supplier custom de um user
+  @ManyToOne(() => User, user => user.suppliers, { nullable: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
+  user?: User;
 
   @Column({ nullable: true })
-  website?: string;
-
-  @Column({ nullable: true })
-  description?: string;
+  user_id?: string;
 
   @OneToMany(() => Item, item => item.supplier)
   items: Item[];
@@ -32,4 +42,4 @@ class Supplier {
   updated_at: Date;
 }
 
-export default Supplier;
+export default Supplier ;
