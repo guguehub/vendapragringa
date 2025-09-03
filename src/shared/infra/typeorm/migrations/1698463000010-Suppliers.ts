@@ -1,6 +1,11 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableForeignKey,
+} from 'typeorm';
 
-export class Suppliers1698463000010 implements MigrationInterface {
+export class CreateSuppliers1698463000010 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -26,7 +31,7 @@ export class Suppliers1698463000010 implements MigrationInterface {
           {
             name: 'user_id',
             type: 'uuid',
-            isNullable: true, // null = supplier global
+            isNullable: true,
           },
           {
             name: 'created_at',
@@ -40,12 +45,12 @@ export class Suppliers1698463000010 implements MigrationInterface {
           },
         ],
       }),
-      true,
     );
 
     await queryRunner.createForeignKey(
       'suppliers',
       new TableForeignKey({
+        name: 'FKSuppliersUser',
         columnNames: ['user_id'],
         referencedTableName: 'users',
         referencedColumnNames: ['id'],

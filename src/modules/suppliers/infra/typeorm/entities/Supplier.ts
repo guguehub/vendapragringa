@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 
 import Item from '@modules/item/infra/typeorm/entities/Item';
-import  User  from '@modules/users/infra/typeorm/entities/User';
+import User from '@modules/users/infra/typeorm/entities/User';
 
 @Entity('suppliers')
 class Supplier {
@@ -18,14 +18,17 @@ class Supplier {
   id: string;
 
   @Column()
-  name: string;
+  name: string; // Nome do fornecedor ou marketplace
 
   @Column()
-  url: string;
+  url: string; // URL principal do fornecedor/marketplace
 
   // Se for null → supplier global
-  // Se tiver valor → supplier custom de um user
-  @ManyToOne(() => User, user => user.suppliers, { nullable: true, onDelete: 'CASCADE' })
+  // Se tiver valor → supplier custom de um usuário
+  @ManyToOne(() => User, user => user.suppliers, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'user_id' })
   user?: User;
 
@@ -42,4 +45,4 @@ class Supplier {
   updated_at: Date;
 }
 
-export default Supplier ;
+export default Supplier;
