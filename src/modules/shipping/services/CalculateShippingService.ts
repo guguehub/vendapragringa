@@ -3,7 +3,7 @@ import { ICalculateShippingDTO } from '../../shipping/dtos/ICalculateShippingDTO
 import { IShippingTypeRepository } from '../../shipping/domain/repositories/IShippingTypeRepository';
 import { IShippingWeightRepository } from '../../shipping/domain/repositories/IShippingWeightRepository';
 import { IShippingPriceRepository } from '../../shipping/domain/repositories/IShippingPriceRepository';
-import { ShippingZoneCountryRepository } from '../../shipping/infra/typeorm/repositories/ShippingZoneCountryRepository';
+import { ShippingZoneCountryRepository } from '../infra/typeorm/repositories/ShippingZoneCountriesRepository';
 import { inject } from 'tsyringe';
 
 class CalculateShippingService {

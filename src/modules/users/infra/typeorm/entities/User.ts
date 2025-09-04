@@ -9,8 +9,8 @@ import {
 
 import { Subscription } from '../../../../subscriptions/infra/typeorm/entities/Subscription';
 import { SavedItem } from '../../../../saved-items/infra/typeorm/entities/SavedItem';
-import UserItem from '@modules/user_items/infra/typeorm/entities/UserItems';
-import Supplier from '@modules/suppliers/infra/typeorm/entities/Supplier';
+import UserItem from '../../../../user_items/infra/typeorm/entities/UserItems';
+import Supplier from '../../../../suppliers/infra/typeorm/entities/Supplier'
 
 @Entity('users')
 class User {

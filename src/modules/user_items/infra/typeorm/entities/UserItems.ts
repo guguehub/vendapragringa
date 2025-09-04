@@ -7,7 +7,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import Item from '@modules/item/infra/typeorm/entities/Item';
+//import Item from '@modules/item/infra/typeorm/entities/Item';
+import Item from '../../../../item/infra/typeorm/entities/Item'
 import User from '../../../../users/infra/typeorm/entities/User';
 
 

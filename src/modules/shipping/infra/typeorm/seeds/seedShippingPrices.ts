@@ -4,7 +4,7 @@ import { ShippingPricesRepository } from '@modules/shipping/infra/typeorm/reposi
 import { ShippingZonesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingZonesRepository';
 import { ShippingTypesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingTypesRepository';
 import { ShippingWeightsRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingWeightsRepository';
-import { ShippingZoneCountryRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingZoneCountryRepository';
+import { ShippingZoneCountryRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingZoneCountriesRepository';
 import { isRegionCode } from '@modules/shipping/utils/regionGroups';
 
 async function seedShippingPrices(dataSource: DataSource) {

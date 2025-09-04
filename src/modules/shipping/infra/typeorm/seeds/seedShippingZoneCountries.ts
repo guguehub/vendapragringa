@@ -1,63 +1,58 @@
 import { DataSource } from 'typeorm';
-import ShippingZone from '../entities/ShippingZone';
-import ShippingZoneCountry from '../entities/ShippingZoneCountry';
+import { ShippingZonesRepository } from '../repositories/ShippingZonesRepository';
+import { ShippingZoneCountriesRepository } from '../repositories/ShippingZoneCountriesRepository';
+import ShippingZoneCountries from '../entities/ShippingZoneCountries';
 
-export async function seedShippingZoneCountries(dataSource: DataSource): Promise<void> {
-  const zoneRepository = dataSource.getRepository(ShippingZone);
-  const zoneCountryRepository = dataSource.getRepository(ShippingZoneCountry);
+interface CountryAssociation {
+  countryCode: string; // Ex: 'BR', 'MX', 'US'
+  zoneCode: string;    // Código da zona existente: 'US', 'EU', etc.
+}
 
-  // Lista de países e suas zonas correspondentes
-  const data: Array<{ countryCode: string; zoneName: string }> = [
-    { countryCode: 'US', zoneName: 'EUA' },
-    { countryCode: 'PR', zoneName: 'EUA' },
-    { countryCode: 'GB', zoneName: 'Reino Unido' },
-    { countryCode: 'DE', zoneName: 'Alemanha' },
-    { countryCode: 'FR', zoneName: 'França' },
-    { countryCode: 'NL', zoneName: 'Holanda' },
-    { countryCode: 'ES', zoneName: 'Espanha' },
-    { countryCode: 'IT', zoneName: 'Itália' },
-    { countryCode: 'PT', zoneName: 'Europa' },
-    { countryCode: 'SE', zoneName: 'Europa' },
-    { countryCode: 'NO', zoneName: 'Europa' },
-    { countryCode: 'IE', zoneName: 'Europa' },
-    { countryCode: 'MX', zoneName: 'América Latina' },
-    { countryCode: 'AR', zoneName: 'América Latina' },
-    { countryCode: 'CL', zoneName: 'América Latina' },
-    { countryCode: 'BR', zoneName: 'América Latina' },
-    { countryCode: 'CN', zoneName: 'Ásia' },
-    { countryCode: 'JP', zoneName: 'Ásia' },
-    { countryCode: 'KR', zoneName: 'Ásia' },
-    { countryCode: 'AE', zoneName: 'Oriente Médio' },
-    { countryCode: 'SA', zoneName: 'Oriente Médio' },
+export default async function seedShippingZoneCountries(dataSource: DataSource): Promise<void> {
+  const zonesRepository = new ShippingZonesRepository(dataSource);
+  const zonesCountriesRepository = new ShippingZoneCountriesRepository(dataSource);
+
+  const associations: CountryAssociation[] = [
+    { countryCode: 'US', zoneCode: 'US' },
+    { countryCode: 'PR', zoneCode: 'US' },
+    { countryCode: 'GB', zoneCode: 'GB' },
+    { countryCode: 'DE', zoneCode: 'DE' },
+    { countryCode: 'FR', zoneCode: 'FR' },
+    { countryCode: 'NL', zoneCode: 'NL' },
+    { countryCode: 'ES', zoneCode: 'ES' },
+    { countryCode: 'IT', zoneCode: 'IT' },
+    { countryCode: 'PT', zoneCode: 'EU' },
+    { countryCode: 'SE', zoneCode: 'EU' },
+    { countryCode: 'NO', zoneCode: 'EU' },
+    { countryCode: 'IE', zoneCode: 'EU' },
+    { countryCode: 'MX', zoneCode: 'LATAM' },
+    { countryCode: 'AR', zoneCode: 'LATAM' },
+    { countryCode: 'CL', zoneCode: 'LATAM' },
+    { countryCode: 'BR', zoneCode: 'LATAM' },
+    { countryCode: 'CN', zoneCode: 'ASIA' },
+    { countryCode: 'JP', zoneCode: 'ASIA' },
+    { countryCode: 'KR', zoneCode: 'ASIA' },
+    { countryCode: 'AE', zoneCode: 'ME' },
+    { countryCode: 'SA', zoneCode: 'ME' },
   ];
 
-  for (const { countryCode, zoneName } of data) {
-    const zone = await zoneRepository.findOne({ where: { name: zoneName } });
-
+  for (const assoc of associations) {
+    const zone = await zonesRepository.findByCode(assoc.zoneCode);
     if (!zone) {
-      console.warn(`[Seed] ⚠️ Zona não encontrada: "${zoneName}"`);
+      console.warn(`[Seed] Zona com código ${assoc.zoneCode} não encontrada`);
       continue;
     }
 
-    const alreadyExists = await zoneCountryRepository.findOne({
-      where: {
-        countryCode,
-        zone: { id: zone.id },
-      },
-      relations: ['zone'],
-    });
+    const existing = await zonesCountriesRepository.findByCountryCode(assoc.countryCode);
+    if (existing) continue;
 
-    if (alreadyExists) {
-      console.log(`[Seed] ❎ Associação já existente: '${countryCode}' -> '${zoneName}'`);
-      continue;
-    }
-
-    const newAssociation = zoneCountryRepository.create({
-      countryCode,
+    await zonesCountriesRepository.create({
+      countryCode: assoc.countryCode, // <-- CORREÇÃO: usar countryCode, não country_code
       zone,
     });
 
-    await zoneCountryRepository.save(newAssociation);
-    console.log(`[Seed] ✅ Associação criada: '${countryCode}' -> '${zoneName}'`);
+    console.log(`[Seed] ✅ Associação criada: '${assoc.countryCode}' -> '${zone.name}'`);
   }
+
+  console.log('[Seed] Seed de associações de países finalizado');
 }

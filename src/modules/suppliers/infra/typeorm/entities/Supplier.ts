@@ -9,8 +9,9 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-import Item from '@modules/item/infra/typeorm/entities/Item';
-import User from '@modules/users/infra/typeorm/entities/User';
+import Item from '../../../../item/infra/typeorm/entities/Item'
+import User from '../../../../users/infra/typeorm/entities/User'
+
 
 @Entity('suppliers')
 class Supplier {
@@ -22,6 +23,9 @@ class Supplier {
 
   @Column()
   url: string; // URL principal do fornecedor/marketplace
+
+  @Column({ default: 'active' })
+  status: 'active' | 'coming_soon'; // Define se está ativo ou "em breve"
 
   // Se for null → supplier global
   // Se tiver valor → supplier custom de um usuário

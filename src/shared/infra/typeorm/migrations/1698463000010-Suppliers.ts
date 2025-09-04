@@ -34,6 +34,11 @@ export class CreateSuppliers1698463000010 implements MigrationInterface {
             isNullable: true,
           },
           {
+            name: 'status',
+            type: 'varchar',
+            default: `'active'`,
+          },
+          {
             name: 'created_at',
             type: 'timestamp',
             default: 'now()',

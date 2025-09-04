@@ -22,8 +22,8 @@ export class CreateShippingTypes1748195100000 implements MigrationInterface {
             name: 'code',
             type: 'enum',
             enum: [
-              'DOCUMENT',  // Exemplo de valores do ShippingTypeCode — substitua conforme seu enum
-              'PRODUCT',
+              'document',  // Exemplo de valores do ShippingTypeCode — substitua conforme seu enum
+              'product',
             ],
             isNullable: false,
           },

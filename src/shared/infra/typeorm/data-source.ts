@@ -13,15 +13,15 @@ import { SavedItem } from '../../../modules/saved-items/infra/typeorm/entities/S
 import { Subscription } from '../../../modules/subscriptions/infra/typeorm/entities/Subscription';
 
 //Log
-import ItemScrapeLog from '@modules/item_scrape_log/infra/typeorm/entities/ItemScrapeLog';
+import ItemScrapeLog from '../../../modules/item_scrape_log/infra/typeorm/entities/ItemScrapeLog'
 
 // Shipping entities
 import ShippingType from '../../../modules/shipping/infra/typeorm/entities/ShippingType';
 import ShippingZone from '../../../modules/shipping/infra/typeorm/entities/ShippingZone';
 import ShippingWeight from '../../../modules/shipping/infra/typeorm/entities/ShippingWeight';
 import ShippingPrice from '../../../modules/shipping/infra/typeorm/entities/ShippingPrice';
-import ShippingZoneCountry from '../../../modules/shipping/infra/typeorm/entities/ShippingZoneCountry';
-import UserItem from '@modules/user_items/infra/typeorm/entities/UserItems';
+import ShippingZoneCountry from '../../../modules/shipping/infra/typeorm/entities/ShippingZoneCountries';
+import UserItem from '../../../modules/user_items/infra/typeorm/entities/UserItems'
 
 console.log('🌐 Env vars (verificação):', {
   host: process.env.TYPEORM_HOST,

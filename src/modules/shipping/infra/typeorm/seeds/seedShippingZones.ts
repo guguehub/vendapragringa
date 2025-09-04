@@ -19,7 +19,7 @@ export default async function seedShippingZones(dataSource: DataSource): Promise
     { name: 'Itália', code: 'IT' },
     { name: 'Europa (restante)', code: 'EU' },
     { name: 'América Latina', code: 'LATAM' },
-    { name: 'Ásia', code: 'ASIA' },
+    { name: 'Asia', code: 'ASIA' },
     { name: 'Oriente Médio', code: 'ME' },
   ];
 

@@ -1,3 +1,4 @@
+// src/modules/shipping/infra/typeorm/seeds/seedShippingPricesProducts.ts
 import { DataSource } from 'typeorm';
 import { ShippingPricesRepository } from 'src/modules/shipping/infra/typeorm/repositories/ShippingPricesRepository';
 import { ShippingZonesRepository } from 'src/modules/shipping/infra/typeorm/repositories/ShippingZonesRepository';
@@ -5,7 +6,7 @@ import { ShippingTypesRepository } from 'src/modules/shipping/infra/typeorm/repo
 import { ShippingWeightsRepository } from 'src/modules/shipping/infra/typeorm/repositories/ShippingWeightsRepository';
 import { isRegionCode } from 'src/modules/shipping/utils/regionGroups';
 import { ShippingTypeCode } from 'src/modules/shipping/enums/ShippingTypeCode';
-
+import { ICreateShippingPriceDTO } from 'src/modules/shipping/dtos/ICreateShippingPriceDTO';
 
 export default async function seedShippingPricesProducts(dataSource: DataSource): Promise<void> {
   const pricesRepository = new ShippingPricesRepository(dataSource);
@@ -78,33 +79,35 @@ export default async function seedShippingPricesProducts(dataSource: DataSource)
     ],
   };
 
-  const pricesData = [];
+  // Códigos que representam ZONAS (não países)
+  const ZONE_CODES = new Set(['EU', 'LATAM', 'ASIA', 'ME']);
+
+  const pricesData: ICreateShippingPriceDTO[] = [];
 
   for (const regionCode of Object.keys(regionGroups)) {
     if (!isRegionCode(regionCode)) {
       throw new Error(`Código de região inválido: ${regionCode}`);
     }
 
-    const groupKey = regionGroups[regionCode];
+    const groupKey = regionGroups[regionCode as keyof typeof regionGroups];
     const priceEntries = regionGroupPrices[groupKey];
 
-    const zone = await zonesRepository.findByCountryCode(regionCode);
+    // Buscar a zona corretamente:
+    const zone = ZONE_CODES.has(regionCode)
+      ? await zonesRepository.findByCode(regionCode)              // código da ZONA (ex: 'EU', 'LATAM', 'ASIA', 'ME')
+      : await zonesRepository.findByCountryCode(regionCode);      // código do PAÍS (ex: 'US', 'DE', ...)
+
     if (!zone) {
-      console.warn(`[Seed] Zona com código ${regionCode} não encontrada`);
+      console.warn(`[Seed] Zona não encontrada para código '${regionCode}'`);
       continue;
     }
 
     for (const entry of priceEntries) {
       const weightInKg = entry.maxWeight / 1000;
 
-      const weightRange = weights.find(
-        w => w.min_kg <= weightInKg && w.max_kg >= weightInKg
-      );
-
+      const weightRange = weights.find(w => w.min_kg <= weightInKg && w.max_kg >= weightInKg);
       if (!weightRange) {
-        console.warn(
-          `[Seed] Faixa de peso não encontrada para ${entry.maxWeight}g (zona ${regionCode})`
-        );
+        console.warn(`[Seed] Faixa de peso não encontrada para ${entry.maxWeight}g (zona ${regionCode})`);
         continue;
       }
 
@@ -117,8 +120,11 @@ export default async function seedShippingPricesProducts(dataSource: DataSource)
     }
   }
 
+  if (pricesData.length === 0) {
+    console.warn('[Seed] Nenhum preço a inserir (pricesData vazio). Verifique zonas/faixas.');
+    return;
+  }
+
   await pricesRepository.createMany(pricesData);
-
-  console.log('[Seed] Preços de frete para produtos inseridos com sucesso!');
+  console.log(`[Seed] Preços de frete para produtos inseridos com sucesso! (${pricesData.length} registros)`);
 }
-

@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import ShippingZoneCountry from './ShippingZoneCountry';
+import ShippingZoneCountry from './ShippingZoneCountries';
 
 @Entity('shipping_zones')
 class ShippingZone {

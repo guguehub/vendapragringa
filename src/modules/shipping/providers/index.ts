@@ -9,7 +9,7 @@ import { ShippingTypesRepository } from '@modules/shipping/infra/typeorm/reposit
 import { ShippingZonesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingZonesRepository';
 import { ShippingWeightsRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingWeightsRepository';
 import { ShippingPricesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingPricesRepository';
-import { ShippingZoneCountryRepository } from '../infra/typeorm/repositories/ShippingZoneCountryRepository';
+import { ShippingZoneCountryRepository } from '../infra/typeorm/repositories/ShippingZoneCountriesRepository';
 
 container.registerSingleton<IShippingTypeRepository>(
   'ShippingTypesRepository',

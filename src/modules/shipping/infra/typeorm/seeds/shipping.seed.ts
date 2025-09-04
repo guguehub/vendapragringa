@@ -1,23 +1,29 @@
-import 'dotenv/config'; // tem que ser a PRIMEIRA coisa executada
-
-import dataSource from '@shared/infra/typeorm/data-source';
-
+import dataSource from "@shared/infra/typeorm/data-source"
 import seedShippingTypes from './seedShippingTypes';
-import seedShippingZones from './seedShippingZones';
-import { seedShippingZoneCountries } from './seedShippingZoneCountries';
 import seedShippingWeights from './seedShippingWeights';
-import seedShippingPrices from './seedShippingPrices';
+import seedShippingZones from './seedShippingZones';
+import seedShippingZoneCountries from './seedShippingZoneCountries';
+import seedShippingPricesProducts from './seedShippingPricesProducts';
 
 async function runSeeds() {
-  await seedShippingZones(dataSource);
-  await seedShippingZoneCountries(dataSource); // deve vir após seedShippingZones
-  await seedShippingTypes(dataSource);
-  await seedShippingWeights(dataSource);
-  await seedShippingPrices(dataSource);
+  try {
+    await dataSource.initialize();
+    console.log('DATABASE ENV: rodando seeds');
+
+    // Ordem correta:
+    await seedShippingTypes(dataSource);
+    await seedShippingWeights(dataSource);
+    await seedShippingZones(dataSource);
+    await seedShippingZoneCountries(dataSource);
+    await seedShippingPricesProducts(dataSource);
+
+    console.log('✅ Todas as seeds de shipping rodaram com sucesso!');
+  } catch (error) {
+    console.error('❌ Erro ao rodar seeds:', error);
+  } finally {
+    await dataSource.destroy();
+    console.log('Conexão com banco finalizada');
+  }
 }
 
-dataSource.initialize()
-  .then(runSeeds)
-  .catch(error => {
-    console.error('[Seed] Erro ao inicializar o dataSource:', error);
-  });
+runSeeds();
