@@ -1,7 +1,6 @@
 import { DataSource } from 'typeorm';
 import { ShippingZonesRepository } from '../repositories/ShippingZonesRepository';
 import { ShippingZoneCountriesRepository } from '../repositories/ShippingZoneCountriesRepository';
-import ShippingZoneCountries from '../entities/ShippingZoneCountries';
 
 interface CountryAssociation {
   countryCode: string; // Ex: 'BR', 'MX', 'US'

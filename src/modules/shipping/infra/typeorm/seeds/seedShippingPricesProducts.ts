@@ -1,12 +1,11 @@
-// src/modules/shipping/infra/typeorm/seeds/seedShippingPricesProducts.ts
 import { DataSource } from 'typeorm';
-import { ShippingPricesRepository } from 'src/modules/shipping/infra/typeorm/repositories/ShippingPricesRepository';
-import { ShippingZonesRepository } from 'src/modules/shipping/infra/typeorm/repositories/ShippingZonesRepository';
-import { ShippingTypesRepository } from 'src/modules/shipping/infra/typeorm/repositories/ShippingTypesRepository';
-import { ShippingWeightsRepository } from 'src/modules/shipping/infra/typeorm/repositories/ShippingWeightsRepository';
-import { isRegionCode } from 'src/modules/shipping/utils/regionGroups';
-import { ShippingTypeCode } from 'src/modules/shipping/enums/ShippingTypeCode';
-import { ICreateShippingPriceDTO } from 'src/modules/shipping/dtos/ICreateShippingPriceDTO';
+import { ShippingPricesRepository } from '../repositories/ShippingPricesRepository';
+import { ShippingZonesRepository } from '../repositories/ShippingZonesRepository';
+import { ShippingTypesRepository } from '../repositories/ShippingTypesRepository';
+import { ShippingWeightsRepository } from '../repositories/ShippingWeightsRepository';
+import { isRegionCode, regionGroups } from '../../../utils/regionGroups';
+import { ShippingTypeCode } from '../../../enums/ShippingTypeCode';
+import { ICreateShippingPriceDTO } from '../../../dtos/ICreateShippingPriceDTO';
 
 export default async function seedShippingPricesProducts(dataSource: DataSource): Promise<void> {
   const pricesRepository = new ShippingPricesRepository(dataSource);
@@ -14,22 +13,18 @@ export default async function seedShippingPricesProducts(dataSource: DataSource)
   const zonesRepository = new ShippingZonesRepository(dataSource);
   const weightsRepository = new ShippingWeightsRepository(dataSource);
 
+  // Busca tipo PRODUCT
   const productType = await typesRepository.findByCode(ShippingTypeCode.PRODUCT);
   if (!productType) {
-    console.error('Tipo "product" não encontrado');
+    console.error('[Seed] Tipo "PRODUCT" não encontrado. Seed abortado.');
     return;
   }
 
   const weights = await weightsRepository.findAll();
-
-  const regionGroups = {
-    US: 'I',
-    DE: 'II', FR: 'II', NL: 'II', ES: 'II', IT: 'II',
-    GB: 'III', EU: 'III',
-    LATAM: 'IV',
-    ASIA: 'V',
-    ME: 'V',
-  } as const;
+  if (!weights.length) {
+    console.error('[Seed] Nenhuma faixa de peso encontrada. Seed abortado.');
+    return;
+  }
 
   const regionGroupPrices = {
     I: [
@@ -79,35 +74,39 @@ export default async function seedShippingPricesProducts(dataSource: DataSource)
     ],
   };
 
-  // Códigos que representam ZONAS (não países)
   const ZONE_CODES = new Set(['EU', 'LATAM', 'ASIA', 'ME']);
-
   const pricesData: ICreateShippingPriceDTO[] = [];
 
   for (const regionCode of Object.keys(regionGroups)) {
     if (!isRegionCode(regionCode)) {
-      throw new Error(`Código de região inválido: ${regionCode}`);
+      console.warn(`[Seed] Código de região inválido: ${regionCode}. Pulando...`);
+      continue;
     }
 
-    const groupKey = regionGroups[regionCode as keyof typeof regionGroups];
+    const groupKey = regionGroups[regionCode];
     const priceEntries = regionGroupPrices[groupKey];
 
-    // Buscar a zona corretamente:
     const zone = ZONE_CODES.has(regionCode)
-      ? await zonesRepository.findByCode(regionCode)              // código da ZONA (ex: 'EU', 'LATAM', 'ASIA', 'ME')
-      : await zonesRepository.findByCountryCode(regionCode);      // código do PAÍS (ex: 'US', 'DE', ...)
+      ? await zonesRepository.findByCode(regionCode)
+      : await zonesRepository.findByCountryCode(regionCode);
 
     if (!zone) {
-      console.warn(`[Seed] Zona não encontrada para código '${regionCode}'`);
+      console.warn(`[Seed] Zona não encontrada para código '${regionCode}'. Pulando...`);
       continue;
     }
 
     for (const entry of priceEntries) {
       const weightInKg = entry.maxWeight / 1000;
-
       const weightRange = weights.find(w => w.min_kg <= weightInKg && w.max_kg >= weightInKg);
+
       if (!weightRange) {
-        console.warn(`[Seed] Faixa de peso não encontrada para ${entry.maxWeight}g (zona ${regionCode})`);
+        console.warn(`[Seed] Faixa de peso não encontrada para ${entry.maxWeight}g (zona ${regionCode}). Pulando...`);
+        continue;
+      }
+
+      // Garantindo que só insere se todos os dados estiverem ok
+      if (!productType.id || !zone.id || !weightRange.id) {
+        console.warn(`[Seed] IDs ausentes (type: ${productType.id}, zone: ${zone.id}, weight: ${weightRange.id}). Pulando entrada.`);
         continue;
       }
 
@@ -120,8 +119,8 @@ export default async function seedShippingPricesProducts(dataSource: DataSource)
     }
   }
 
-  if (pricesData.length === 0) {
-    console.warn('[Seed] Nenhum preço a inserir (pricesData vazio). Verifique zonas/faixas.');
+  if (!pricesData.length) {
+    console.warn('[Seed] Nenhum preço a inserir (pricesData vazio). Verifique tipos, zonas e faixas.');
     return;
   }
 

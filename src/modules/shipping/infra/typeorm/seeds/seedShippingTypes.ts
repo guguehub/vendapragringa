@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import { ShippingTypesRepository } from '../repositories/ShippingTypesRepository';
-import { ShippingTypeCode } from '@modules/shipping/enums/ShippingTypeCode';
+import { ShippingTypeCode } from '../../../enums/ShippingTypeCode';
 
 interface ShippingTypeSeed {
   name: string;
@@ -18,7 +18,7 @@ export default async function seedShippingTypes(dataSource: DataSource): Promise
   let createdCount = 0;
 
   for (const type of types) {
-    const exists = await repository.findByCode(type.code);
+    const exists = await repository.findByCode(ShippingTypeCode.PRODUCT);
 
     if (!exists) {
       await repository.create(type);

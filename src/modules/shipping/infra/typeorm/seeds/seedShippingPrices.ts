@@ -1,20 +1,21 @@
 import { DataSource } from 'typeorm';
 
-import { ShippingPricesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingPricesRepository';
-import { ShippingZonesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingZonesRepository';
-import { ShippingTypesRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingTypesRepository';
-import { ShippingWeightsRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingWeightsRepository';
-import { ShippingZoneCountryRepository } from '@modules/shipping/infra/typeorm/repositories/ShippingZoneCountriesRepository';
-import { isRegionCode } from '@modules/shipping/utils/regionGroups';
+import { ShippingPricesRepository } from '../../typeorm/repositories/ShippingPricesRepository';
+import { ShippingTypesRepository } from '../../typeorm/repositories/ShippingTypesRepository';
+import { ShippingWeightsRepository } from '../../typeorm/repositories/ShippingWeightsRepository';
+import { ShippingZoneCountriesRepository } from '../../typeorm/repositories/ShippingZoneCountriesRepository';
+import { isRegionCode, regionGroups } from '../../../utils/regionGroups';
+import { ShippingTypeCode } from '../../../../../modules/shipping/enums/ShippingTypeCode';
+
+
 
 async function seedShippingPrices(dataSource: DataSource) {
   const pricesRepository = new ShippingPricesRepository(dataSource);
   const typesRepository = new ShippingTypesRepository(dataSource);
-  const zonesRepository = new ShippingZonesRepository(dataSource);
   const weightsRepository = new ShippingWeightsRepository(dataSource);
-  const zoneCountryRepository = new ShippingZoneCountryRepository(dataSource);
+  const zoneCountryRepository = new ShippingZoneCountriesRepository(dataSource);
 
-  // Verifica se já existe algum preço cadastrado para evitar duplicidade
+  // Evita duplicidade
   const existing = await pricesRepository.findAll();
   if (existing.length > 0) {
     console.log('[Seed] Preços já existem. Pulando...');
@@ -22,7 +23,7 @@ async function seedShippingPrices(dataSource: DataSource) {
   }
 
   // Busca o tipo "document"
-  const documentType = await typesRepository.findByCode('document');
+  const documentType = await typesRepository.findByCode(ShippingTypeCode.DOCUMENT);
   if (!documentType) {
     console.error('Tipo "document" não encontrado');
     return;
@@ -30,14 +31,7 @@ async function seedShippingPrices(dataSource: DataSource) {
 
   const weights = await weightsRepository.findAll();
 
-  const regionGroups = {
-    US: 'I',
-    DE: 'II', FR: 'II', NL: 'II', ES: 'II', IT: 'II',
-    GB: 'III', EU: 'III',
-    LATAM: 'IV',
-    ASIA: 'V',
-    ME: 'V',
-  } as const;
+
 
   const regionGroupPrices = {
     I: [
@@ -80,14 +74,14 @@ async function seedShippingPrices(dataSource: DataSource) {
   const pricesData = [];
 
   for (const regionCode of Object.keys(regionGroups)) {
-    if (!isRegionCode(regionCode)) {
-      throw new Error(`Código de região inválido: ${regionCode}`);
-    }
+  if (!isRegionCode(regionCode)) {
+    throw new Error(`Código de região inválido: ${regionCode}`);
+  }
 
-    const groupKey = regionGroups[regionCode];
-    const priceEntries = regionGroupPrices[groupKey];
 
-    // Busca zona pelo código do país usando o repositório associativo
+  const groupKey = regionGroups[regionCode as keyof typeof regionGroups];
+  const priceEntries = regionGroupPrices[groupKey];
+
     const zone = await zoneCountryRepository.findByCountryCode(regionCode);
     if (!zone) {
       console.warn(`[Seed] Zona com código ${regionCode} não encontrada`);
@@ -97,7 +91,6 @@ async function seedShippingPrices(dataSource: DataSource) {
     for (const entry of priceEntries) {
       const weightInKg = entry.maxWeight / 1000;
 
-      // Encontra a faixa de peso correta
       const weightRange = weights.find(
         w => w.min_kg <= weightInKg && w.max_kg >= weightInKg
       );
