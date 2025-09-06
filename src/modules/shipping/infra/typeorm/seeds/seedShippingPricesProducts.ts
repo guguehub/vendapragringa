@@ -3,29 +3,33 @@ import { ShippingPricesRepository } from '../repositories/ShippingPricesReposito
 import { ShippingZonesRepository } from '../repositories/ShippingZonesRepository';
 import { ShippingTypesRepository } from '../repositories/ShippingTypesRepository';
 import { ShippingWeightsRepository } from '../repositories/ShippingWeightsRepository';
+
 import { isRegionCode, regionGroups } from '../../../utils/regionGroups';
 import { ShippingTypeCode } from '../../../enums/ShippingTypeCode';
 import { ICreateShippingPriceDTO } from '../../../dtos/ICreateShippingPriceDTO';
 
-export default async function seedShippingPricesProducts(dataSource: DataSource): Promise<void> {
+export default async function seedShippingPricesProducts(
+  dataSource: DataSource,
+): Promise<void> {
   const pricesRepository = new ShippingPricesRepository(dataSource);
   const typesRepository = new ShippingTypesRepository(dataSource);
   const zonesRepository = new ShippingZonesRepository(dataSource);
   const weightsRepository = new ShippingWeightsRepository(dataSource);
 
-  // Busca tipo PRODUCT
+  // 1. Buscar tipo "product"
   const productType = await typesRepository.findByCode(ShippingTypeCode.PRODUCT);
   if (!productType) {
-    console.error('[Seed] Tipo "PRODUCT" não encontrado. Seed abortado.');
+    console.error('❌ Tipo "product" não encontrado. Abortando seed de preços.');
     return;
   }
 
   const weights = await weightsRepository.findAll();
   if (!weights.length) {
-    console.error('[Seed] Nenhuma faixa de peso encontrada. Seed abortado.');
+    console.error('❌ Nenhuma faixa de peso encontrada. Abortando seed de preços.');
     return;
   }
 
+  // 2. Tabela de preços (exemplo adaptado Correios)
   const regionGroupPrices = {
     I: [
       { maxWeight: 100, price: 55.05 },
@@ -74,42 +78,50 @@ export default async function seedShippingPricesProducts(dataSource: DataSource)
     ],
   };
 
+  // 3. Códigos que são zonas (não países)
   const ZONE_CODES = new Set(['EU', 'LATAM', 'ASIA', 'ME']);
+
   const pricesData: ICreateShippingPriceDTO[] = [];
 
   for (const regionCode of Object.keys(regionGroups)) {
     if (!isRegionCode(regionCode)) {
-      console.warn(`[Seed] Código de região inválido: ${regionCode}. Pulando...`);
+      console.warn(`⚠️ Código de região inválido ignorado: ${regionCode}`);
       continue;
     }
 
     const groupKey = regionGroups[regionCode];
     const priceEntries = regionGroupPrices[groupKey];
 
+    if (!priceEntries) {
+      console.warn(`⚠️ Nenhuma tabela de preços para o grupo ${groupKey}`);
+      continue;
+    }
+
+    // Buscar zona pelo código da região
     const zone = ZONE_CODES.has(regionCode)
       ? await zonesRepository.findByCode(regionCode)
       : await zonesRepository.findByCountryCode(regionCode);
 
     if (!zone) {
-      console.warn(`[Seed] Zona não encontrada para código '${regionCode}'. Pulando...`);
+      console.warn(`⚠️ Zona não encontrada para código '${regionCode}'`);
       continue;
     }
 
     for (const entry of priceEntries) {
       const weightInKg = entry.maxWeight / 1000;
-      const weightRange = weights.find(w => w.min_kg <= weightInKg && w.max_kg >= weightInKg);
+
+      const weightRange = weights.find(
+        w => w.min_kg <= weightInKg && w.max_kg >= weightInKg,
+      );
 
       if (!weightRange) {
-        console.warn(`[Seed] Faixa de peso não encontrada para ${entry.maxWeight}g (zona ${regionCode}). Pulando...`);
+        console.warn(
+          `⚠️ Faixa de peso não encontrada para ${entry.maxWeight}g (zona ${regionCode})`,
+        );
         continue;
       }
 
-      // Garantindo que só insere se todos os dados estiverem ok
-      if (!productType.id || !zone.id || !weightRange.id) {
-        console.warn(`[Seed] IDs ausentes (type: ${productType.id}, zone: ${zone.id}, weight: ${weightRange.id}). Pulando entrada.`);
-        continue;
-      }
-
+      // Agora todos os campos são garantidos
       pricesData.push({
         type_id: productType.id,
         zone_id: zone.id,
@@ -120,10 +132,13 @@ export default async function seedShippingPricesProducts(dataSource: DataSource)
   }
 
   if (!pricesData.length) {
-    console.warn('[Seed] Nenhum preço a inserir (pricesData vazio). Verifique tipos, zonas e faixas.');
+    console.warn('⚠️ Nenhum preço válido encontrado. Nada foi inserido.');
     return;
   }
 
   await pricesRepository.createMany(pricesData);
-  console.log(`[Seed] Preços de frete para produtos inseridos com sucesso! (${pricesData.length} registros)`);
+
+  console.log(
+    `✅ [Seed] Preços de frete para produtos inseridos com sucesso! (${pricesData.length} registros)`,
+  );
 }

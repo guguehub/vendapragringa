@@ -7,8 +7,6 @@ import { ShippingZoneCountriesRepository } from '../../typeorm/repositories/Ship
 import { isRegionCode, regionGroups } from '../../../utils/regionGroups';
 import { ShippingTypeCode } from '../../../../../modules/shipping/enums/ShippingTypeCode';
 
-
-
 async function seedShippingPrices(dataSource: DataSource) {
   const pricesRepository = new ShippingPricesRepository(dataSource);
   const typesRepository = new ShippingTypesRepository(dataSource);
@@ -30,8 +28,6 @@ async function seedShippingPrices(dataSource: DataSource) {
   }
 
   const weights = await weightsRepository.findAll();
-
-
 
   const regionGroupPrices = {
     I: [
@@ -71,16 +67,20 @@ async function seedShippingPrices(dataSource: DataSource) {
     ],
   };
 
-  const pricesData = [];
+  const pricesData: {
+    type_id: string;
+    zone_id: string;
+    weight_id: string;
+    price: number;
+  }[] = [];
 
   for (const regionCode of Object.keys(regionGroups)) {
-  if (!isRegionCode(regionCode)) {
-    throw new Error(`Código de região inválido: ${regionCode}`);
-  }
+    if (!isRegionCode(regionCode)) {
+      throw new Error(`Código de região inválido: ${regionCode}`);
+    }
 
-
-  const groupKey = regionGroups[regionCode as keyof typeof regionGroups];
-  const priceEntries = regionGroupPrices[groupKey];
+    const groupKey = regionGroups[regionCode as keyof typeof regionGroups];
+    const priceEntries = regionGroupPrices[groupKey];
 
     const zone = await zoneCountryRepository.findByCountryCode(regionCode);
     if (!zone) {

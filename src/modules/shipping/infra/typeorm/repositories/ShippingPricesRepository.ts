@@ -1,7 +1,7 @@
 import { DataSource, Repository } from 'typeorm';
 import ShippingPrice from '../entities/ShippingPrice';
-import { IShippingPriceRepository } from '@modules/shipping/domain/repositories/IShippingPriceRepository';
-import { ICreateShippingPriceDTO } from '@modules/shipping/dtos/ICreateShippingPriceDTO';
+import { IShippingPriceRepository } from '../../../../../modules/shipping/domain/repositories/IShippingPriceRepository';
+import { ICreateShippingPriceDTO } from '../../../../../modules/shipping/dtos/ICreateShippingPriceDTO';
 
 export class ShippingPricesRepository implements IShippingPriceRepository {
   private ormRepository: Repository<ShippingPrice>;
@@ -35,16 +35,26 @@ export class ShippingPricesRepository implements IShippingPriceRepository {
   }
 
   async create(data: ICreateShippingPriceDTO): Promise<ShippingPrice> {
-    const shippingPrice = this.ormRepository.create(data);
-    await this.ormRepository.save(shippingPrice);
-    return shippingPrice;
+    const shippingPrice = this.ormRepository.create({
+      shipping_type_id: data.type_id,
+      shipping_zone_id: data.zone_id,
+      shipping_weight_id: data.weight_id,
+      price: data.price,
+    });
+    return this.ormRepository.save(shippingPrice);
   }
 
   async createMany(data: ICreateShippingPriceDTO[]): Promise<ShippingPrice[]> {
-    const entries = this.ormRepository.create(data);
+    const entries = data.map(dto =>
+      this.ormRepository.create({
+        shipping_type_id: dto.type_id,
+        shipping_zone_id: dto.zone_id,
+        shipping_weight_id: dto.weight_id,
+        price: dto.price,
+      }),
+    );
     return this.ormRepository.save(entries);
   }
-
 
   async save(price: ShippingPrice): Promise<ShippingPrice> {
     return this.ormRepository.save(price);
