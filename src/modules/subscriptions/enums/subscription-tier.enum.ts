@@ -3,4 +3,5 @@ export enum SubscriptionTier {
   BRONZE = 'bronze',
   SILVER = 'silver',
   GOLD = 'gold',
+  INFINITY = 'infinity',
 }

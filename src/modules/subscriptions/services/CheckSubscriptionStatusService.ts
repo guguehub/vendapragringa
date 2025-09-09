@@ -1,11 +1,10 @@
 import { inject, injectable } from 'tsyringe';
-import AppError from '@shared/errors/AppError';
+import RedisCache from '@shared/cache/RedisCache';
 
+import { ISubscriptionRepository } from '../domain/repositories/ISubscriptionsRepository';
 import { Subscription } from '../infra/typeorm/entities/Subscription';
-//import { ISubscriptionsRepository } from '../domain/repositories/ISubscriptionsRepository';
 import { SubscriptionTier } from '../enums/subscription-tier.enum';
 import { SubscriptionStatus } from '../infra/typeorm/entities/Subscription';
-import { ISubscriptionRepository } from '../domain/repositories/ISubscriptionsRepository';
 
 @injectable()
 class CheckSubscriptionStatusService {
@@ -19,30 +18,62 @@ class CheckSubscriptionStatusService {
     tier: SubscriptionTier;
     subscription: Subscription | undefined;
   }> {
-    const subscription =
-      await this.subscriptionsRepository.findActiveByUserId(userId);
+    const cacheKey = `user-subscription-${userId}`;
+
+    // 1️⃣ Tenta recuperar do cache
+    const cached = await RedisCache.recover<{
+      isActive: boolean;
+      tier: SubscriptionTier;
+      subscription: Subscription | undefined;
+    }>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    // 2️⃣ Consulta o banco
+    const subscription = await this.subscriptionsRepository.findActiveByUserId(userId);
 
     if (!subscription) {
-      return {
+      const result = {
         isActive: false,
         tier: SubscriptionTier.FREE,
         subscription: undefined,
       };
+
+      await RedisCache.save(cacheKey, result, 3600); // 1 hora de cache
+      return result;
     }
 
     const now = new Date();
+    let isActive = true;
 
-    const isExpired =
-      subscription.expiresAt !== null && subscription.expiresAt < now;
-    const isCancelled = subscription.status === SubscriptionStatus.CANCELLED;
+    // Infinity nunca expira
+    if (
+      subscription.tier !== SubscriptionTier.INFINITY &&
+      (subscription.expiresAt === null || subscription.expiresAt < now)
+    ) {
+      isActive = false;
+    }
 
-    const isActive = !isExpired && !isCancelled;
+    if (subscription.status === SubscriptionStatus.CANCELLED) {
+      isActive = false;
+    }
 
-    return {
+    const result = {
       isActive,
       tier: subscription.tier,
       subscription,
     };
+
+    // 3️⃣ Salva no cache (exceto Infinity que pode ter cache sem expiração)
+    if (subscription.tier === SubscriptionTier.INFINITY) {
+      await RedisCache.save(cacheKey, result);
+    } else {
+      await RedisCache.save(cacheKey, result, 3600); // 1 hora
+    }
+
+    return result;
   }
 }
 

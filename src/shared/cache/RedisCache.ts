@@ -13,9 +13,13 @@ class RedisCache {
     }
   }
 
-  public async save(key: string, value: any): Promise<void> {
+  public async save(key: string, value: any, expireInSeconds?: number): Promise<void> {
+  if (expireInSeconds) {
+    await this.client.set(key, JSON.stringify(value), 'EX', expireInSeconds);
+  } else {
     await this.client.set(key, JSON.stringify(value));
   }
+}
 
   public async recover<T>(key: string): Promise<T | null> {
     const data = await this.client.get(key);

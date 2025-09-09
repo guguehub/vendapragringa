@@ -1,13 +1,11 @@
 import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
-import { SubscriptionStatus } from '@modules/subscriptions/infra/typeorm/entities/Subscription';
+import { SubscriptionStatus } from '@modules/subscriptions/enums/subscription-status.enum';
 
 export interface ICreateSubscription {
   userId: string;
-  //tier: 'free' | 'bronze' | 'silver' | 'gold';
   tier: SubscriptionTier;
-  //status: 'active' | 'inactive' | 'cancelled' | 'expired';
   status: SubscriptionStatus;
-  startDate?: Date;
-  endDate?: Date;
-  expiresAt?: Date;
+  startDate?: Date;           // início da assinatura
+  expiresAt?: Date | null;    // fim da assinatura; null para INFINITY
+  endDate?: Date;             // opcional, mantido para histórico ou relatórios
 }

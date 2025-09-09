@@ -7,22 +7,20 @@ import {
   ManyToOne,
   JoinColumn,
   Unique,
+  Index,
 } from 'typeorm';
+
 import User from '../../../../users/infra/typeorm/entities/User';
-
-import { Index } from 'typeorm';
-//import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
-import { SubscriptionTier } from '../../../../subscriptions/enums/subscription-tier.enum';
-
-//export type SubscriptionTier = 'free' | 'bronze' | 'silver' | 'gold';
+import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
 export enum SubscriptionStatus {
   ACTIVE = 'active',
   CANCELLED = 'cancelled',
   EXPIRED = 'expired',
 }
 
+
 @Entity('subscriptions')
-@Unique(['userId']) // 🟡 Opcional, redundante com o banco, mas bom para clareza
+@Unique(['userId'])
 export class Subscription {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -39,16 +37,14 @@ export class Subscription {
     enum: SubscriptionTier,
     default: SubscriptionTier.FREE,
   })
+  @Index()
   tier: SubscriptionTier;
 
   @Column({ type: 'timestamp', nullable: true })
   startDate: Date | null;
 
   @Column({ type: 'timestamp', nullable: true })
-  endDate: Date | null;
-
-  @Column({ type: 'timestamp', nullable: true })
-  expiresAt: Date | null;
+  expiresAt: Date | null; // fim de validade do plano
 
   @ManyToOne(() => User, user => user.subscriptions, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
@@ -58,9 +54,9 @@ export class Subscription {
   @Column()
   userId: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

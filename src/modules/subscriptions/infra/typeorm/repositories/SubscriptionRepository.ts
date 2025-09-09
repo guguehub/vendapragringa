@@ -3,8 +3,10 @@ import { Repository, MoreThan, DeepPartial } from 'typeorm';
 import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositories/ISubscriptionsRepository';
 import { ICreateSubscription } from '@modules/subscriptions/domain/models/ICreateSubscription';
 
-import { SubscriptionStatus } from '../entities/Subscription';
 import { Subscription } from '../entities/Subscription';
+import { SubscriptionStatus } from '@modules/subscriptions/enums/subscription-status.enum';
+import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
+
 import dataSource from '@shared/infra/typeorm/data-source';
 
 class SubscriptionRepository implements ISubscriptionRepository {
@@ -40,14 +42,31 @@ class SubscriptionRepository implements ISubscriptionRepository {
     const now = new Date();
 
     const result = await this.ormRepository.findOne({
-      where: {
-        userId,
-        status: SubscriptionStatus.ACTIVE,
-        expiresAt: MoreThan(now), // permite planos ativos com expiração futura
-      },
+      where: [
+        {
+          userId,
+          status: SubscriptionStatus.ACTIVE,
+          expiresAt: MoreThan(now), // planos normais ativos com expiração futura
+        },
+        {
+          userId,
+          status: SubscriptionStatus.ACTIVE,
+          tier: SubscriptionTier.INFINITY, // plano vitalício sempre ativo
+        },
+      ],
       order: { createdAt: 'DESC' },
     });
+
     return result ?? undefined;
+  }
+
+  public async findLatestByUserId(
+    userId: string,
+  ): Promise<Subscription | null> {
+    return this.ormRepository.findOne({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+    });
   }
 }
 

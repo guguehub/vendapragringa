@@ -4,7 +4,7 @@ import {
   InsertEvent,
   UpdateEvent,
 } from 'typeorm';
-import { Subscription } from '../entities/Subscription';
+import { Subscription, SubscriptionStatus } from '../entities/Subscription';
 
 @EventSubscriber()
 export class SubscriptionSubscriber
@@ -15,16 +15,36 @@ export class SubscriptionSubscriber
   }
 
   beforeInsert(event: InsertEvent<Subscription>) {
-    // Logic before inserting a subscription, e.g., set startDate
+    if (!event.entity) return;
+
+    // Define a data de início da assinatura
     event.entity.startDate = new Date();
-    // Set endDate based on tier duration
-    // For example, add 30 days for 'bronze' tier
+
+    // Define a data de expiração com base no tier
+    switch (event.entity.tier) {
+      case 'bronze':
+        event.entity.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 dias
+        break;
+      case 'silver':
+        event.entity.expiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000); // 60 dias
+        break;
+      case 'gold':
+        event.entity.expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000); // 90 dias
+        break;
+      case 'infinity':
+        event.entity.expiresAt = null; // nunca expira
+        break;
+      default:
+        event.entity.expiresAt = new Date(); // fallback
+    }
   }
 
   beforeUpdate(event: UpdateEvent<Subscription>) {
-    // Logic before updating a subscription, e.g., handle status changes
-    if (event.entity.status === 'cancelled') {
-      event.entity.endDate = new Date();
+    if (!event.entity) return;
+
+    // Se a assinatura foi cancelada, define expiresAt para agora
+    if (event.entity.status === SubscriptionStatus.CANCELLED) {
+      event.entity.expiresAt = new Date();
     }
   }
 }
