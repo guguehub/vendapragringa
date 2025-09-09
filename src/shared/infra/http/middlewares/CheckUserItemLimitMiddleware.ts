@@ -5,7 +5,7 @@ import { Subscription } from "@modules/subscriptions/infra/typeorm/entities/Subs
 import { In, IsNull } from "typeorm";
 
 const tierLimits: Record<string, number> = {
-  free: 4,
+  free: 2,
   bronze: 20,
   silver: 50,
   gold: 150,

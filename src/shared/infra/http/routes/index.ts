@@ -16,6 +16,7 @@ import scrapRoutes from '@modules/scrap/infra/http/routes/scrap.routes';
 import scrapDevRouter from '@modules/scrap/infra/http/routes/scrapDev.routes';
 import userAdminRouter from '@modules/users/infra/http/routes/user.admin.routes'
 import itemScrapeLogRoutes from '@modules/item_scrape_log/infra/http/routes/itemScrapeLog.routes';
+import subscriptionRouter from '@modules/subscriptions/infra/http/routes/subscriptionRoutes';
 
 const routes = Router();
 
@@ -29,6 +30,8 @@ routes.use('/profile', profileRouter);
 routes.use('/scrapy', scrapyRouter);
 routes.use('/shipping', shippingRoutes);
 routes.use('/items', itemsRouter);
+routes.use('/subscriptions', subscriptionRouter);
+
 // ROTAS DE SCRAP
 
 //console.log('>>> scrapRoutes:', scrapRoutes);

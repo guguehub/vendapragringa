@@ -5,7 +5,7 @@ import ProductsRepository from '@modules/products/infra/typeorm/repositories/Pro
 import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
 import UsersRepository from '@modules/users/infra/typeorm/repositories/UsersRepository';
 import '@modules/users/providers';
-import SubscriptionRepository from '@modules/subscriptions/infra/typeorm/repositories/SubscriptionRepository';
+import SubscriptionsRepository from '@modules/subscriptions/infra/typeorm/repositories/SubscriptionRepository';
 import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositories/ICreateSubscription';
 
 import { ISavedItemsRepository } from '@modules/saved-items/domain/repositories/ISavedItemsRepository';
@@ -27,7 +27,7 @@ container.registerSingleton<IUsersRepository>(
 
 container.registerSingleton<ISubscriptionRepository>(
   'SubscriptionRepository',
-  SubscriptionRepository,
+  SubscriptionsRepository,
 );
 
 container.registerSingleton<IItemsRepository>(

@@ -12,7 +12,7 @@ async function seedAdmin() {
 
   const adminUser = repo.create({
     name: 'Super Admin',
-    email: 'admin@example.com',
+    email: 'testador@teste.com',
     password: passwordHash,
     is_admin: true,
   });

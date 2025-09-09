@@ -50,6 +50,16 @@ export class Subscriptions1698463000014 implements MigrationInterface {
             isNullable: true,
           },
           {
+            name: 'isTrial',
+            type: 'boolean',
+            default: false,
+          },
+          {
+            name: 'cancelledAt',
+            type: 'timestamp',
+            isNullable: true,
+          },
+          {
             name: 'userId',
             type: 'uuid',
             isNullable: false,

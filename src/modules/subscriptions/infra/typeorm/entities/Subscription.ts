@@ -1,3 +1,4 @@
+
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -11,13 +12,13 @@ import {
 } from 'typeorm';
 
 import User from '../../../../users/infra/typeorm/entities/User';
-import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
+import { SubscriptionTier } from '../../../../subscriptions/enums/subscription-tier.enum';
+
 export enum SubscriptionStatus {
   ACTIVE = 'active',
   CANCELLED = 'cancelled',
   EXPIRED = 'expired',
 }
-
 
 @Entity('subscriptions')
 @Unique(['userId'])
@@ -45,6 +46,12 @@ export class Subscription {
 
   @Column({ type: 'timestamp', nullable: true })
   expiresAt: Date | null; // fim de validade do plano
+
+  @Column({ type: 'boolean', default: false })
+  isTrial: boolean; // nova flag para trial
+
+  @Column({ type: 'timestamp', nullable: true })
+  cancelledAt: Date | null; // nova coluna para histórico de cancelamento
 
   @ManyToOne(() => User, user => user.subscriptions, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })

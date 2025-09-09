@@ -3,7 +3,8 @@ import { ICalculateShippingDTO } from '../../shipping/dtos/ICalculateShippingDTO
 import { IShippingTypeRepository } from '../../shipping/domain/repositories/IShippingTypeRepository';
 import { IShippingWeightRepository } from '../../shipping/domain/repositories/IShippingWeightRepository';
 import { IShippingPriceRepository } from '../../shipping/domain/repositories/IShippingPriceRepository';
-import { ShippingZoneCountryRepository } from '../infra/typeorm/repositories/ShippingZoneCountriesRepository';
+import { ShippingZoneCountriesRepository } from '../infra/typeorm/repositories/ShippingZoneCountriesRepository';
+
 import { inject } from 'tsyringe';
 
 class CalculateShippingService {
@@ -18,7 +19,7 @@ class CalculateShippingService {
     private shippingPriceRepository: IShippingPriceRepository,
 
     @inject('ShippingZoneCountryRepository')
-    private shippingZoneCountryRepository: ShippingZoneCountryRepository // novo repositório
+    private shippingZoneCountryRepository: ShippingZoneCountriesRepository // novo repositório
   ) {}
 
   public async execute({
