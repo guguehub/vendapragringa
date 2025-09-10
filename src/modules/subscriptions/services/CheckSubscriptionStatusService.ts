@@ -9,7 +9,7 @@ import { SubscriptionStatus } from '../infra/typeorm/entities/Subscription';
 @injectable()
 class CheckSubscriptionStatusService {
   constructor(
-    @inject('SubscriptionsRepository')
+    @inject('SubscriptionRepository')
     private subscriptionsRepository: ISubscriptionRepository,
   ) {}
 
