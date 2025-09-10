@@ -8,10 +8,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-
-import Item from '../../../../item/infra/typeorm/entities/Item'
-import User from '../../../../users/infra/typeorm/entities/User'
-
+import Item from '../../../../item/infra/typeorm/entities/Item';
+import User from '../../../../users/infra/typeorm/entities/User';
 
 @Entity('suppliers')
 class Supplier {
@@ -19,28 +17,56 @@ class Supplier {
   id: string;
 
   @Column()
-  name: string; // Nome do fornecedor ou marketplace
+  name: string;
 
-  @Column()
-  url: string; // URL principal do fornecedor/marketplace
+  @Column({ nullable: true })
+  url?: string; // opcional
 
-  @Column({ default: 'active' })
-  status: 'active' | 'coming_soon'; // Define se está ativo ou "em breve"
+  @Column({ type: 'enum', enum: ['ready', 'listed', 'sold'], default: 'ready' })
+  status: 'ready' | 'listed' | 'sold';
 
-  // Se for null → supplier global
-  // Se tiver valor → supplier custom de um usuário
-  @ManyToOne(() => User, user => user.suppliers, {
-    nullable: true,
-    onDelete: 'CASCADE',
-  })
+  @Column({ default: true })
+  is_active: boolean;
+
+  @OneToMany(() => Item, item => item.supplier, { cascade: true })
+  items: Item[] = []; // inicializa array para evitar undefined
+
+  @ManyToOne(() => User, user => user.suppliers, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user?: User;
 
   @Column({ nullable: true })
   user_id?: string;
 
-  @OneToMany(() => Item, item => item.supplier)
-  items: Item[];
+  @Column({ nullable: true })
+  marketplace?: 'mercado_livre' | 'olx' | 'custom';
+
+  @Column({ nullable: true })
+  external_id?: string;
+
+  @Column({ nullable: true })
+  email?: string;
+
+  @Column({ nullable: true })
+  link?: string;
+
+  @Column({ nullable: true })
+  website?: string;
+
+  @Column({ nullable: true })
+  address?: string;
+
+  @Column({ nullable: true })
+  city?: string;
+
+  @Column({ nullable: true })
+  state?: string;
+
+  @Column({ nullable: true })
+  country?: string;
+
+  @Column({ nullable: true })
+  zip_code?: string;
 
   @CreateDateColumn()
   created_at: Date;

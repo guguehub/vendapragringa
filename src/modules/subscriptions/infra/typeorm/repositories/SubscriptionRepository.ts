@@ -31,7 +31,7 @@ class SubscriptionRepository implements ISubscriptionRepository {
   public async findByUserId(userId: string): Promise<Subscription | undefined> {
     const result = await this.ormRepository.findOne({
       where: { userId },
-      order: { createdAt: 'DESC' },
+      order: { created_at: 'DESC' },
     });
     return result ?? undefined;
   }
@@ -46,7 +46,7 @@ class SubscriptionRepository implements ISubscriptionRepository {
         {
           userId,
           status: SubscriptionStatus.ACTIVE,
-          expiresAt: MoreThan(now), // planos normais ativos com expiração futura
+          expires_at: MoreThan(now), // planos normais ativos com expiração futura
         },
         {
           userId,
@@ -54,7 +54,7 @@ class SubscriptionRepository implements ISubscriptionRepository {
           tier: SubscriptionTier.INFINITY, // plano vitalício sempre ativo
         },
       ],
-      order: { createdAt: 'DESC' },
+      order: { created_at: 'DESC' },
     });
 
     return result ?? undefined;
@@ -65,7 +65,7 @@ class SubscriptionRepository implements ISubscriptionRepository {
   ): Promise<Subscription | null> {
     return this.ormRepository.findOne({
       where: { userId },
-      order: { createdAt: 'DESC' },
+      order: { created_at: 'DESC' },
     });
   }
 }

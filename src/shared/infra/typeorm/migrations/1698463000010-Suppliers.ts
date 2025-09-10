@@ -26,17 +26,17 @@ export class CreateSuppliers1698463000010 implements MigrationInterface {
           {
             name: 'url',
             type: 'varchar',
-            isNullable: false,
+            isNullable: true, // ✅ agora opcional
+          },
+          {
+            name: 'status',
+            type: 'varchar',
+            default: `'active'`, // ✅ default coerente com entidade
           },
           {
             name: 'user_id',
             type: 'uuid',
             isNullable: true,
-          },
-          {
-            name: 'status',
-            type: 'varchar',
-            default: `'active'`,
           },
           {
             name: 'created_at',
@@ -65,6 +65,7 @@ export class CreateSuppliers1698463000010 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropForeignKey('suppliers', 'FKSuppliersUser');
     await queryRunner.dropTable('suppliers');
   }
 }

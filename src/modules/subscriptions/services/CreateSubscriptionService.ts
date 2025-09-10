@@ -29,13 +29,13 @@ class CreateSubscriptionService {
       throw new AppError('This user already has a subscription');
     }
 
-    // Se o plano for INFINITY, não definimos expiresAt
+    // Se o plano for INFINITY, não definimos expires_at
     const subscriptionData: ICreateSubscription = {
       userId,
       tier,
       status,
-      startDate: new Date(),
-      expiresAt:
+      start_date: new Date(),
+      expires_at:
         tier === SubscriptionTier.INFINITY
           ? null
           : new Date(new Date().setFullYear(new Date().getFullYear() + 1)), // Exemplo: plano normal expira em 1 ano

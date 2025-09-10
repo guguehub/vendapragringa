@@ -40,12 +40,12 @@ export class Subscriptions1698463000014 implements MigrationInterface {
             default: "'free'",
           },
           {
-            name: 'startDate',
+            name: 'start_date',
             type: 'timestamp',
             isNullable: true,
           },
           {
-            name: 'expiresAt',
+            name: 'expires_at',
             type: 'timestamp',
             isNullable: true,
           },
@@ -55,7 +55,7 @@ export class Subscriptions1698463000014 implements MigrationInterface {
             default: false,
           },
           {
-            name: 'cancelledAt',
+            name: 'cancelled_at',
             type: 'timestamp',
             isNullable: true,
           },
@@ -66,12 +66,12 @@ export class Subscriptions1698463000014 implements MigrationInterface {
             isUnique: true,
           },
           {
-            name: 'createdAt',
+            name: 'created_at',
             type: 'timestamp',
             default: 'now()',
           },
           {
-            name: 'updatedAt',
+            name: 'updated_at',
             type: 'timestamp',
             default: 'now()',
           },

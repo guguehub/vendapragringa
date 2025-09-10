@@ -42,16 +42,16 @@ export class Subscription {
   tier: SubscriptionTier;
 
   @Column({ type: 'timestamp', nullable: true })
-  startDate: Date | null;
+  start_date: Date | null;
 
   @Column({ type: 'timestamp', nullable: true })
-  expiresAt: Date | null; // fim de validade do plano
+  expires_at: Date | null; // fim de validade do plano
 
   @Column({ type: 'boolean', default: false })
   isTrial: boolean; // nova flag para trial
 
   @Column({ type: 'timestamp', nullable: true })
-  cancelledAt: Date | null; // nova coluna para histórico de cancelamento
+  cancelled_at: Date | null; // nova coluna para histórico de cancelamento
 
   @ManyToOne(() => User, user => user.subscriptions, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
@@ -62,8 +62,8 @@ export class Subscription {
   userId: string;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  created_at: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updated_at: Date;
 }

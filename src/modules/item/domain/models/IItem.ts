@@ -1,15 +1,23 @@
+// src/modules/items/domain/models/IItem.ts
 import { ISupplier } from '@modules/suppliers/domain/models/ISupplier';
-import { IUser } from '@modules/users/domain/models/IUser';
 
 export interface IItem {
   id: string;
   title: string;
   description?: string;
   price: number;
-  supplier?: ISupplier;
-  supplierId?: string;
-  user: IUser;
-  user_id: string;
+  externalId?: string;
+  marketplace?: string;           // ex: "mercadolivre", "olx"
+  shippingPrice?: number;
+  status: 'ready' | 'listed' | 'sold';
+  itemLink?: string;
+  lastScrapedAt?: Date;
+  images?: string[];               // JSON string convertida para array de URLs
+  importStage: 'draft' | string;   // mantém possibilidade de outros estágios
+  isDraft: boolean;
+  isSynced: boolean;
+  supplier?: ISupplier;            // relação opcional
+  createdBy: string;               // obrigatório, default: 'system'
   created_at: Date;
   updated_at: Date;
 }

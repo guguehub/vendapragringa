@@ -6,9 +6,9 @@ export interface ISubscription {
   userId: string;
   tier: SubscriptionTier;               // agora inclui INFINITY
   status: SubscriptionStatus;           // active, cancelled, expired
-  startDate?: Date | null;
-  expiresAt?: Date | null;              // null se INFINITY
-  endDate?: Date | null;                 // opcional, mantido para histórico ou relatórios
-  createdAt: Date;
-  updatedAt: Date;
+  start_date?: Date | null;
+  expires_at?: Date | null;              // null se INFINITY
+  end_date?: Date | null;                 // opcional, mantido para histórico ou relatórios
+  created_at: Date;
+  updated_at: Date;
 }

@@ -26,13 +26,13 @@ class UpgradeSubscriptionService {
 
     // Atualiza tier
     subscription.tier = newTier;
-    subscription.updatedAt = new Date();
+    subscription.updated_at = new Date();
 
-    // Ajusta expiresAt: INFINITY não expira, outros planos expiram em 1 ano (exemplo)
+    // Ajusta expires_at: INFINITY não expira, outros planos expiram em 1 ano (exemplo)
     if (newTier === SubscriptionTier.INFINITY) {
-      subscription.expiresAt = null;
+      subscription.expires_at = null;
     } else {
-      subscription.expiresAt = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
+      subscription.expires_at = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
     }
 
     // Caso queira, podemos manter o status ACTIVE automaticamente
