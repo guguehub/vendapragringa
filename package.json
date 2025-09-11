@@ -20,6 +20,12 @@
     "check:ts": "tsc --noEmit",
     "tsc:watch": "tsc --noEmit --watch",
     "dev:check": "tsc --noEmit && yarn dev:watch",
+      "dev:build": "docker compose build --no-cache",
+        "dev:build:light": "docker compose build",
+          "dev:build:light-reset": "rm -rf .docker/dbdata && docker compose build",
+
+
+
     "check-schema": "ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js schema:log -d src/shared/infra/typeorm/data-source.ts",
     "seed:shipping": "ts-node src/modules/shipping/infra/typeorm/seeds/runSeeds.ts",
     "seed:admin": "ts-node -r tsconfig-paths/register src/modules/users/infra/typeorm/seeds/seedAdmin.ts",

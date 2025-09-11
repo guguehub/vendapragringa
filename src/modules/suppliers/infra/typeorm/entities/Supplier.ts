@@ -29,7 +29,7 @@ class Supplier {
   is_active: boolean;
 
   @OneToMany(() => Item, item => item.supplier, { cascade: true })
-  items: Item[] = []; // inicializa array para evitar undefined
+  items: Item[];
 
   @ManyToOne(() => User, user => user.suppliers, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
