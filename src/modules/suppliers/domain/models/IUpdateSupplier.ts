@@ -1,3 +1,4 @@
+import { SupplierStatus } from "../enums/supplier-status.enum";
 import { IMarketplaces } from "./IMarketplaces";
 
 export interface IUpdateSupplier {
@@ -14,6 +15,6 @@ export interface IUpdateSupplier {
   state?: string;
   country?: string;
   zip_code?: string;
-  status?: 'ready' | 'listed' | 'sold';
+  status?: SupplierStatus;
   is_active?: boolean;
 }

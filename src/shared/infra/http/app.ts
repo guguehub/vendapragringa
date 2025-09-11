@@ -10,8 +10,12 @@ import '../typeorm/data-source';
 import '../../../shared/container';
 import uploadConfig from '@config/upload';
 import rateLimiter from './middlewares/rateLimiter';
+import errorHandler from './middlewares/errorHandler';
 
 const app = express();
+
+app.use(errorHandler);
+
 
 // Configuração de session (necessária para /scrap/once)
 app.use(

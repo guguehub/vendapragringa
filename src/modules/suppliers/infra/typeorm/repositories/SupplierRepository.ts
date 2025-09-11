@@ -1,3 +1,4 @@
+// src/modules/suppliers/infra/typeorm/repositories/SupplierRepository.ts
 import { Repository } from 'typeorm';
 import Supplier from '../entities/Supplier';
 import Item from '@modules/item/infra/typeorm/entities/Item';
@@ -9,6 +10,8 @@ import { IItem } from '@modules/item/domain/models/IItem';
 import { ISupplierPaginate } from '@modules/suppliers/domain/models/ISupplierPaginate';
 import dataSource from '@shared/infra/typeorm/data-source';
 import { IMarketplaces } from '@modules/suppliers/domain/models/IMarketplaces';
+import { ItemStatus } from '@modules/item/domain/enums/item-status.enum';
+import { SupplierStatus } from '@modules/suppliers/domain/enums/supplier-status.enum';
 
 // Erro customizado
 export class SupplierNotFoundError extends Error {
@@ -34,22 +37,32 @@ function mapSupplierEntityToISupplier(supplier: Supplier): ISupplier {
     state: supplier.state,
     country: supplier.country,
     zip_code: supplier.zip_code,
-    status: supplier.status,
+    status: supplier.status as SupplierStatus, // usa enum de Supplier
     is_active: supplier.is_active,
     created_at: supplier.created_at,
     updated_at: supplier.updated_at,
-    items: supplier.items?.map((i: Item): IItem => ({
-      id: i.id,
-      title: i.title,
-      description: i.description,
-      price: i.price,
-      status: i.status, // já é enum na entidade
-      importStage: i.importStage,
-      isDraft: i.isDraft,
-      isSynced: i.isSynced,
-      created_at: i.created_at,
-      updated_at: i.updated_at,
-    })) ?? [],
+    items:
+      supplier.items?.map(
+        (i: Item): IItem => ({
+          id: i.id,
+          title: i.title,
+          description: i.description,
+          price: i.price,
+          externalId: i.externalId,
+          marketplace: i.marketplace,
+          shippingPrice: i.shippingPrice,
+          status: i.status as ItemStatus, // cast seguro para enum
+          itemLink: i.itemLink,
+          lastScrapedAt: i.lastScrapedAt,
+          images: i.images ? JSON.parse(i.images) : undefined,
+          importStage: i.importStage,
+          isDraft: i.isDraft,
+          isSynced: i.isSynced,
+          createdBy: i.createdBy,
+          created_at: i.created_at,
+          updated_at: i.updated_at,
+        }),
+      ) ?? [],
   };
 }
 
@@ -63,11 +76,10 @@ export default class SupplierRepository implements ISupplierRepository {
   public async create(data: ICreateSupplier): Promise<ISupplier> {
     const supplier = this.ormRepository.create({
       ...data,
-      status: data.status ?? 'active', // ajustar enum se necessário
+      status: data.status ?? SupplierStatus.ACTIVE, // enum correto
       is_active: data.is_active ?? true,
     });
 
-    // Inicializa items apenas depois
     supplier.items = [];
 
     await this.ormRepository.save(supplier);
@@ -92,7 +104,7 @@ export default class SupplierRepository implements ISupplierRepository {
       state: data.state ?? supplier.state,
       country: data.country ?? supplier.country,
       zip_code: data.zip_code ?? supplier.zip_code,
-      status: data.status ?? supplier.status,
+      status: data.status ?? supplier.status, // já alinhado ao enum
       is_active: data.is_active ?? supplier.is_active,
     });
 
@@ -123,7 +135,10 @@ export default class SupplierRepository implements ISupplierRepository {
     return mapSupplierEntityToISupplier(supplier);
   }
 
-  public async findByExternalId(external_id: string, marketplace: IMarketplaces): Promise<ISupplier | null> {
+  public async findByExternalId(
+    external_id: string,
+    marketplace: IMarketplaces,
+  ): Promise<ISupplier | null> {
     const supplier = await this.ormRepository.findOne({
       where: { external_id, marketplace },
       relations: ['items'],
@@ -132,7 +147,11 @@ export default class SupplierRepository implements ISupplierRepository {
     return mapSupplierEntityToISupplier(supplier);
   }
 
-  public async findAll({ page, skip, take }: SearchParams): Promise<ISupplierPaginate> {
+  public async findAll({
+    page,
+    skip,
+    take,
+  }: SearchParams): Promise<ISupplierPaginate> {
     const [suppliers, count] = await this.ormRepository.findAndCount({
       skip,
       take,

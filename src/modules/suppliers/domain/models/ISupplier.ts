@@ -1,11 +1,9 @@
-// src/modules/suppliers/domain/models/ISupplier.ts
-import { IItem } from '@modules/item/domain/models/IItem';
-import { IMarketplaces } from './IMarketplaces';
+import { IItem } from "@modules/item/domain/models/IItem";
 
 export interface ISupplier {
   id: string;
   name: string;
-  marketplace: IMarketplaces;
+  marketplace: string;
   external_id?: string;
   email?: string;
   link?: string;
@@ -16,9 +14,9 @@ export interface ISupplier {
   state?: string;
   country?: string;
   zip_code?: string;
-  status: 'ready' | 'listed' | 'sold';
+  status: string;
   is_active: boolean;
-  items?: IItem[];
   created_at: Date;
   updated_at: Date;
+  items?: IItem[];
 }

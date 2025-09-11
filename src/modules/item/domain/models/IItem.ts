@@ -1,5 +1,5 @@
-// src/modules/items/domain/models/IItem.ts
 import { ISupplier } from '@modules/suppliers/domain/models/ISupplier';
+import { ItemStatus } from '../enums/item-status.enum';
 
 export interface IItem {
   id: string;
@@ -9,7 +9,7 @@ export interface IItem {
   externalId?: string;
   marketplace?: string;           // ex: "mercadolivre", "olx"
   shippingPrice?: number;
-  status: 'ready' | 'listed' | 'sold';
+  status: ItemStatus;              // <--- agora usa enum
   itemLink?: string;
   lastScrapedAt?: Date;
   images?: string[];               // JSON string convertida para array de URLs

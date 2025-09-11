@@ -1,4 +1,6 @@
+import { SupplierStatus } from "../enums/supplier-status.enum";
 import { IMarketplaces } from "./IMarketplaces";
+
 
 export interface ICreateSupplier {
   name: string;
@@ -13,6 +15,6 @@ export interface ICreateSupplier {
   state?: string;
   country?: string;
   zip_code?: string;
-  status?: 'ready' | 'listed' | 'sold';
+  status?: SupplierStatus; // corrigido para Supplier
   is_active?: boolean;
 }

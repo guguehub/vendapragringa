@@ -22,8 +22,8 @@ class Supplier {
   @Column({ nullable: true })
   url?: string; // opcional
 
-  @Column({ type: 'enum', enum: ['ready', 'listed', 'sold'], default: 'ready' })
-  status: 'ready' | 'listed' | 'sold';
+  @Column({ type: 'enum', enum: ['active', 'inactive', 'coming_soon'], default: 'active' })
+  status: 'active' | 'inactive' | 'coming_soon';
 
   @Column({ default: true })
   is_active: boolean;
