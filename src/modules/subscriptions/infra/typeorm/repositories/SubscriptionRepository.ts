@@ -60,6 +60,14 @@ class SubscriptionRepository implements ISubscriptionRepository {
     return result ?? undefined;
   }
 
+  public async findById(id: string): Promise<Subscription | undefined> {
+    const subscription = await this.ormRepository.findOne({
+      where: { id },
+    });
+    return subscription ?? undefined;
+  }
+
+  // opcional, não faz parte da interface mas pode ser útil
   public async findLatestByUserId(
     userId: string,
   ): Promise<Subscription | null> {

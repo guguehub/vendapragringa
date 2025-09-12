@@ -8,4 +8,7 @@ export interface ISubscriptionRepository {
   findActiveByUserId(userId: string): Promise<Subscription | undefined>;
   save(subscription: Subscription): Promise<Subscription>;
   findByTier?(tier: SubscriptionTier): Promise<Subscription[]>;
+
+  // 🔥 novo método para suportar UpdateSubscriptionService
+  findById(id: string): Promise<Subscription | undefined>;
 }

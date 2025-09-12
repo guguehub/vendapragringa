@@ -1,11 +1,12 @@
-import { IsEnum } from 'class-validator';
-//import { SubscriptionTier } from './subscription-tier.enum';
+import { IsEnum, IsUUID } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { SubscriptionTier } from '../enums/subscription-tier.enum';
 
-import { Transform } from 'class-transformer';
-
 export class CreateSubscriptionDto {
+  @IsUUID()
+  userId: string;
+
   @Transform(({ value }) => value.toLowerCase())
-  @IsEnum(SubscriptionTier)
+  @IsEnum(SubscriptionTier, { message: 'tier must be a valid subscription tier' })
   tier: SubscriptionTier;
 }

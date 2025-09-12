@@ -24,8 +24,7 @@
         "dev:build:light": "docker compose build",
           "dev:build:light-reset": "rm -rf .docker/dbdata && docker compose build",
 
-
-
+      "seed:tiers": "ts-node -r tsconfig-paths/register src/modules/subscriptions/infra/typeorm/seeds/seedSubscriptions.ts",
     "check-schema": "ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js schema:log -d src/shared/infra/typeorm/data-source.ts",
     "seed:shipping": "ts-node src/modules/shipping/infra/typeorm/seeds/runSeeds.ts",
     "seed:admin": "ts-node -r tsconfig-paths/register src/modules/users/infra/typeorm/seeds/seedAdmin.ts",

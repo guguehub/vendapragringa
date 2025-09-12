@@ -5,7 +5,7 @@ export interface ICreateSubscription {
   userId: string;
   tier: SubscriptionTier;
   status: SubscriptionStatus;
-  start_date?: Date;           // início da assinatura
-  expires_at?: Date | null;    // fim da assinatura; null para INFINITY
-  end_date?: Date;             // opcional, mantido para histórico ou relatórios
+  start_date?: Date;            // opcional, diferente de created_at se precisar
+  expires_at?: Date | null;     // null = sem limite
+  end_date?: Date | null;       // usado só quando expira/cancela
 }
