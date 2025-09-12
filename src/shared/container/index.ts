@@ -6,8 +6,7 @@ import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepos
 import UsersRepository from '@modules/users/infra/typeorm/repositories/UsersRepository';
 import '@modules/users/providers';
 import SubscriptionsRepository from '@modules/subscriptions/infra/typeorm/repositories/SubscriptionRepository';
-import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositories/ICreateSubscription';
-
+import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositories/ISubscriptionsRepository';
 import { ISavedItemsRepository } from '@modules/saved-items/domain/repositories/ISavedItemsRepository';
 import { SavedItemsRepository } from '@modules/saved-items/infra/typeorm/repositories/SavedItemsRepository';
 import ItemsRepository from '@modules/item/infra/typeorm/repositories/ItemsRepository';
