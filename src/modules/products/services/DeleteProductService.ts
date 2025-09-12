@@ -1,26 +1,32 @@
-//import 'reflect-metadata';
+import 'reflect-metadata';
+import { inject, injectable } from 'tsyringe';
 import redisCache from '../../../shared/cache/RedisCache';
 import AppError from '@shared/errors/AppError';
 import { IProductsRepository } from '../domain/repositories/IProductsRepository';
-import { inject, injectable } from 'tsyringe';
-import { IDeleteOrder } from '@modules/orders/domain/models/IDeleteOrder';
+
+interface IDeleteProduct {
+  id: string;
+}
 
 @injectable()
 class DeleteProductService {
   constructor(
     @inject('ProductsRepository')
-    private ProductsRepository: IProductsRepository,
+    private productsRepository: IProductsRepository,
   ) {}
 
-  public async execute({ id }: IDeleteOrder): Promise<void> {
-    const product = await this.ProductsRepository.findById(id);
+  public async execute({ id }: IDeleteProduct): Promise<void> {
+    const product = await this.productsRepository.findById(id);
 
     if (!product) {
       throw new AppError('Product not found');
     }
-    //const redisCache = new RedisCache();
+
+    // Invalida cache para manter consistência
     await redisCache.invalidate('api-vendas-PRODUCT-LIST');
-    await this.ProductsRepository.remove(product);
+
+    // Remove do banco
+    await this.productsRepository.remove(product);
   }
 }
 

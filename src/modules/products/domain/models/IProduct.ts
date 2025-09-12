@@ -1,15 +1,15 @@
-import OrdersProducts from '@modules/orders/infra/typeorm/entities/OrdersProducts';
+//import OrdersProducts from '@modules/orders/infra/typeorm/entities/OrdersProducts';
 
 export interface IProduct {
   id: string;
   name: string;
   price: number;
-  order_products: OrdersProducts[];
+  //order_products: OrdersProducts[];
   quantity: number;
   created_at: Date;
   updated_at: Date;
   listingUrl: string;
-  mercadoLivreItemId: string; // Mercado Livre item ID
+  mercadoLivreItemId: string;
   description: string;
   shippingPrice: number;
   status: string;
@@ -21,6 +21,6 @@ export interface IProduct {
   currency: string;
   publishedAt: Date;
   expirationDate: Date | null;
-  marketplace: string; // Marketplace of the listing
-  itemType: string; // New, used, etc.
+  marketplace: string;
+  itemType: string;
 }

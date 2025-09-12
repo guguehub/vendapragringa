@@ -1,8 +1,9 @@
+import 'reflect-metadata';
+import { inject, injectable } from 'tsyringe';
 import redisCache from '../../../shared/cache/RedisCache';
 import AppError from '../../../shared/errors/AppError';
-import { inject, injectable } from 'tsyringe';
-import { ICreateProduct } from '../domain/models/ICreateProduct';
 import { IProductsRepository } from '../domain/repositories/IProductsRepository';
+import { ICreateProduct } from '../domain/models/ICreateProduct';
 import { IProduct } from '../domain/models/IProduct';
 
 @injectable()
@@ -16,11 +17,26 @@ class CreateProductService {
     name,
     price,
     quantity,
+    listingUrl,
+    mercadoLivreItemId,
+    description,
+    shippingPrice,
+    status,
+    condition,
+    availableQuantity,
+    sellerId,
+    categoryId,
+    images,
+    currency,
+    publishedAt,
+    expirationDate,
+    marketplace,
+    itemType,
   }: ICreateProduct): Promise<IProduct> {
     const productExists = await this.productsRepository.findByName(name);
 
     if (productExists) {
-      throw new AppError('there is already one product with this name');
+      throw new AppError('There is already a product with this name');
     }
 
     await redisCache.invalidate('api-vendas-PRODUCT-LIST');
@@ -29,9 +45,22 @@ class CreateProductService {
       name,
       price,
       quantity,
+      listingUrl,
+      mercadoLivreItemId,
+      description,
+      shippingPrice,
+      status,
+      condition,
+      availableQuantity,
+      sellerId,
+      categoryId,
+      images,
+      currency,
+      publishedAt,
+      expirationDate,
+      marketplace,
+      itemType,
     });
-
-    //await this.productsRepository.save(product);
 
     return product;
   }

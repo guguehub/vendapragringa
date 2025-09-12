@@ -1,65 +1,107 @@
 import { Request, Response } from 'express';
-import ListProductService from '../../../../products/services/ListProductService';
-import ShowProductService from '../../../../products/services/ShowProductService';
-import CreateProductService from '../../../../products/services/CreateProductService';
-import UpdateProductService from '@modules/products/services/UpdateProductService';
-import DeleteProductService from '../../../../products/services/DeleteProductService';
 import { container } from 'tsyringe';
+import ListProductService from '@modules/products/services/ListProductService';
+import ShowProductService from '@modules/products/services/ShowProductService';
+import CreateProductService from '@modules/products/services/CreateProductService';
+import UpdateProductService from '@modules/products/services/UpdateProductService';
+import DeleteProductService from '@modules/products/services/DeleteProductService';
+import AppError from '@shared/errors/AppError';
 
 export default class ProductsController {
-  public async index(request: Request, response: Response): Promise<Response> {
-    const listProducts = container.resolve(ListProductService);
-
-    const products = await listProducts.execute();
-
-    return response.json(products);
+  public async index(req: Request, res: Response): Promise<Response> {
+    const listService = container.resolve(ListProductService);
+    const products = await listService.execute();
+    return res.status(200).json(products);
   }
 
-  public async show(request: Request, response: Response): Promise<Response> {
-    const { id } = request.params;
+  public async show(req: Request, res: Response): Promise<Response> {
+    const { id } = req.params;
 
-    const showProduct = container.resolve(ShowProductService);
+    if (!id) {
+      throw new AppError('Product ID is required', 400);
+    }
 
-    const product = await showProduct.execute({ id });
-
-    return response.json(product);
+    const showService = container.resolve(ShowProductService);
+    const product = await showService.execute({ id });
+    return res.status(200).json(product);
   }
 
-  public async create(request: Request, response: Response): Promise<Response> {
-    const { name, price, quantity } = request.body;
-
-    const createProduct = container.resolve(CreateProductService);
-
-    const product = await createProduct.execute({
+  public async create(req: Request, res: Response): Promise<Response> {
+    const {
       name,
       price,
       quantity,
-    });
-    return response.json(product);
-  }
+      listingUrl,
+      mercadoLivreItemId,
+      description,
+      shippingPrice,
+      status,
+      condition,
+      availableQuantity,
+      sellerId,
+      categoryId,
+      images,
+      currency,
+      publishedAt,
+      expirationDate,
+      marketplace,
+      itemType,
+    } = req.body;
 
-  public async update(request: Request, response: Response): Promise<Response> {
-    const { name, price, quantity } = request.body;
-    const { id } = request.params;
+    // Validação mínima
+    if (!name || price === undefined || quantity === undefined) {
+      throw new AppError('Name, price, and quantity are required', 400);
+    }
 
-    const updateProduct = container.resolve(UpdateProductService);
-
-    const product = await updateProduct.execute({
-      id,
+    const createService = container.resolve(CreateProductService);
+    const product = await createService.execute({
       name,
       price,
       quantity,
+      listingUrl,
+      mercadoLivreItemId,
+      description,
+      shippingPrice,
+      status,
+      condition,
+      availableQuantity,
+      sellerId,
+      categoryId,
+      images,
+      currency,
+      publishedAt,
+      expirationDate,
+      marketplace,
+      itemType,
     });
-    return response.json(product);
+
+    return res.status(201).json(product);
   }
 
-  public async delete(request: Request, response: Response): Promise<Response> {
-    const { id } = request.params;
+  public async update(req: Request, res: Response): Promise<Response> {
+    const { id } = req.params;
 
-    const deleteProduct = container.resolve(DeleteProductService);
+    if (!id) {
+      throw new AppError('Product ID is required', 400);
+    }
 
-    await deleteProduct.execute({ id });
+    const updateService = container.resolve(UpdateProductService);
+    const product = await updateService.execute({ ...req.body, id });
 
-    return response.json([]);
+    return res.status(200).json(product);
+  }
+
+  public async delete(req: Request, res: Response): Promise<Response> {
+    const { id } = req.params;
+
+    if (!id) {
+      throw new AppError('Product ID is required', 400);
+    }
+
+    const deleteService = container.resolve(DeleteProductService);
+    await deleteService.execute({ id });
+
+    return res.status(204).send();
   }
 }
+s

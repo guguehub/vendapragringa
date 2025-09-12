@@ -1,6 +1,7 @@
-import { IProductsRepository } from '../domain/repositories/IProductsRepository';
+import 'reflect-metadata';
 import { inject, injectable } from 'tsyringe';
 import redisCache from '../../../shared/cache/RedisCache';
+import { IProductsRepository } from '../domain/repositories/IProductsRepository';
 import { IProduct } from '../domain/models/IProduct';
 
 @injectable()
@@ -11,14 +12,15 @@ class ListProductService {
   ) {}
 
   public async execute(): Promise<IProduct[]> {
-    let products = await redisCache.recover<IProduct[]>(
-      'api-vendas-PRODUCT_LIST',
-    );
+    // Tenta recuperar do cache
+    let products = await redisCache.recover<IProduct[]>('api-vendas-PRODUCT-LIST');
 
     if (!products) {
+      // Busca do banco se não estiver em cache
       products = await this.productsRepository.findAll();
 
-      //await redisCache.save('api-vendas-PRODUCT_LIST', products);
+      // Salva no cache
+      await redisCache.save('api-vendas-PRODUCT-LIST', products);
     }
 
     return products;

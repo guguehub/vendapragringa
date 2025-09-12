@@ -2,9 +2,8 @@ import 'reflect-metadata';
 import AppError from '@shared/errors/AppError';
 import { injectable, inject } from 'tsyringe';
 import { IProductsRepository } from '../domain/repositories/IProductsRepository';
-import { IProduct } from '../domain/models/IProduct';
 import { IShowProduct } from '../domain/models/IShowProduct';
-import Product from '../infra/typeorm/entities/Product';
+import { IProduct } from '../domain/models/IProduct';
 
 @injectable()
 class ShowProductService {
@@ -13,7 +12,7 @@ class ShowProductService {
     private productsRepository: IProductsRepository,
   ) {}
 
-  public async execute({ id }: IShowProduct): Promise<Product> {
+  public async execute({ id }: IShowProduct): Promise<IProduct> {
     const product = await this.productsRepository.findById(id);
 
     if (!product) {
