@@ -4,6 +4,7 @@ import SubscriptionController from '../controllers/SubscriptionController';
 import CheckSubscriptionStatusController from '../controllers/CheckSubscriptionStatusController';
 import isAuthenticated from '@shared/infra/http/middlewares/isAuthenticated';
 import isAdmin from '@shared/infra/http/middlewares/isAdmin';
+import populateSubscription from '@shared/infra/http/middlewares/populateSubscription';
 
 const subscriptionRouter = Router();
 
@@ -26,7 +27,7 @@ subscriptionRouter.post(
  */
 subscriptionRouter.put(
   '/upgrade',
-  isAuthenticated,
+  isAuthenticated,populateSubscription,
   subscriptionController.upgrade,
 );
 
@@ -35,7 +36,7 @@ subscriptionRouter.put(
  */
 subscriptionRouter.put(
   '/update',
-  isAuthenticated,
+  isAuthenticated, populateSubscription,
   isAdmin,
   subscriptionController.update,
 );
@@ -45,7 +46,7 @@ subscriptionRouter.put(
  */
 subscriptionRouter.get(
   '/status',
-  isAuthenticated,
+  isAuthenticated, populateSubscription,
   checkStatusController.show,
 );
 

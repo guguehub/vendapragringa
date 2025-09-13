@@ -1,16 +1,22 @@
 import { Router } from 'express';
-//import ProductsController from '../controllers/ProductsController';
 import { celebrate, Joi, Segments } from 'celebrate';
 import isAuthenticated from '@shared/infra/http/middlewares/isAuthenticated';
+import isAdmin from '@shared/infra/http/middlewares/isAdmin';
 import ProductsController from '../controllers/ProductsControllers';
 
 const productsRouter = Router();
 const productsController = new ProductsController();
 
-// Listar todos os produtos
-productsRouter.get('/', isAuthenticated, productsController.index);
+/**
+ * GET /products
+ * Lista todos os produtos (público por enquanto)
+ */
+productsRouter.get('/', productsController.index);
 
-// Mostrar um produto pelo ID
+/**
+ * GET /products/:id
+ * Mostrar um produto pelo ID (público)
+ */
 productsRouter.get(
   '/:id',
   celebrate({
@@ -21,9 +27,14 @@ productsRouter.get(
   productsController.show,
 );
 
-// Criar um novo produto
+/**
+ * POST /products
+ * Criar produto (apenas admin)
+ */
 productsRouter.post(
   '/',
+  isAuthenticated,
+  isAdmin,
   celebrate({
     [Segments.BODY]: {
       product_title: Joi.string().required(),
@@ -41,9 +52,14 @@ productsRouter.post(
   productsController.create,
 );
 
-// Atualizar um produto existente
+/**
+ * PUT /products/:id
+ * Atualizar produto (apenas admin)
+ */
 productsRouter.put(
   '/:id',
+  isAuthenticated,
+  isAdmin,
   celebrate({
     [Segments.PARAMS]: {
       id: Joi.string().uuid().required(),
@@ -64,9 +80,14 @@ productsRouter.put(
   productsController.update,
 );
 
-// Deletar um produto
+/**
+ * DELETE /products/:id
+ * Deletar produto (apenas admin)
+ */
 productsRouter.delete(
   '/:id',
+  isAuthenticated,
+  isAdmin,
   celebrate({
     [Segments.PARAMS]: {
       id: Joi.string().uuid().required(),
