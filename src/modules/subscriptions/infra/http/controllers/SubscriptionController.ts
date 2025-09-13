@@ -4,8 +4,9 @@ import { container } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 
 import CreateSubscriptionService from '@modules/subscriptions/services/CreateSubscriptionService';
-import UpgradeSubscriptionService from '@modules/subscriptions/services/UpgradeSubscriptionService';
-import UpdateSubscriptionService from '@modules/subscriptions/services/UpdateSubscriptionService';
+import UpgradeSubscriptionServiceUser from '@modules/subscriptions/services/UpgradeSubscriptionServiceUser';
+import UpdateSubscriptionServiceAdmin from '@modules/subscriptions/services/UpdateSubscriptionServiceAdmin';
+
 import { CreateSubscriptionDto } from '@modules/subscriptions/dtos/create-subscription.dto';
 import { UpdateSubscriptionDto } from '@modules/subscriptions/dtos/update-subscription.dto';
 import { SubscriptionStatus } from '@modules/subscriptions/infra/typeorm/entities/Subscription';
@@ -56,11 +57,12 @@ export default class SubscriptionController {
         throw new AppError('Tier is required for upgrade', 400);
       }
 
-      const upgradeService = container.resolve(UpgradeSubscriptionService);
-      await upgradeService.execute({ userId, tier });
+      const upgradeService = container.resolve(UpgradeSubscriptionServiceUser);
+      const subscription = await upgradeService.execute({ userId, tier });
 
       return response.json({
         message: `Subscription tier updated to "${tier}" successfully`,
+        subscription,
       });
     } catch (error: unknown) {
       if (error instanceof AppError) {
@@ -81,9 +83,8 @@ export default class SubscriptionController {
         throw new AppError('subscriptionId is required for update', 400);
       }
 
-      const updateService = container.resolve(UpdateSubscriptionService);
-
-      await updateService.execute({
+      const updateService = container.resolve(UpdateSubscriptionServiceAdmin);
+      const subscription = await updateService.execute({
         subscriptionId,
         tier,
         status,
@@ -91,7 +92,8 @@ export default class SubscriptionController {
       });
 
       return response.json({
-        message: `Subscription updated successfully`,
+        message: 'Subscription updated successfully',
+        subscription,
       });
     } catch (error: unknown) {
       if (error instanceof AppError) {

@@ -1,18 +1,19 @@
-// src/modules/subscriptions/services/UpdateSubscriptionService.ts
+// src/modules/subscriptions/services/UpdateSubscriptionServiceAdmin.ts
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 import { ISubscriptionRepository } from '../domain/repositories/ISubscriptionsRepository';
 import { UpdateSubscriptionDto } from '../dtos/update-subscription.dto';
 import { SubscriptionStatus } from '../infra/typeorm/entities/Subscription';
+import { Subscription } from '../infra/typeorm/entities/Subscription';
 
 @injectable()
-export default class UpdateSubscriptionService {
+export default class UpdateSubscriptionServiceAdmin {
   constructor(
     @inject('SubscriptionsRepository')
     private subscriptionsRepository: ISubscriptionRepository,
   ) {}
 
-  public async execute(data: UpdateSubscriptionDto): Promise<void> {
+  public async execute(data: UpdateSubscriptionDto): Promise<Subscription> {
     const subscriptionId = data.subscriptionId;
     if (!subscriptionId) throw new AppError('subscriptionId is required for admin update');
 
@@ -26,6 +27,6 @@ export default class UpdateSubscriptionService {
 
     subscription.updated_at = new Date();
 
-    await this.subscriptionsRepository.save(subscription);
+    return this.subscriptionsRepository.save(subscription);
   }
 }
