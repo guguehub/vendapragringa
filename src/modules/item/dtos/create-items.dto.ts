@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsUUID, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateItemDto {
   @IsString()
@@ -56,8 +56,4 @@ export class CreateItemDto {
   @IsString()
   @IsOptional()
   barcode?: string;
-
-  @IsUUID()
-  @IsNotEmpty()
-  userId: string;
 }

@@ -9,5 +9,4 @@ export interface IProductsRepository {
   save(product: IProduct): Promise<IProduct>;
   remove(product: IProduct): Promise<void>;
   findAll(): Promise<IProduct[]>;
-  findAllByIds(products: IFindProducts[]): Promise<IProduct[]>;
 }

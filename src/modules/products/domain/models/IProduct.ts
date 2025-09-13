@@ -1,26 +1,16 @@
-//import OrdersProducts from '@modules/orders/infra/typeorm/entities/OrdersProducts';
-
 export interface IProduct {
   id: string;
-  name: string;
+  product_title: string;
+  description?: string;
   price: number;
-  //order_products: OrdersProducts[];
-  quantity: number;
+  is_active: boolean;
+  product_url?: string;
+  image_url?: string;
+  payment_method?: string;
+  category?: string;
+  tags?: string[];
+  published_at: Date;
+  expiration_date?: Date | null;
   created_at: Date;
   updated_at: Date;
-  listingUrl: string;
-  mercadoLivreItemId: string;
-  description: string;
-  shippingPrice: number;
-  status: string;
-  condition: string;
-  availableQuantity: number;
-  sellerId: string;
-  categoryId: string;
-  images: string[];
-  currency: string;
-  publishedAt: Date;
-  expirationDate: Date | null;
-  marketplace: string;
-  itemType: string;
 }

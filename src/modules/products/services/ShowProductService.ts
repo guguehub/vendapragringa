@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import AppError from '@shared/errors/AppError';
-import { injectable, inject } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 import { IProductsRepository } from '../domain/repositories/IProductsRepository';
 import { IShowProduct } from '../domain/models/IShowProduct';
 import { IProduct } from '../domain/models/IProduct';

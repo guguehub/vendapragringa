@@ -4,74 +4,57 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
 } from 'typeorm';
-//import OrdersProducts from '@modules/orders/infra/typeorm/entities/OrdersProducts';
 
 @Entity('products')
 class Product {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  // Nome ou título comercial do produto (plano/serviço)
   @Column()
-  name: string;
+  product_title: string;
 
+  // Descrição opcional do produto
   @Column({ nullable: true })
   description: string;
 
+  // Preço do produto/plano
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
   price: number;
 
+  // Flag para ativar/desativar um produto
   @Column({ default: true })
-  isActive: boolean;
+  is_active: boolean;
 
-  @Column('int', { default: 0 })
-  quantity: number;
-
-  @Column()
-  listingUrl: string;
-
+  // Opcional: URL de referência (página de detalhe do plano)
   @Column({ nullable: true })
-  mercadoLivreItemId: string;
+  product_url: string;
 
-  @Column('decimal', { precision: 10, scale: 2, default: 0 })
-  shippingPrice: number;
+  // Imagem ilustrativa (pode ser usado no front para exibir cards de planos)
+  @Column({ nullable: true })
+  image_url: string;
 
-  @Column()
-  status: string;
+  // Método de pagamento associado (ex: stripe, mercadopago, paypal)
+  // pode ser null inicialmente (até termos implementação)
+  @Column({ nullable: true })
+  payment_method: string;
 
-  @Column()
-  condition: string;
+  // Categoria do produto (ex: plano, funcionalidade extra, módulo futuro)
+  @Column({ nullable: true })
+  category: string;
 
-  @Column('int', { default: 0 })
-  availableQuantity: number;
+  // Tags como "Ouro, Prata, Bronze, Infinity"
+  @Column('simple-array', { nullable: true })
+  tags: string[];
 
-  @Column()
-  sellerId: string;
+  // Data de início/publicação do plano
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  published_at: Date;
 
-  @Column()
-  categoryId: string;
-
-  @Column('simple-array')
-  images: string[];
-
-  @Column()
-  currency: string;
-
-  @Column({ type: 'timestamp' })
-  publishedAt: Date;
-
+  // Data de expiração (para promoções, testes temporários)
   @Column({ type: 'timestamp', nullable: true })
-  expirationDate: Date | null;
-
-  @Column()
-  marketplace: string;
-
-  @Column()
-  itemType: string;
-
-  //@OneToMany(() => OrdersProducts, op => op.product)
-  //order_products: OrdersProducts[];
+  expiration_date: Date | null;
 
   @CreateDateColumn({ name: 'created_at' })
   created_at: Date;

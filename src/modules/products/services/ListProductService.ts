@@ -12,15 +12,17 @@ class ListProductService {
   ) {}
 
   public async execute(): Promise<IProduct[]> {
+    const cacheKey = 'api-vendas-PRODUCT-LIST';
+
     // Tenta recuperar do cache
-    let products = await redisCache.recover<IProduct[]>('api-vendas-PRODUCT-LIST');
+    let products = await redisCache.recover<IProduct[]>(cacheKey);
 
     if (!products) {
-      // Busca do banco se não estiver em cache
+      // Busca do banco se não estiver no cache
       products = await this.productsRepository.findAll();
 
       // Salva no cache
-      await redisCache.save('api-vendas-PRODUCT-LIST', products);
+      await redisCache.save(cacheKey, products);
     }
 
     return products;

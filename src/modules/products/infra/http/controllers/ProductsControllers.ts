@@ -28,51 +28,34 @@ export default class ProductsController {
 
   public async create(req: Request, res: Response): Promise<Response> {
     const {
-      name,
+      product_title,
       price,
-      quantity,
-      listingUrl,
-      mercadoLivreItemId,
       description,
-      shippingPrice,
-      status,
-      condition,
-      availableQuantity,
-      sellerId,
-      categoryId,
-      images,
-      currency,
-      publishedAt,
-      expirationDate,
-      marketplace,
-      itemType,
+      product_url,
+      image_url,
+      payment_method,
+      category,
+      tags,
+      published_at,
+      expiration_date,
     } = req.body;
 
-    // Validação mínima
-    if (!name || price === undefined || quantity === undefined) {
-      throw new AppError('Name, price, and quantity are required', 400);
+    if (!product_title || price === undefined) {
+      throw new AppError('Product title and price are required', 400);
     }
 
     const createService = container.resolve(CreateProductService);
     const product = await createService.execute({
-      name,
+      product_title,
       price,
-      quantity,
-      listingUrl,
-      mercadoLivreItemId,
       description,
-      shippingPrice,
-      status,
-      condition,
-      availableQuantity,
-      sellerId,
-      categoryId,
-      images,
-      currency,
-      publishedAt,
-      expirationDate,
-      marketplace,
-      itemType,
+      product_url,
+      image_url,
+      payment_method,
+      category,
+      tags,
+      published_at,
+      expiration_date,
     });
 
     return res.status(201).json(product);
@@ -104,4 +87,3 @@ export default class ProductsController {
     return res.status(204).send();
   }
 }
-s

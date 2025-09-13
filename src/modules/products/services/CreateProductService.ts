@@ -13,54 +13,17 @@ class CreateProductService {
     private productsRepository: IProductsRepository,
   ) {}
 
-  public async execute({
-    name,
-    price,
-    quantity,
-    listingUrl,
-    mercadoLivreItemId,
-    description,
-    shippingPrice,
-    status,
-    condition,
-    availableQuantity,
-    sellerId,
-    categoryId,
-    images,
-    currency,
-    publishedAt,
-    expirationDate,
-    marketplace,
-    itemType,
-  }: ICreateProduct): Promise<IProduct> {
-    const productExists = await this.productsRepository.findByName(name);
+  public async execute(data: ICreateProduct): Promise<IProduct> {
+    const { product_title } = data;
 
+    const productExists = await this.productsRepository.findByName(product_title);
     if (productExists) {
-      throw new AppError('There is already a product with this name');
+      throw new AppError('There is already a product with this title');
     }
 
     await redisCache.invalidate('api-vendas-PRODUCT-LIST');
 
-    const product = await this.productsRepository.create({
-      name,
-      price,
-      quantity,
-      listingUrl,
-      mercadoLivreItemId,
-      description,
-      shippingPrice,
-      status,
-      condition,
-      availableQuantity,
-      sellerId,
-      categoryId,
-      images,
-      currency,
-      publishedAt,
-      expirationDate,
-      marketplace,
-      itemType,
-    });
+    const product = await this.productsRepository.create(data);
 
     return product;
   }

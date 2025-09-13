@@ -1,3 +1,6 @@
 export interface IFindProducts {
-  id: string;
+  search?: string;
+  is_active?: boolean;
+  category?: string;
+  tags?: string[];
 }

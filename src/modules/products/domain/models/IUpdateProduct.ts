@@ -1,21 +1,14 @@
 export interface IUpdateProduct {
   id: string;
-  name?: string;
-  price?: number;
-  quantity?: number;
-  listingUrl?: string;
-  mercadoLivreItemId?: string;
+  product_title?: string;
   description?: string;
-  shippingPrice?: number;
-  status?: string;
-  condition?: string;
-  availableQuantity?: number;
-  sellerId?: string;
-  categoryId?: string;
-  images?: string[];
-  currency?: string;
-  publishedAt?: Date;
-  expirationDate?: Date;
-  marketplace?: string;
-  itemType?: string;
+  price?: number;
+  is_active?: boolean;
+  product_url?: string;
+  image_url?: string;
+  payment_method?: string;
+  category?: string;
+  tags?: string[];
+  published_at?: Date;
+  expiration_date?: Date | null;
 }

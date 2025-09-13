@@ -1,20 +1,13 @@
 export interface ICreateProduct {
-  name: string;
+  product_title: string;
+  description?: string;
   price: number;
-  quantity: number;
-  listingUrl: string;
-  mercadoLivreItemId: string;
-  description: string;
-  shippingPrice: number;
-  status: string;
-  condition: string;
-  availableQuantity: number;
-  sellerId: string;
-  categoryId: string;
-  images: string[];
-  currency: string;
-  publishedAt: Date;
-  expirationDate?: Date;
-  marketplace: string;
-  itemType: string;
+  is_active?: boolean;
+  product_url?: undefined;
+  image_url?: undefined;
+  payment_method?: undefined;
+  category?: string;
+  tags?: string[];
+  published_at?: Date;
+  expiration_date?: Date | null;
 }

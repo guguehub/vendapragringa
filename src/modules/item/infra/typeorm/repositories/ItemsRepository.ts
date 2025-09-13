@@ -22,16 +22,11 @@ class ItemsRepository implements IItemsRepository {
   public async findById(id: string): Promise<Item | null> {
     return this.ormRepository.findOne({
       where: { id },
-      relations: ['supplier'],
+      relations: ['supplier'], // apenas supplier
     });
   }
 
-  public async findByUserId(userId: string): Promise<Item[]> {
-  return this.ormRepository.find({
-    where: { userId: userId }, // aqui usa o nome correto da coluna
-    relations: ['supplier'],
-  });
-}
+  // ❌ Removido findByUserId, pois Item é agnóstico
 
   public async findByStatus(status?: string): Promise<Item[]> {
     if (status) {
@@ -40,7 +35,6 @@ class ItemsRepository implements IItemsRepository {
         relations: ['supplier'],
       });
     }
-    // Se status não for informado, retorna todos
     return this.ormRepository.find({
       relations: ['supplier'],
     });
@@ -56,7 +50,7 @@ class ItemsRepository implements IItemsRepository {
 
   public async findAll(): Promise<Item[]> {
     return this.ormRepository.find({
-      relations: ['user', 'updatedBy'],  // confere o nome da relação na entidade Item
+      relations: ['supplier'], // apenas supplier
     });
   }
 }
