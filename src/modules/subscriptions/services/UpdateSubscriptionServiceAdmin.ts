@@ -1,19 +1,18 @@
-// src/modules/subscriptions/services/UpdateSubscriptionServiceAdmin.ts
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
+import RedisCache from '@shared/cache/RedisCache';
 import { ISubscriptionRepository } from '../domain/repositories/ISubscriptionsRepository';
 import { UpdateSubscriptionDto } from '../dtos/update-subscription.dto';
-import { SubscriptionStatus } from '../infra/typeorm/entities/Subscription';
-import { Subscription } from '../infra/typeorm/entities/Subscription';
+//import { SubscriptionStatus } from '../infra/typeorm/entities/Subscription';
 
 @injectable()
 export default class UpdateSubscriptionServiceAdmin {
   constructor(
-    @inject('SubscriptionsRepository')
+    @inject('SubscriptionRepository')
     private subscriptionsRepository: ISubscriptionRepository,
   ) {}
 
-  public async execute(data: UpdateSubscriptionDto): Promise<Subscription> {
+  public async execute(data: UpdateSubscriptionDto): Promise<void> {
     const subscriptionId = data.subscriptionId;
     if (!subscriptionId) throw new AppError('subscriptionId is required for admin update');
 
@@ -27,6 +26,9 @@ export default class UpdateSubscriptionServiceAdmin {
 
     subscription.updated_at = new Date();
 
-    return this.subscriptionsRepository.save(subscription);
+    await this.subscriptionsRepository.save(subscription);
+
+    // 🚀 Invalida cache
+    await RedisCache.invalidate(`user-subscription-${subscription.userId}`);
   }
 }
