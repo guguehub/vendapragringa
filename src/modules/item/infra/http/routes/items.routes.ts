@@ -1,16 +1,20 @@
+// src/modules/item/infra/http/routes/item.routes.ts
 import { Router } from 'express';
 import { celebrate, Joi, Segments } from 'celebrate';
+
 import isAuthenticated from '@shared/infra/http/middlewares/isAuthenticated';
-import { CheckUserItemLimitMiddleware } from '@shared/infra/http/middlewares/CheckUserItemLimitMiddleware';
+import isAdmin from '@shared/infra/http/middlewares/isAdmin';
+
 import ItemsController from '../controllers/ItemsController';
 
 const itemsRouter = Router();
 const itemsController = new ItemsController();
 
-// Listar itens do usuário
-itemsRouter.get('/', isAuthenticated, itemsController.index);
+// Rotas abertas SOMENTE para usuários logados
+itemsRouter.use(isAuthenticated);
 
-// Detalhes de um item específico
+itemsRouter.get('/', itemsController.index);
+
 itemsRouter.get(
   '/:id',
   celebrate({
@@ -21,37 +25,42 @@ itemsRouter.get(
   itemsController.show,
 );
 
-// Criar item (aplica limite do tier)
 itemsRouter.post(
   '/',
-  isAuthenticated,
-  CheckUserItemLimitMiddleware,
   celebrate({
     [Segments.BODY]: {
-      title: Joi.string().required(),
-      price: Joi.number().precision(2).required(),
-      quantity: Joi.number().required(),
+      name: Joi.string().required(),
+      description: Joi.string().optional(),
     },
   }),
-  itemsController.create
+  itemsController.create,
 );
 
-// Atualizar item
+// Somente admin pode alterar/excluir itens
 itemsRouter.put(
   '/:id',
-  isAuthenticated,
+  isAdmin,
+  celebrate({
+    [Segments.PARAMS]: {
+      id: Joi.string().uuid().required(),
+    },
+    [Segments.BODY]: {
+      name: Joi.string().optional(),
+      description: Joi.string().optional(),
+    },
+  }),
+  itemsController.update,
 );
 
-// Deletar item
 itemsRouter.delete(
   '/:id',
-  isAuthenticated,
+  isAdmin,
   celebrate({
     [Segments.PARAMS]: {
       id: Joi.string().uuid().required(),
     },
   }),
-  itemsController.delete
+  itemsController.delete,
 );
 
 export default itemsRouter;

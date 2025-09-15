@@ -1,9 +1,9 @@
+// src/modules/user_items/services/UpdateUserItemService.ts
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 
 import { IUserItemsRepository } from '../domain/repositories/IUserItemsRepository';
 import { IUserItem } from '../domain/models/IUserItem';
-import { IUpdateUserItemDTO } from '../dtos/IUpdateUserItemDTO';
 
 @injectable()
 class UpdateUserItemService {
@@ -14,16 +14,18 @@ class UpdateUserItemService {
 
   public async execute(
     id: string,
-    data: IUpdateUserItemDTO,
+    user_id: string,
+    data: Partial<IUserItem>,
   ): Promise<IUserItem> {
-    const userItem = await this.userItemsRepository.findById(id);
+    const userItem = await this.userItemsRepository.findByIdAndUser(id, user_id);
 
     if (!userItem) {
-      throw new AppError('User item not found.');
+      throw new AppError('Item não encontrado ou não pertence ao usuário', 404);
     }
 
-    const updated = await this.userItemsRepository.update(id, data);
-    return updated;
+    Object.assign(userItem, data);
+
+    return this.userItemsRepository.save(userItem);
   }
 }
 

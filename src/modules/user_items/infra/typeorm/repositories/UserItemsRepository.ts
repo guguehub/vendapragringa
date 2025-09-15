@@ -31,14 +31,17 @@ export class UserItemsRepository implements IUserItemsRepository {
   }
 
   public async findByUserAndItem(
-    user_id: string,
-    item_id: string,
+    userId: string,
+    itemId: string,
   ): Promise<IUserItem | null> {
-    return this.ormRepository.findOne({ where: { userId: user_id, itemId: item_id } });
+    return this.ormRepository.findOne({ where: { userId, itemId } });
   }
 
-  public async listByUser(user_id: string): Promise<IUserItem[]> {
-    return this.ormRepository.find({ where: { userId: user_id }, relations: ['item'] });
+  public async listByUser(userId: string): Promise<IUserItem[]> {
+    return this.ormRepository.find({
+      where: { userId },
+      relations: ['item'],
+    });
   }
 
   public async update(id: string, data: Partial<IUserItem>): Promise<IUserItem> {
@@ -49,6 +52,15 @@ export class UserItemsRepository implements IUserItemsRepository {
   }
 
   public async show(id: string): Promise<IUserItem | null> {
-    return this.ormRepository.findOne({ where: { id }, relations: ['item', 'user'] });
+    return this.ormRepository.findOne({
+      where: { id },
+      relations: ['item', 'user'],
+    });
+  }
+
+  public async findByIdAndUser(id: string, userId: string): Promise<IUserItem | null> {
+    return this.ormRepository.findOne({
+      where: { id, userId },
+    });
   }
 }
