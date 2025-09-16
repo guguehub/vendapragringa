@@ -1,3 +1,4 @@
+// src/modules/suppliers/infra/http/controllers/SupplierController.ts
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 
@@ -8,11 +9,17 @@ import ListSuppliersService from '@modules/suppliers/services/ListSuppliersServi
 import AppError from '@shared/errors/AppError';
 
 export default class SupplierController {
-  // Lista todos os suppliers (opção clean)
+  /**
+   * Lista todos os suppliers (marketplaces e custom)
+   */
   public async index(request: Request, response: Response): Promise<Response> {
     try {
       const listSuppliers = container.resolve(ListSuppliersService);
-      const suppliers = await listSuppliers.execute();
+
+      // Pega user_id da query (ou de token/autenticação, se for o caso)
+      const { user_id } = request.query as { user_id?: string };
+
+      const suppliers = await listSuppliers.execute({ user_id });
 
       return response.json(suppliers);
     } catch (error: unknown) {
@@ -24,7 +31,9 @@ export default class SupplierController {
     }
   }
 
-  // Criação de supplier
+  /**
+   * Criação de supplier (marketplace ou custom)
+   */
   public async create(request: Request, response: Response): Promise<Response> {
     try {
       const {
@@ -72,7 +81,9 @@ export default class SupplierController {
     }
   }
 
-  // Atualização de supplier
+  /**
+   * Atualização de supplier
+   */
   public async update(request: Request, response: Response): Promise<Response> {
     try {
       const { id } = request.params;
@@ -122,7 +133,9 @@ export default class SupplierController {
     }
   }
 
-  // Remoção de supplier
+  /**
+   * Remoção de supplier
+   */
   public async delete(request: Request, response: Response): Promise<Response> {
     try {
       const { id } = request.params;

@@ -6,7 +6,12 @@ import { IUserItemsRepository } from '../domain/repositories/IUserItemsRepositor
 import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
 import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
 import { IUserItem } from '../domain/models/IUserItem';
-import { ICreateUserItemDTO } from '../dtos/ICreateUserItemDTO';
+
+interface ICreateUserItemDTO {
+  user_id: string;
+  item_id: string;
+  quantity?: number;
+}
 
 @injectable()
 class CreateUserItemService {
@@ -24,40 +29,39 @@ class CreateUserItemService {
   public async execute({
     user_id,
     item_id,
-    quantity = 1, // default caso não seja informado
+    quantity = 1,
   }: ICreateUserItemDTO): Promise<IUserItem> {
-    // 1. Validar se o usuário existe
+    if (quantity < 1) {
+      throw new AppError('A quantidade deve ser pelo menos 1.');
+    }
+
     const user = await this.usersRepository.findById(user_id);
     if (!user) {
-      throw new AppError('Usuário não encontrado.');
+      throw new AppError('Usuário não encontrado.', 404);
     }
 
-    // 2. Validar se o item existe
     const item = await this.itemsRepository.findById(item_id);
     if (!item) {
-      throw new AppError('Item não encontrado.');
+      throw new AppError('Item não encontrado.', 404);
     }
 
-    // 3. Verificar se esse item já está vinculado ao usuário
     const existingUserItem = await this.userItemsRepository.findByUserAndItem(
       user_id,
       item_id,
     );
 
     if (existingUserItem) {
-      // já existe → apenas atualizar a quantidade
       existingUserItem.quantity += quantity;
       return this.userItemsRepository.save(existingUserItem);
     }
 
-    // 4. Criar novo registro
+    // ✅ faltava o await aqui
     const userItem = await this.userItemsRepository.create({
       user_id,
       item_id,
       quantity,
     });
 
-    // Salva o novo registro
     return this.userItemsRepository.save(userItem);
   }
 }

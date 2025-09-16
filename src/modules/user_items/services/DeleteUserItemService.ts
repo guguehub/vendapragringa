@@ -18,7 +18,7 @@ class DeleteUserItemService {
       throw new AppError('Item não encontrado ou não pertence ao usuário', 404);
     }
 
-    await this.userItemsRepository.delete(id);
+    await this.userItemsRepository.delete(userItem.id);
   }
 }
 

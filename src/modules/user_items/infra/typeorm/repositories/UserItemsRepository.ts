@@ -26,22 +26,27 @@ export class UserItemsRepository implements IUserItemsRepository {
     await this.ormRepository.delete(id);
   }
 
+  public async remove(userItem: IUserItem): Promise<void> {
+    await this.ormRepository.remove(userItem as UserItem);
+  }
+
   public async findById(id: string): Promise<IUserItem | null> {
     return this.ormRepository.findOne({ where: { id } });
   }
 
   public async findByUserAndItem(
-    userId: string,
-    itemId: string,
+    user_id: string,
+    item_id: string,
   ): Promise<IUserItem | null> {
-    return this.ormRepository.findOne({ where: { userId, itemId } });
+    return this.ormRepository.findOne({ where: { userId: user_id, itemId: item_id } });
   }
 
-  public async listByUser(userId: string): Promise<IUserItem[]> {
-    return this.ormRepository.find({
-      where: { userId },
-      relations: ['item'],
-    });
+  public async findByIdAndUser(id: string, user_id: string): Promise<IUserItem | null> {
+    return this.ormRepository.findOne({ where: { id, userId: user_id } });
+  }
+
+  public async listByUser(user_id: string): Promise<IUserItem[]> {
+    return this.ormRepository.find({ where: { userId: user_id }, relations: ['item'] });
   }
 
   public async update(id: string, data: Partial<IUserItem>): Promise<IUserItem> {
@@ -52,15 +57,6 @@ export class UserItemsRepository implements IUserItemsRepository {
   }
 
   public async show(id: string): Promise<IUserItem | null> {
-    return this.ormRepository.findOne({
-      where: { id },
-      relations: ['item', 'user'],
-    });
-  }
-
-  public async findByIdAndUser(id: string, userId: string): Promise<IUserItem | null> {
-    return this.ormRepository.findOne({
-      where: { id, userId },
-    });
+    return this.ormRepository.findOne({ where: { id }, relations: ['item', 'user'] });
   }
 }

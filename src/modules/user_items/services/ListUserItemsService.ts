@@ -1,7 +1,5 @@
 // src/modules/user_items/services/ListUserItemsService.ts
-
 import { inject, injectable } from 'tsyringe';
-
 import { IUserItemsRepository } from '../domain/repositories/IUserItemsRepository';
 import { IUserItem } from '../domain/models/IUserItem';
 
@@ -13,9 +11,7 @@ class ListUserItemsService {
   ) {}
 
   public async execute(user_id: string): Promise<IUserItem[]> {
-    const userItems = await this.userItemsRepository.findByUserId(user_id);
-
-    return userItems;
+    return this.userItemsRepository.listByUser(user_id);
   }
 }
 

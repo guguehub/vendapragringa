@@ -2,17 +2,18 @@
 import { DataSource, DeepPartial } from 'typeorm';
 import Supplier from '../entities/Supplier';
 import dataSource from '@shared/infra/typeorm/data-source';
+import { SupplierStatus } from '@modules/suppliers/domain/enums/supplier-status.enum';
 
 const suppliersSeed: DeepPartial<Supplier>[] = [
   {
     name: 'Mercado Livre',
     url: 'https://www.mercadolivre.com.br',
-    status: 'active',
+    status: SupplierStatus.ACTIVE,
   },
   {
     name: 'OLX',
     url: 'https://www.olx.com.br',
-    status: 'coming_soon',
+    status: SupplierStatus.COMING_SOON,
   },
 ];
 

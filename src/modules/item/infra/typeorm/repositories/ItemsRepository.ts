@@ -1,5 +1,6 @@
+// src/modules/item/infra/typeorm/repositories/ItemsRepository.ts
 import { Repository } from 'typeorm';
-import { IItemsRepository } from 'src/modules/item/domain/repositories/IItemsRepository';
+import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
 import Item from '../entities/Item';
 import { ICreateItem } from '@modules/item/domain/models/ICreateItem';
 import { injectable } from 'tsyringe';
@@ -22,21 +23,7 @@ class ItemsRepository implements IItemsRepository {
   public async findById(id: string): Promise<Item | null> {
     return this.ormRepository.findOne({
       where: { id },
-      relations: ['supplier'], // apenas supplier
-    });
-  }
-
-  // ❌ Removido findByUserId, pois Item é agnóstico
-
-  public async findByStatus(status?: string): Promise<Item[]> {
-    if (status) {
-      return this.ormRepository.find({
-        where: { status },
-        relations: ['supplier'],
-      });
-    }
-    return this.ormRepository.find({
-      relations: ['supplier'],
+      relations: ['supplier'], // manter apenas supplier
     });
   }
 
@@ -50,7 +37,7 @@ class ItemsRepository implements IItemsRepository {
 
   public async findAll(): Promise<Item[]> {
     return this.ormRepository.find({
-      relations: ['supplier'], // apenas supplier
+      relations: ['supplier'], // manter apenas supplier
     });
   }
 }

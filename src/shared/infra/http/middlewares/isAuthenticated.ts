@@ -1,6 +1,7 @@
 // src/shared/infra/http/middlewares/isAuthenticated.ts
 import { Request, Response, NextFunction } from 'express';
 import { verify } from 'jsonwebtoken';
+
 import authConfig from '@config/auth';
 import AppError from '@shared/errors/AppError';
 
@@ -26,7 +27,7 @@ export default function isAuthenticated(
   try {
     const decoded = verify(token, authConfig.jwt.secret) as ITokenPayload;
 
-    // aqui garantimos que user não é mais opcional
+    // Agora garantimos que request.user sempre existirá após este middleware
     request.user = {
       id: decoded.sub,
     };

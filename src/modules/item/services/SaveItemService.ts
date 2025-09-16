@@ -12,6 +12,7 @@ const tierLimits: Record<SubscriptionTier, number> = {
   bronze: 25,
   silver: 50,
   gold: 150,
+  infinity: Infinity,
 };
 
 @injectable()

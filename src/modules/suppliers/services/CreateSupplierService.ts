@@ -9,16 +9,29 @@ export default class CreateSupplierService {
   constructor(private suppliersRepository: ISupplierRepository) {}
 
   public async execute(data: ICreateSupplier): Promise<ISupplier> {
-    // Se for marketplace "mercado_livre" ou "olx", endereço e localização são opcionais
-    if (
-      data.marketplace === IMarketplaces.MERCADO_LIVRE ||
-      data.marketplace === IMarketplaces.OLX
-    ) {
-      data.address = undefined;
-      data.city = undefined;
-      data.state = undefined;
-      data.country = undefined;
-      data.zip_code = undefined;
+    const isMarketplace = Object.values(IMarketplaces).includes(
+      data.marketplace as IMarketplaces,
+    );
+
+    if (isMarketplace) {
+      // Para marketplaces oficiais (ex: Mercado Livre, OLX), endereço e localização são ignorados
+      if (
+        data.marketplace === IMarketplaces.MERCADO_LIVRE ||
+        data.marketplace === IMarketplaces.OLX
+      ) {
+        data.address = undefined;
+        data.city = undefined;
+        data.state = undefined;
+        data.country = undefined;
+        data.zip_code = undefined;
+      }
+    } else {
+      // Para custom suppliers, podemos exigir dados mínimos (nome + endereço/cidade)
+      if (!data.address || !data.city) {
+        throw new Error(
+          'Custom suppliers precisam de pelo menos endereço e cidade definidos',
+        );
+      }
     }
 
     // Garante status e is_active usando enum SupplierStatus

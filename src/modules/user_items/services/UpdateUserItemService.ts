@@ -5,6 +5,14 @@ import AppError from '@shared/errors/AppError';
 import { IUserItemsRepository } from '../domain/repositories/IUserItemsRepository';
 import { IUserItem } from '../domain/models/IUserItem';
 
+// DTO só com campos editáveis
+interface IUpdateUserItemDTO {
+  quantity?: number;
+  notes?: string | null;
+  import_stage?: 'draft' | 'pending' | 'ready' | 'listed' | 'sold';
+  sync_status?: 'active' | 'paused' | 'sold_out';
+}
+
 @injectable()
 class UpdateUserItemService {
   constructor(
@@ -15,7 +23,7 @@ class UpdateUserItemService {
   public async execute(
     id: string,
     user_id: string,
-    data: Partial<IUserItem>,
+    data: IUpdateUserItemDTO,
   ): Promise<IUserItem> {
     const userItem = await this.userItemsRepository.findByIdAndUser(id, user_id);
 

@@ -31,7 +31,7 @@ export class CreateSuppliers1698463000010 implements MigrationInterface {
           {
             name: 'status',
             type: 'enum',
-            enum: ['active', 'inactive', 'coming_soon'],
+            enum: ['active', 'inactive', 'coming_soon'], // Deve estar alinhado com SupplierStatus enum
             default: `'active'`,
           },
           {
@@ -42,7 +42,7 @@ export class CreateSuppliers1698463000010 implements MigrationInterface {
           {
             name: 'marketplace',
             type: 'enum',
-            enum: ['mercado_livre', 'olx', 'custom'],
+            enum: ['mercado_livre', 'olx', 'custom'], // Deve estar alinhado com IMarketplaces enum
             isNullable: true,
           },
           {

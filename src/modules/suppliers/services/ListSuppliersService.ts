@@ -1,6 +1,8 @@
-// /src/modules/suppliers/services/ListSuppliersService.ts
+// src/modules/suppliers/services/ListSuppliersService.ts
 import { inject, injectable } from 'tsyringe';
 import { ISupplierRepository } from '../domain/repositories/ISupplierRepository';
+import { IItem } from '@modules/item/domain/models/IItem';
+import { ISupplier } from '../domain/models/ISupplier';
 
 type CleanItem = {
   id: string;
@@ -29,6 +31,10 @@ type CleanSupplier = {
   items: CleanItem[];
 };
 
+interface IRequest {
+  user_id?: string; // agora opcional
+}
+
 @injectable()
 export default class ListSuppliersService {
   constructor(
@@ -36,14 +42,22 @@ export default class ListSuppliersService {
     private suppliersRepository: ISupplierRepository,
   ) {}
 
-  public async execute(): Promise<CleanSupplier[]> {
-    const result = await this.suppliersRepository.findAll({
-      page: 1,
-      skip: 0,
-      take: 1000,
+  public async execute({ user_id }: IRequest): Promise<CleanSupplier[]> {
+    // Busca todos suppliers (global + user)
+    // Usamos findAll() do ISupplierRepository
+    const allSuppliers: ISupplier[] = await this.suppliersRepository.findAll();
+
+    // Filtra suppliers customizados do usuário se user_id existir
+    const filteredSuppliers = allSuppliers.filter(supplier => {
+      if (user_id) {
+        // custom suppliers do usuário
+        return supplier.user_id === user_id || supplier.user_id === null;
+      }
+      // se não houver user_id, retorna apenas globais
+      return supplier.user_id === null;
     });
 
-    return result.data.map(supplier => ({
+    return filteredSuppliers.map(supplier => ({
       id: supplier.id,
       name: supplier.name,
       marketplace: supplier.marketplace,
@@ -60,7 +74,7 @@ export default class ListSuppliersService {
       is_active: supplier.is_active,
       created_at: supplier.created_at,
       updated_at: supplier.updated_at,
-      items: supplier.items?.map(item => ({
+      items: supplier.items?.map((item: IItem): CleanItem => ({
         id: item.id,
         title: item.title,
         price: item.price,

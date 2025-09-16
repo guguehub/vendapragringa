@@ -8,8 +8,11 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
+
 import Item from '../../../../item/infra/typeorm/entities/Item';
 import User from '../../../../users/infra/typeorm/entities/User';
+import { SupplierStatus } from '@modules/suppliers/domain/enums/supplier-status.enum';
+import { IMarketplaces } from '@modules/suppliers/domain/models/IMarketplaces';
 
 @Entity('suppliers')
 class Supplier {
@@ -22,8 +25,12 @@ class Supplier {
   @Column({ nullable: true })
   url?: string; // opcional
 
-  @Column({ type: 'enum', enum: ['active', 'inactive', 'coming_soon'], default: 'active' })
-  status: 'active' | 'inactive' | 'coming_soon';
+  @Column({
+    type: 'enum',
+    enum: SupplierStatus,
+    default: SupplierStatus.ACTIVE,
+  })
+  status: SupplierStatus;
 
   @Column({ default: true })
   is_active: boolean;
@@ -31,15 +38,22 @@ class Supplier {
   @OneToMany(() => Item, item => item.supplier, { cascade: true })
   items: Item[];
 
-  @ManyToOne(() => User, user => user.suppliers, { nullable: true, onDelete: 'CASCADE' })
+  @ManyToOne(() => User, user => user.suppliers, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'user_id' })
   user?: User;
 
   @Column({ nullable: true })
   user_id?: string;
 
-  @Column({ nullable: true })
-  marketplace?: 'mercado_livre' | 'olx' | 'custom';
+  @Column({
+    type: 'enum',
+    enum: IMarketplaces,
+    nullable: true,
+  })
+  marketplace?: IMarketplaces;
 
   @Column({ nullable: true })
   external_id?: string;

@@ -1,13 +1,11 @@
-// src/modules/suppliers/infra/typeorm/repositories/SupplierRepository.ts
 import { Repository } from 'typeorm';
 import Supplier from '../entities/Supplier';
 import Item from '@modules/item/infra/typeorm/entities/Item';
-import { ISupplierRepository, SearchParams } from '@modules/suppliers/domain/repositories/ISupplierRepository';
+import { ISupplierRepository } from '@modules/suppliers/domain/repositories/ISupplierRepository';
 import { ICreateSupplier } from '@modules/suppliers/domain/models/ICreateSupplier';
 import { IUpdateSupplier } from '@modules/suppliers/domain/models/IUpdateSupplier';
 import { ISupplier } from '@modules/suppliers/domain/models/ISupplier';
 import { IItem } from '@modules/item/domain/models/IItem';
-import { ISupplierPaginate } from '@modules/suppliers/domain/models/ISupplierPaginate';
 import dataSource from '@shared/infra/typeorm/data-source';
 import { IMarketplaces } from '@modules/suppliers/domain/models/IMarketplaces';
 import { ItemStatus } from '@modules/item/domain/enums/item-status.enum';
@@ -26,7 +24,7 @@ function mapSupplierEntityToISupplier(supplier: Supplier): ISupplier {
   return {
     id: supplier.id,
     name: supplier.name,
-    marketplace: supplier.marketplace as IMarketplaces,
+    marketplace: supplier.marketplace ?? IMarketplaces.CUSTOM, // default para CUSTOM
     external_id: supplier.external_id,
     email: supplier.email,
     link: supplier.link,
@@ -37,7 +35,7 @@ function mapSupplierEntityToISupplier(supplier: Supplier): ISupplier {
     state: supplier.state,
     country: supplier.country,
     zip_code: supplier.zip_code,
-    status: supplier.status as SupplierStatus, // usa enum de Supplier
+    status: supplier.status as SupplierStatus,
     is_active: supplier.is_active,
     created_at: supplier.created_at,
     updated_at: supplier.updated_at,
@@ -51,7 +49,7 @@ function mapSupplierEntityToISupplier(supplier: Supplier): ISupplier {
           externalId: i.externalId,
           marketplace: i.marketplace,
           shippingPrice: i.shippingPrice,
-          status: i.status as ItemStatus, // cast seguro para enum
+          status: i.status as ItemStatus,
           itemLink: i.itemLink,
           lastScrapedAt: i.lastScrapedAt,
           images: i.images ? JSON.parse(i.images) : undefined,
@@ -76,7 +74,7 @@ export default class SupplierRepository implements ISupplierRepository {
   public async create(data: ICreateSupplier): Promise<ISupplier> {
     const supplier = this.ormRepository.create({
       ...data,
-      status: data.status ?? SupplierStatus.ACTIVE, // enum correto
+      status: data.status ?? SupplierStatus.ACTIVE,
       is_active: data.is_active ?? true,
     });
 
@@ -104,7 +102,7 @@ export default class SupplierRepository implements ISupplierRepository {
       state: data.state ?? supplier.state,
       country: data.country ?? supplier.country,
       zip_code: data.zip_code ?? supplier.zip_code,
-      status: data.status ?? supplier.status, // já alinhado ao enum
+      status: data.status ?? supplier.status,
       is_active: data.is_active ?? supplier.is_active,
     });
 
@@ -147,25 +145,32 @@ export default class SupplierRepository implements ISupplierRepository {
     return mapSupplierEntityToISupplier(supplier);
   }
 
-  public async findAll({
-    page,
-    skip,
-    take,
-  }: SearchParams): Promise<ISupplierPaginate> {
-    const [suppliers, count] = await this.ormRepository.findAndCount({
-      skip,
-      take,
+  public async findAll(): Promise<ISupplier[]> {
+    const suppliers = await this.ormRepository.find({
       order: { name: 'ASC' },
       relations: ['items'],
     });
 
-    const data = suppliers.map(mapSupplierEntityToISupplier);
+    return suppliers.map(mapSupplierEntityToISupplier);
+  }
 
-    return {
-      per_page: take,
-      total: count,
-      current_page: page,
-      data,
-    };
+  public async findGlobals(): Promise<ISupplier[]> {
+    const suppliers = await this.ormRepository.find({
+      where: { user_id: undefined }, // TypeORM aceita undefined para campos opcionais
+      order: { name: 'ASC' },
+      relations: ['items'],
+    });
+
+    return suppliers.map(mapSupplierEntityToISupplier);
+  }
+
+  public async findByUser(userId: string): Promise<ISupplier[]> {
+    const suppliers = await this.ormRepository.find({
+      where: { user_id: userId },
+      order: { name: 'ASC' },
+      relations: ['items'],
+    });
+
+    return suppliers.map(mapSupplierEntityToISupplier);
   }
 }
