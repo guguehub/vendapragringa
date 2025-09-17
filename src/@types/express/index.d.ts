@@ -3,7 +3,7 @@ import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier
 declare global {
   namespace Express {
     export interface Request {
-      user?: {
+      user: {
         id: string;
         subscription?: {
           tier: SubscriptionTier;

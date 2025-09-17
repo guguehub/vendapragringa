@@ -28,7 +28,7 @@ class User {
 
   // 🔹 Relacionamento: cada usuário pode ter vários suppliers (inclusive custom)
   @OneToMany(() => Supplier, supplier => supplier.user)
-  suppliers: Supplier[];
+  suppliers?: Supplier[];
 
   // 🔹 Relacionamento: cada usuário pode ter várias assinaturas
   @OneToMany(() => Subscription, subscription => subscription.user)

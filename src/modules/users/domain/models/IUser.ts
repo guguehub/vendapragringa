@@ -1,4 +1,5 @@
 import { IItem } from '@modules/item/domain/models/IItem';
+import { ISubscription } from '@modules/subscriptions/domain/models/ISubscription';
 
 export interface IUser {
   id: string;
@@ -6,10 +7,12 @@ export interface IUser {
   email: string;
   password: string;
   avatar?: string;
-  hasUsedFreeScrap: boolean ;
+  hasUsedFreeScrap: boolean;
   is_admin: boolean | undefined;
 
-  items?: IItem[]; // Items associated with the user
+  items?: IItem[];               // Items associated with the user
+  subscription?: ISubscription;  // 👈 relação com Subscription
+
   created_at: Date;
   updated_at: Date;
 }

@@ -6,14 +6,7 @@ import { ICreateSavedItem } from '../../saved-items/domain/interfaces/ICreateSav
 import { SavedItem } from '../../saved-items/infra/typeorm/entities/SavedItem';
 import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
 import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
-
-const tierLimits: Record<SubscriptionTier, number> = {
-  free: 6,
-  bronze: 25,
-  silver: 50,
-  gold: 150,
-  infinity: Infinity,
-};
+import { SubscriptionTierLimits } from '@modules/subscriptions/enums/subscription-limits.enum';
 
 @injectable()
 export class SaveItemService {
@@ -42,7 +35,7 @@ export class SaveItemService {
     }
 
     const tier = subscription.tier as SubscriptionTier;
-    const maxItems = tierLimits[tier] ?? 0;
+    const maxItems = SubscriptionTierLimits[tier] ?? 0;
 
     const currentCount = await this.savedItemsRepository.countByUserId(user_id);
 
