@@ -11,8 +11,8 @@ import {
 
 import Item from '../../../../item/infra/typeorm/entities/Item';
 import User from '../../../../users/infra/typeorm/entities/User';
-import { SupplierStatus } from '@modules/suppliers/domain/enums/supplier-status.enum';
-import { IMarketplaces } from '@modules/suppliers/domain/models/IMarketplaces';
+import { SupplierStatus } from '../../../domain/enums/supplier-status.enum';
+import { IMarketplaces } from '../../../domain/models/IMarketplaces';
 
 @Entity('suppliers')
 class Supplier {

@@ -9,6 +9,7 @@ interface ITokenPayload {
   iat: number;
   exp: number;
   sub: string;
+  is_admin?: boolean; // adicionamos opcional para inspecionar
 }
 
 export default function isAuthenticated(
@@ -25,15 +26,20 @@ export default function isAuthenticated(
   const [, token] = authHeader.split(' ');
 
   try {
-    const decoded = verify(token, authConfig.jwt.secret) as ITokenPayload;
+    const decoded = verify(token, authConfig.jwt.secret) as ITokenPayload | any;
+
+    // 🔍 Log para inspecionar o conteúdo do token
+    console.log('🔑 TOKEN DECODIFICADO:', decoded);
 
     // Agora garantimos que request.user sempre existirá após este middleware
     request.user = {
       id: decoded.sub,
+      is_admin: decoded.is_admin, // se existir, repassamos
     };
 
     return next();
-  } catch {
+  } catch (err) {
+    console.error('❌ Erro ao validar token:', err);
     throw new AppError('Invalid JWT token', 401);
   }
 }

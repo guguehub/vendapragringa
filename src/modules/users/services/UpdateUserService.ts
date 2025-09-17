@@ -3,7 +3,7 @@ import AppError from '@shared/errors/AppError';
 import { compare, hash } from 'bcryptjs';
 import { inject, injectable } from 'tsyringe';
 import { IUsersRepository } from '../domain/repositories/IUsersRepository';
-import { IUser } from '../domain/models/IUser';
+//import { IUser } from '../domain/models/IUser';
 import { IUpdateUser } from '../domain/models/IUpdateUser';
 
 @injectable()

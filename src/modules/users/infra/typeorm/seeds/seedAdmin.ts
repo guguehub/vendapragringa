@@ -3,22 +3,30 @@ import dataSource from '@shared/infra/typeorm/data-source';
 import User from '../entities/User';
 
 async function seedAdmin() {
+  if (!dataSource.isInitialized) await dataSource.initialize();
+
   const repo = dataSource.getRepository(User);
 
-  const exists = await repo.findOne({ where: { email: 'admin@example.com' } });
-  if (exists) return;
+  let adminUser = await repo.findOne({ where: { email: 'testador@teste3.com' } });
 
-  const passwordHash = await hash('senhaSegura123', 8);
+  const passwordHash = await hash('123456', 8);
 
-  const adminUser = repo.create({
-    name: 'Super Admin',
-    email: 'testador@teste.com',
-    password: passwordHash,
-    is_admin: true,
-  });
-
-  await repo.save(adminUser);
-  console.log('✅ Admin user created: admin@example.com / senhaSegura123');
+  if (!adminUser) {
+    adminUser = repo.create({
+      name: 'Testador3',
+      email: 'testador@teste3.com',
+      password: passwordHash,
+      is_admin: true,
+    });
+    await repo.save(adminUser);
+    console.log('✅ Admin user created: testador@teste3.com / 123456');
+  } else if (!adminUser.is_admin) {
+    adminUser.is_admin = true;
+    await repo.save(adminUser);
+    console.log('✅ Admin user atualizado para is_admin = true');
+  } else {
+    console.log('Admin já existe com is_admin = true, pulando seed.');
+  }
 }
 
 seedAdmin()

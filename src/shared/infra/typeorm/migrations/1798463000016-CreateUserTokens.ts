@@ -7,6 +7,8 @@ import {
 
 export class CreateUserTokens1798463000016 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
+
     await queryRunner.createTable(
       new Table({
         name: 'user_tokens',
@@ -43,6 +45,7 @@ export class CreateUserTokens1798463000016 implements MigrationInterface {
           },
         ],
       }),
+      true,
     );
 
     await queryRunner.createForeignKey(

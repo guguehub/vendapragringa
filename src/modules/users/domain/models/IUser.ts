@@ -8,7 +8,7 @@ export interface IUser {
   password: string;
   avatar?: string;
   hasUsedFreeScrap: boolean;
-  is_admin: boolean | undefined;
+  is_admin: boolean ;
 
   items?: IItem[];               // Items associated with the user
   subscription?: ISubscription;  // 👈 relação com Subscription
