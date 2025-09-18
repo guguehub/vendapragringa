@@ -1,12 +1,9 @@
-import { Repository, MoreThan, DeepPartial } from 'typeorm';
-
+import { Repository, DeepPartial } from 'typeorm';
 import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositories/ISubscriptionsRepository';
 import { ICreateSubscription } from '@modules/subscriptions/domain/models/ICreateSubscription';
-
 import { Subscription } from '../entities/Subscription';
 import { SubscriptionStatus } from '@modules/subscriptions/enums/subscription-status.enum';
 import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
-
 import dataSource from '@shared/infra/typeorm/data-source';
 
 class SubscriptionRepository implements ISubscriptionRepository {
@@ -17,9 +14,7 @@ class SubscriptionRepository implements ISubscriptionRepository {
   }
 
   public async create(data: ICreateSubscription): Promise<Subscription> {
-    const subscription = this.ormRepository.create(
-      data as DeepPartial<Subscription>,
-    );
+    const subscription = this.ormRepository.create(data as DeepPartial<Subscription>);
     await this.ormRepository.save(subscription);
     return subscription;
   }
@@ -29,54 +24,42 @@ class SubscriptionRepository implements ISubscriptionRepository {
   }
 
   public async findByUserId(userId: string): Promise<Subscription | undefined> {
-    const result = await this.ormRepository.findOne({
+    return await this.ormRepository.findOne({
       where: { userId },
       order: { created_at: 'DESC' },
-    });
-    return result ?? undefined;
+    }) ?? undefined;
   }
 
-  public async findActiveByUserId(
-    userId: string,
-  ): Promise<Subscription | undefined> {
+  public async findActiveByUserId(userId: string): Promise<Subscription | undefined> {
     const now = new Date();
 
-    const result = await this.ormRepository.findOne({
-      where: [
-        {
-          userId,
-          status: SubscriptionStatus.ACTIVE,
-          expires_at: MoreThan(now), // planos normais ativos com expiração futura
-        },
-        {
-          userId,
-          status: SubscriptionStatus.ACTIVE,
-          tier: SubscriptionTier.INFINITY, // plano vitalício sempre ativo
-        },
-        {
-          userId,
-          status: SubscriptionStatus.ACTIVE,
-          expires_at: null, // inclui planos FREE ou outros sem expiração
-        },
-      ],
+    // traz todas assinaturas ativas
+    const subscriptions = await this.ormRepository.find({
+      where: { userId, status: SubscriptionStatus.ACTIVE },
       order: { created_at: 'DESC' },
     });
 
-    return result ?? undefined;
+    if (!subscriptions.length) return undefined;
+
+    // prioridade: INFINITY → expirando no futuro → sem expires_at (FREE)
+    const infinitySub = subscriptions.find(s => s.tier === SubscriptionTier.INFINITY);
+    if (infinitySub) return infinitySub;
+
+    const validSub = subscriptions.find(s => s.expires_at && s.expires_at > now);
+    if (validSub) return validSub;
+
+    const freeSub = subscriptions.find(s => !s.expires_at);
+    if (freeSub) return freeSub;
+
+    return undefined;
   }
 
   public async findById(id: string): Promise<Subscription | undefined> {
-    const subscription = await this.ormRepository.findOne({
-      where: { id },
-    });
-    return subscription ?? undefined;
+    return await this.ormRepository.findOne({ where: { id } }) ?? undefined;
   }
 
-  // opcional, não faz parte da interface mas pode ser útil
-  public async findLatestByUserId(
-    userId: string,
-  ): Promise<Subscription | null> {
-    return this.ormRepository.findOne({
+  public async findLatestByUserId(userId: string): Promise<Subscription | null> {
+    return await this.ormRepository.findOne({
       where: { userId },
       order: { created_at: 'DESC' },
     });

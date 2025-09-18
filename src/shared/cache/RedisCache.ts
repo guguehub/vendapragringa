@@ -1,3 +1,4 @@
+// /src/shared/cache/RedisCache.ts
 import Redis, { Redis as RedisClient } from 'ioredis';
 import cacheConfig from '@config/cache';
 
@@ -19,10 +20,12 @@ class RedisCache {
    * @param ttl - tempo de expiração em segundos (opcional)
    */
   public async save(key: string, value: any, ttl?: number): Promise<void> {
+    const stringValue = JSON.stringify(value);
+
     if (ttl) {
-      await this.client.set(key, JSON.stringify(value), 'EX', ttl);
+      await this.client.set(key, stringValue, 'EX', ttl);
     } else {
-      await this.client.set(key, JSON.stringify(value));
+      await this.client.set(key, stringValue);
     }
   }
 
@@ -33,12 +36,14 @@ class RedisCache {
   public async recover<T>(key: string): Promise<T | null> {
     const data = await this.client.get(key);
 
-    if (!data) {
+    if (!data) return null;
+
+    try {
+      return JSON.parse(data) as T;
+    } catch (error) {
+      console.error(`[RedisCache] Falha ao parsear chave ${key}:`, error);
       return null;
     }
-
-    const parseData = JSON.parse(data) as T;
-    return parseData;
   }
 
   /**
@@ -46,19 +51,28 @@ class RedisCache {
    * @param key - chave de cache
    */
   public async invalidate(key: string): Promise<void> {
-    await this.client.del(key);
+    try {
+      await this.client.del(key);
+    } catch (error) {
+      console.error(`[RedisCache] Falha ao invalidar chave ${key}:`, error);
+    }
   }
 
   /**
    * Invalida todas as chaves que começam com o prefixo informado
+   * @param prefix - prefixo das chaves
    */
   public async invalidatePrefix(prefix: string): Promise<void> {
-    const keys = await this.client.keys(`${prefix}:*`);
-    const pipeline = this.client.pipeline();
+    try {
+      const keys = await this.client.keys(`${prefix}:*`);
+      if (keys.length === 0) return;
 
-    keys.forEach(key => pipeline.del(key));
-
-    await pipeline.exec();
+      const pipeline = this.client.pipeline();
+      keys.forEach(key => pipeline.del(key));
+      await pipeline.exec();
+    } catch (error) {
+      console.error(`[RedisCache] Falha ao invalidar prefixo ${prefix}:`, error);
+    }
   }
 }
 

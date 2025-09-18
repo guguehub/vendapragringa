@@ -1,4 +1,3 @@
-// src/modules/subscriptions/infra/http/controllers/SubscriptionController.ts
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
@@ -50,14 +49,14 @@ export default class SubscriptionController {
       if (!tier) throw new AppError('Tier is required for upgrade', 400);
 
       const upgradeService = container.resolve(UpgradeSubscriptionServiceUser);
-      await upgradeService.execute({ userId, tier });
+      const subscription = await upgradeService.execute({ userId, tier });
 
-      // Atualiza cache
+      // Atualiza cache usando userId
       const checkStatusService = container.resolve(CheckSubscriptionStatusService);
       const subscriptionStatus = await checkStatusService.execute(userId);
 
       return response.json({
-        message: `Subscription tier updated to "${tier}" successfully`,
+        message: `Subscription tier updated to "${subscription.tier}" successfully`,
         subscription: subscriptionStatus.subscription,
       });
     } catch (error: unknown) {
@@ -71,15 +70,17 @@ export default class SubscriptionController {
    */
   public async update(request: Request, response: Response): Promise<Response> {
     try {
-      const { subscriptionId, tier, status, expires_at } = request.body as UpdateSubscriptionDto;
+      const { subscriptionId, tier, status, expires_at, isTrial, cancelled_at } =
+        request.body as UpdateSubscriptionDto;
+
       if (!subscriptionId) throw new AppError('subscriptionId is required for update', 400);
 
       const updateService = container.resolve(UpdateSubscriptionServiceAdmin);
-      await updateService.execute({ subscriptionId, tier, status, expires_at });
+      await updateService.execute({ subscriptionId, tier, status, expires_at, isTrial, cancelled_at });
 
-      // Atualiza cache
-      const checkStatusService = container.resolve(CheckSubscriptionStatusService);
-      const subscriptionStatus = await checkStatusService.execute(subscriptionId);
+      // Busca subscription pelo userId do subscription atualizado
+      const subscriptionRepo = container.resolve(CheckSubscriptionStatusService);
+      const subscriptionStatus = await subscriptionRepo.execute(subscriptionId); // ⚠️ Aqui passamos subscriptionId
 
       return response.json({
         message: 'Subscription updated successfully',
