@@ -1,43 +1,60 @@
+import { sign, Secret } from 'jsonwebtoken';
+import { compare } from 'bcryptjs';
+
 import AppError from '@shared/errors/AppError';
-import { Secret, sign } from 'jsonwebtoken';
 import authConfig from '@config/auth';
-import { inject, injectable } from 'tsyringe';
-import { IUsersRepository } from '../domain/repositories/IUsersRepository';
-import { ICreateSession } from '../domain/models/ICreateSession';
-import { IUserAuthenticated } from '../domain/models/IUserAuthenticated';
-import { IHashProvider } from '../providers/HashProvider/models/IHashProvider';
+import dataSource from '@shared/infra/typeorm/data-source';
 
-@injectable()
-class CreateSessionService {
-  constructor(
-    @inject('UsersRepository')
-    private usersRepository: IUsersRepository,
-    @inject('HashProvider')
-    private hashProvider: IHashProvider,
-  ) {}
+import User from '@modules/users/infra/typeorm/entities/User';
 
-  public async execute({
-    email,
-    password,
-  }: ICreateSession): Promise<IUserAuthenticated> {
-    const user = await this.usersRepository.findByEmail(email);
+interface IRequest {
+  email: string;
+  password: string;
+}
+
+interface IResponse {
+  user: User;
+  token: string;
+}
+
+export default class CreateSessionService {
+  public async execute({ email, password }: IRequest): Promise<IResponse> {
+    const usersRepository = dataSource.getRepository(User);
+
+    console.log('[DEBUG] Tentando autenticar usuário com email:', email);
+
+    const user = await usersRepository.findOne({ where: { email } });
 
     if (!user) {
-      throw new AppError('Incorrect email/password combination', 401);
-    }
-    const passwordConfirmed = await this.hashProvider.compareHash(
-      password,
-      user.password,
-    );
-
-    if (!passwordConfirmed) {
-      throw new AppError('incorrect email/password combination', 401);
+      console.error('[DEBUG] Usuário não encontrado com email:', email);
+      throw new AppError('Incorrect email/password combination.', 401);
     }
 
-    const token = sign({}, authConfig.jwt.secret as Secret, {
+    console.log('[DEBUG] Usuário encontrado:', {
+      id: user.id,
+      email: user.email,
+      is_admin: user.is_admin,
+    });
+
+    const passwordMatched = await compare(password, user.password);
+
+    if (!passwordMatched) {
+      console.error('[DEBUG] Senha incorreta para usuário:', user.email);
+      throw new AppError('Incorrect email/password combination.', 401);
+    }
+
+    console.log('[DEBUG] Senha validada para usuário:', user.email);
+
+    // Incluindo is_admin no payload do JWT
+    const payload = { is_admin: user.is_admin };
+    console.log('[DEBUG] Payload do JWT:', payload);
+
+    const token = sign(payload, authConfig.jwt.secret as Secret, {
       subject: user.id,
       expiresIn: authConfig.jwt.expiresIn,
     });
+
+    console.log('[DEBUG] Token JWT gerado com sucesso para usuário:', user.email);
 
     return {
       user,
@@ -45,4 +62,3 @@ class CreateSessionService {
     };
   }
 }
-export default CreateSessionService;

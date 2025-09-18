@@ -7,6 +7,7 @@ const tierHierarchy: SubscriptionTier[] = [
   SubscriptionTier.BRONZE,
   SubscriptionTier.SILVER,
   SubscriptionTier.GOLD,
+  SubscriptionTier.INFINITY,
 ];
 
 export function ensureTier(requiredTier: SubscriptionTier) {

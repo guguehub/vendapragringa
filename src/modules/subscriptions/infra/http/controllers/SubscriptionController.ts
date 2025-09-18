@@ -10,7 +10,6 @@ import CheckSubscriptionStatusService from '@modules/subscriptions/services/Chec
 
 import { CreateSubscriptionDto } from '@modules/subscriptions/dtos/create-subscription.dto';
 import { UpdateSubscriptionDto } from '@modules/subscriptions/dtos/update-subscription.dto';
-import { SubscriptionStatus } from '@modules/subscriptions/infra/typeorm/entities/Subscription';
 
 export default class SubscriptionController {
   /**
@@ -26,7 +25,6 @@ export default class SubscriptionController {
       const subscription = await createService.execute({
         userId,
         tier,
-        status: SubscriptionStatus.ACTIVE,
       });
 
       // Atualiza cache após criação
@@ -79,7 +77,7 @@ export default class SubscriptionController {
       const updateService = container.resolve(UpdateSubscriptionServiceAdmin);
       await updateService.execute({ subscriptionId, tier, status, expires_at });
 
-      // Atualiza cache se possível
+      // Atualiza cache
       const checkStatusService = container.resolve(CheckSubscriptionStatusService);
       const subscriptionStatus = await checkStatusService.execute(subscriptionId);
 

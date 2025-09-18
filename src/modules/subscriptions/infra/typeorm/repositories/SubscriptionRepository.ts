@@ -53,6 +53,11 @@ class SubscriptionRepository implements ISubscriptionRepository {
           status: SubscriptionStatus.ACTIVE,
           tier: SubscriptionTier.INFINITY, // plano vitalício sempre ativo
         },
+        {
+          userId,
+          status: SubscriptionStatus.ACTIVE,
+          expires_at: null, // inclui planos FREE ou outros sem expiração
+        },
       ],
       order: { created_at: 'DESC' },
     });

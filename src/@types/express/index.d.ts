@@ -5,15 +5,23 @@ declare global {
     export interface Request {
       user: {
         id: string;
-        is_admin?: boolean; // ✅ adiciona aqui
+        is_admin?: boolean;
         subscription?: {
+          id: string;
+          status: string;
           tier: SubscriptionTier;
-        };
+          start_date: string | null;
+          expires_at: string | null;
+          isTrial: boolean;
+          cancelled_at: string | null;
+          userId: string;
+          created_at: string;
+          updated_at: string;
+        } | null;
       };
       session?: {
         scrapedOnce?: boolean;
-        // outras propriedades que podemos adicionar futuramente
-        [key: string]: any; // flexibilidade controlada
+        [key: string]: any;
       };
     }
   }
