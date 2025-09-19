@@ -4,16 +4,6 @@ import * as cheerio from 'cheerio';
 // Utility function to pause execution for a given duration
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Normaliza o preço para não quebrar inserção no banco
-function normalizePrice(price: string | null, itemStatus: string): string {
-  const numericPrice = price ? parseFloat(price) : 0;
-  if (numericPrice > 1) {
-    return price!; // mantém preço real
-  }
-  // Se não tiver preço ou for 0, mantém 0.00
-  return '0.00';
-}
-
 // Function to extract the product title
 function extractTitle($: cheerio.CheerioAPI): string {
   return $('h1.ui-pdp-title').text().trim();
@@ -85,6 +75,7 @@ function extractItemStatus($: cheerio.CheerioAPI): string {
     if ($(selector).length > 0) return status;
   }
 
+  // Verificação textual adicional
   const pageText = $('body').text().toLowerCase();
   if (pageText.includes('anúncio finalizado')) return 'Anúncio finalizado';
   if (pageText.includes('este produto está indisponível no momento')) return 'Inativo';
@@ -125,8 +116,7 @@ export async function scrapeMercadoLivre(url: string) {
   try {
     const { data: html } = await axios.get(url, {
       headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       },
       timeout: 5000,
     });
@@ -134,24 +124,30 @@ export async function scrapeMercadoLivre(url: string) {
     const $ = cheerio.load(html);
 
     const title = extractTitle($);
-    const rawPrice = extractPrice($);
-    const itemStatus = extractItemStatus($);
-    const price = normalizePrice(rawPrice, itemStatus);
+    const price = extractPrice($);
     const description = extractDescription($);
     const shippingInfo = extractShippingInfo($);
+    const itemStatus = extractItemStatus($);
     const itemId = extractItemId(url, $);
 
-    // Log detalhado
-    console.log(`[SCRAPER] ${title} | Price: ${price} | Status: ${itemStatus}`);
+    // 🔹 Ajuste do price para nunca salvar null no banco
+    const finalPrice =
+      (!price || (itemStatus !== 'Ativo' && parseFloat(price) < 1))
+        ? '0.00'
+        : price;
 
-    return { title, price, description, shippingInfo, itemStatus, url, itemId };
+    console.log(`[SCRAPER] ${title} | Price: ${finalPrice} | Status: ${itemStatus}`);
+
+    return { title, price: finalPrice, description, shippingInfo, itemStatus, url, itemId };
   } catch (error: any) {
     const itemStatus =
       error.response && error.response.status === 400
         ? 'Anúncio não disponível'
         : 'Erro desconhecido';
     const errorDetails = error.message || 'Erro desconhecido';
-    console.log(`[SCRAPER ERROR] URL: ${url} | Status: ${itemStatus} | Detalhe: ${errorDetails}`);
+
+    console.log(`[SCRAPER][ERRO] URL: ${url} | Status: ${itemStatus} | Detalhes: ${errorDetails}`);
+
     return {
       title: null,
       price: '0.00',
@@ -167,26 +163,22 @@ export async function scrapeMercadoLivre(url: string) {
 
 // Function to process multiple URLs with a delay between requests
 export async function processUrls(urls: string[]) {
-  let counter = 0;
-  const total = urls.length;
   const results = [];
-
+  let counter = 1;
   for (const url of urls) {
-    counter++;
     try {
-      await delay(1000); // Wait for 1 second between requests
+      console.log(`\n[SCRAPER] Processando URL ${counter}/${urls.length}`);
+      await delay(1000); // Wait 1 second
       const productDetails = await scrapeMercadoLivre(url);
       results.push(productDetails);
-
-      // Log simples de progresso
-      console.log(`[PROGRESS] ${counter}/${total} URLs processadas.`);
+      counter++;
     } catch (error: any) {
-      console.error(`[ERROR] URL: ${url} | ${error.message}`);
+      console.error(`Erro ao processar ${url}:`, error.message);
       results.push({ error: true, message: error.message, url });
     }
   }
-
-  console.log('Resultados finais:', JSON.stringify(results, null, 2));
+  console.log('\n[SCRAPER] Todos os resultados processados:');
+  console.log(JSON.stringify(results, null, 2));
 }
 
 // URLs para testar
@@ -200,8 +192,7 @@ const urls = [
   'https://www.mercadolivre.com.br/cd-tool--undertow--1993/up/MLBU1095682064?pdp_filters=item_id:MLB1615267043#position=16&search_layout=grid&type=item&tracking_id=1a1e374c-5d2d-46ac-8584-5935122b937b',
   'https://produto.mercadolivre.com.br/MLB-2115545019-fonte-de-alimentaco-para-karaoke-vmp-3700-ou-3700-plus-_JM#polycard_client=recommendations_home_navigation-recommendations&reco_backend=machinalis-homes-univb-equivalent-offer&reco_client=home_navigation-recommendations&reco_item_pos=2&reco_backend_type=function&reco_id=fa9a43e9-9243-40b9-b1ac-41dacb7b2835&c_id=/home/navigation-recommendations/element&c_uid=621d89a6-1728-4d9a-99ff-796684ffe85b',
   'https://produto.mercadolivre.com.br/MLB-5190895718-prizm-card-neymar-jr-copa-mundo-2014-psa-9-_JM?searchVariation=182308606698#polycard_client=search-nordic&searchVariation=182308606698&position=5&search_layout=grid&type=item&tracking_id=8fa41ef2-16fc-4aaf-8661-188bb6bcac0d',
-
-
+  'https://produto.mercadolivre.com.br/MLB-2714357958-ckl-5112-lp-12-polegadas-musica-chinesa-vinil-colorido-18314-_JM#polycard_client=search-nordic&position=47&search_layout=grid&type=item&tracking_id=cca03f4e-c6c5-4149-9646-8c72fe8c7bec&wid=MLB2714357958&sid=search',
 ];
 
 // Processar os URLs

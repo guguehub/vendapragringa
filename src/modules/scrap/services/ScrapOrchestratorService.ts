@@ -8,13 +8,27 @@ export class ScrapOrchestratorService {
   private scraper = new MercadoLivreScraper();
   private cache = new RedisCacheProvider();
 
-  /**
-   * Processa uma ou mais URLs.
-   * - Se `userId` for fornecido → salva no banco e aplica limites via middleware.
-   * - Se anônimo → apenas retorna resultado (sem salvar no banco).
-   */
-  async processUrls(urls: string[], userId?: string): Promise<IScrapedItem[]> {
+  // Limites de raspagem por tier
+  private readonly LIMITS: Record<string, number> = {
+    free: 3,
+    bronze: 10,
+    silver: 20,
+    gold: 50,
+  };
+
+  async processUrls(urls: string[], user?: { id: string; tier: string }): Promise<IScrapedItem[]> {
     const results: IScrapedItem[] = [];
+
+    // --- verifica limite antes de iniciar ---
+    if (user) {
+      const itemRepo = AppDataSource.getRepository(Item);
+      const count = await itemRepo.count({ where: { createdBy: user.id } });
+      const max = this.LIMITS[user.tier] || this.LIMITS.free;
+
+      if (count >= max) {
+        throw new Error(`Limite de raspagem atingido para usuários ${user.tier}`);
+      }
+    }
 
     for (const url of urls) {
       const cacheKey = `scraped:${url}`;
@@ -24,34 +38,26 @@ export class ScrapOrchestratorService {
         console.log(`[CACHE HIT] URL já raspada: ${url}`);
       } else {
         console.log(`[CACHE MISS] Raspando URL: ${url}`);
-            console.log("[SCRAP RESULT]", results[0]); // 🔥 aqui mostra no terminal
-
         item = await this.scraper.scrape(url);
-
-        // Salva no cache com TTL 12h
-        await this.cache.set(cacheKey, item, 12 * 60 * 60);
+        await this.cache.set(cacheKey, item, 12 * 60 * 60); // 12h TTL
       }
 
-      // Se usuário está logado → salva no banco
-      if (userId) {
+      if (user) {
         try {
           const itemRepository = AppDataSource.getRepository(Item);
 
-          await itemRepository.save(
-            itemRepository.create({
-              title: item.title,
-              price: item.price,
-              url: item.url,
-              user: { id: userId },
-            })
-          );
+          // Cria e salva item com fields válidos
+          const newItem = itemRepository.create({
+  title: item.title || "Sem título",
+  price: item.price && !isNaN(Number(item.price)) ? Number(item.price) : 0,
+  itemLink: item.url,
+  createdBy: user.id,
+});
 
-          console.log(`[DB SAVE] Item salvo para o usuário: ${userId}`);
+          await itemRepository.save(newItem);
+          console.log(`[DB SAVE] Item salvo para o usuário: ${user.id}`);
         } catch (err) {
-          console.error(
-            `[DB ERROR] Erro ao salvar item para usuário ${userId}:`,
-            err
-          );
+          console.error(`[DB ERROR] Erro ao salvar item para usuário ${user.id}:`, err);
         }
       }
 
