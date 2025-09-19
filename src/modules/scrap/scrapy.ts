@@ -1,10 +1,18 @@
-// scraper.ts
-
 import axios from 'axios';
-import * as cheerio from 'cheerio';;
+import * as cheerio from 'cheerio';
 
 // Utility function to pause execution for a given duration
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Normaliza o preço para não quebrar inserção no banco
+function normalizePrice(price: string | null, itemStatus: string): string {
+  const numericPrice = price ? parseFloat(price) : 0;
+  if (numericPrice > 1) {
+    return price!; // mantém preço real
+  }
+  // Se não tiver preço ou for 0, mantém 0.00
+  return '0.00';
+}
 
 // Function to extract the product title
 function extractTitle($: cheerio.CheerioAPI): string {
@@ -59,40 +67,27 @@ function extractShippingInfo($: cheerio.CheerioAPI): string {
 // Function to determine the item status
 function extractItemStatus($: cheerio.CheerioAPI): string {
   const statusContainer = $('.ui-pdp-main-actions__status');
-  if (statusContainer.length > 0) {
-    return statusContainer.text().trim();
-  }
+  if (statusContainer.length > 0) return statusContainer.text().trim();
 
   const soldOutStatus = $('.ui-pdp-main-actions__sold-out').text().trim();
-  if (soldOutStatus) {
-    return 'Esgotado';
-  }
+  if (soldOutStatus) return 'Esgotado';
 
   const possibleStatuses = [
     { selector: '.ui-pdp-main-actions__paused', status: 'Pausado' },
     { selector: '.ui-pdp-main-actions__closed', status: 'Encerrado' },
     { selector: '.ui-pdp-main-actions__inactive', status: 'Inativo' },
     { selector: '.ui-pdp-main-actions__under-review', status: 'Sob revisão' },
-    {
-      selector: '.ui-pdp-main-actions__payment-required',
-      status: 'Pagamento pendente',
-    },
-    {
-      selector: '.ui-pdp-main-actions__finished',
-      status: 'Anúncio finalizado',
-    },
+    { selector: '.ui-pdp-main-actions__payment-required', status: 'Pagamento pendente' },
+    { selector: '.ui-pdp-main-actions__finished', status: 'Anúncio finalizado' },
   ];
 
   for (const { selector, status } of possibleStatuses) {
-    if ($(selector).length > 0) {
-      return status;
-    }
+    if ($(selector).length > 0) return status;
   }
 
   const pageText = $('body').text().toLowerCase();
-  if (pageText.includes('anúncio finalizado')) {
-    return 'Anúncio finalizado';
-  }
+  if (pageText.includes('anúncio finalizado')) return 'Anúncio finalizado';
+  if (pageText.includes('este produto está indisponível no momento')) return 'Inativo';
 
   return 'Ativo';
 }
@@ -139,11 +134,15 @@ export async function scrapeMercadoLivre(url: string) {
     const $ = cheerio.load(html);
 
     const title = extractTitle($);
-    const price = extractPrice($);
+    const rawPrice = extractPrice($);
+    const itemStatus = extractItemStatus($);
+    const price = normalizePrice(rawPrice, itemStatus);
     const description = extractDescription($);
     const shippingInfo = extractShippingInfo($);
-    const itemStatus = extractItemStatus($);
     const itemId = extractItemId(url, $);
+
+    // Log detalhado
+    console.log(`[SCRAPER] ${title} | Price: ${price} | Status: ${itemStatus}`);
 
     return { title, price, description, shippingInfo, itemStatus, url, itemId };
   } catch (error: any) {
@@ -152,9 +151,10 @@ export async function scrapeMercadoLivre(url: string) {
         ? 'Anúncio não disponível'
         : 'Erro desconhecido';
     const errorDetails = error.message || 'Erro desconhecido';
+    console.log(`[SCRAPER ERROR] URL: ${url} | Status: ${itemStatus} | Detalhe: ${errorDetails}`);
     return {
       title: null,
-      price: null,
+      price: '0.00',
       description: null,
       shippingInfo: null,
       itemStatus,
@@ -167,24 +167,32 @@ export async function scrapeMercadoLivre(url: string) {
 
 // Function to process multiple URLs with a delay between requests
 export async function processUrls(urls: string[]) {
+  let counter = 0;
+  const total = urls.length;
   const results = [];
+
   for (const url of urls) {
+    counter++;
     try {
       await delay(1000); // Wait for 1 second between requests
       const productDetails = await scrapeMercadoLivre(url);
       results.push(productDetails);
+
+      // Log simples de progresso
+      console.log(`[PROGRESS] ${counter}/${total} URLs processadas.`);
     } catch (error: any) {
-      console.error(`Erro ao processar ${url}:`, error.message);
+      console.error(`[ERROR] URL: ${url} | ${error.message}`);
       results.push({ error: true, message: error.message, url });
     }
   }
-  console.log('Resultados:', JSON.stringify(results, null, 2));
+
+  console.log('Resultados finais:', JSON.stringify(results, null, 2));
 }
 
 // URLs para testar
 const urls = [
   'https://produto.mercadolivre.com.br/MLB-2197404989',
-  'https://www.mercadolivre.com.br/cd-jonnata-doll-e-garotos-solventes-crocodilo-2016-sem-uso/up/MLBU1412331913#polycard_client=search-nordic&searchVariation=MLBU1412331913&wid=MLB1980905943&position=1&search_layout=grid&type=product&tracking_id=277d54e2-291e-4ae5-8b4f-cfafd14d3824&sid=search' ,
+  'https://www.mercadolivre.com.br/cd-jonnata-doll-e-garotos-solventes-crocodilo-2016-sem-uso/up/MLBU1412331913#polycard_client=search-nordic&searchVariation=MLBU1412331913&wid=MLB1980905943&position=1&search_layout=grid&type=product&tracking_id=277d54e2-291e-4ae5-8b4f-cfafd14d3824&sid=search',
   'https://www.mercadolivre.com.br/lp-explorations-bill-evans-trio/up/MLBU1481610204',
   'https://produto.mercadolivre.com.br/MLB-4225368926',
   'https://www.mercadolivre.com.br/cd-tool--undertow--1993/up/MLBU1095682064?pdp_filters=item_id:MLB1615267043#position=16&search_layout=grid&type=item&tracking_id=1a1e374c-5d2d-46ac-8584-5935122b937b',
@@ -192,7 +200,8 @@ const urls = [
   'https://www.mercadolivre.com.br/cd-tool--undertow--1993/up/MLBU1095682064?pdp_filters=item_id:MLB1615267043#position=16&search_layout=grid&type=item&tracking_id=1a1e374c-5d2d-46ac-8584-5935122b937b',
   'https://produto.mercadolivre.com.br/MLB-2115545019-fonte-de-alimentaco-para-karaoke-vmp-3700-ou-3700-plus-_JM#polycard_client=recommendations_home_navigation-recommendations&reco_backend=machinalis-homes-univb-equivalent-offer&reco_client=home_navigation-recommendations&reco_item_pos=2&reco_backend_type=function&reco_id=fa9a43e9-9243-40b9-b1ac-41dacb7b2835&c_id=/home/navigation-recommendations/element&c_uid=621d89a6-1728-4d9a-99ff-796684ffe85b',
   'https://produto.mercadolivre.com.br/MLB-5190895718-prizm-card-neymar-jr-copa-mundo-2014-psa-9-_JM?searchVariation=182308606698#polycard_client=search-nordic&searchVariation=182308606698&position=5&search_layout=grid&type=item&tracking_id=8fa41ef2-16fc-4aaf-8661-188bb6bcac0d',
-  'https://produto.mercadolivre.com.br/MLB-2714357958-ckl-5112-lp-12-polegadas-musica-chinesa-vinil-colorido-18314-_JM#polycard_client=search-nordic&position=47&search_layout=grid&type=item&tracking_id=cca03f4e-c6c5-4149-9646-8c72fe8c7bec&wid=MLB2714357958&sid=search',
+
+
 ];
 
 // Processar os URLs

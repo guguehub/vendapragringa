@@ -24,6 +24,8 @@
         "dev:build:light": "docker compose build",
           "dev:build:light-reset": "rm -rf .docker/dbdata && docker compose build",
         "test:tier": "ts-node -r tsconfig-paths/register src/__tests__/subscriptions/subscription-tier-validation.test.ts",
+  "dev:scrapy": "ts-node -r tsconfig-paths/register src/modules/scrap/scrapy.ts",
+
 
       "seed:tiers": "ts-node -r tsconfig-paths/register src/modules/subscriptions/infra/typeorm/seeds/seedSubscriptions.ts",
       "seed:plans": "ts-node -r tsconfig-paths/register src/modules/products/infra/typeorm/seeds/scripts/seedPlans.ts",
