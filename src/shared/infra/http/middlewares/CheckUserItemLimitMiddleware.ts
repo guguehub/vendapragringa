@@ -9,6 +9,7 @@ const tierLimits: Record<string, number> = {
   bronze: 20,
   silver: 50,
   gold: 150,
+  infinity: Infinity
 };
 
 // Está assumindo que import_stage ativo = 'ready', 'listed', 'sold'

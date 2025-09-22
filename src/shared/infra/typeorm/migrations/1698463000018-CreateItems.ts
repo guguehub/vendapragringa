@@ -16,6 +16,7 @@ export class CreateItems1698463000018 implements MigrationInterface {
           {
             name: 'title',
             type: 'varchar',
+            isNullable: false,
           },
           {
             name: 'description',
@@ -27,6 +28,7 @@ export class CreateItems1698463000018 implements MigrationInterface {
             type: 'decimal',
             precision: 10,
             scale: 2,
+            isNullable: false,
           },
           {
             name: 'external_id',
@@ -36,6 +38,16 @@ export class CreateItems1698463000018 implements MigrationInterface {
           {
             name: 'marketplace',
             type: 'varchar',
+            isNullable: true,
+          },
+          {
+            name: 'condition',
+            type: 'varchar',
+            isNullable: true,
+          },
+          {
+            name: 'sold_count',
+            type: 'int',
             isNullable: true,
           },
           {
@@ -63,7 +75,7 @@ export class CreateItems1698463000018 implements MigrationInterface {
           },
           {
             name: 'images',
-            type: 'text',
+            type: 'text', // JSON string stored as text
             isNullable: true,
           },
           {
@@ -134,16 +146,16 @@ export class CreateItems1698463000018 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-  await queryRunner.dropUniqueConstraint('items', 'UQ_items_external_marketplace');
+    await queryRunner.dropUniqueConstraint('items', 'UQ_items_external_marketplace');
 
-  const table = await queryRunner.getTable('items');
-  if (table) {
-    const foreignKey = table.foreignKeys.find(fk => fk.name === 'FKItemsSupplier');
-    if (foreignKey) {
-      await queryRunner.dropForeignKey('items', foreignKey);
+    const table = await queryRunner.getTable('items');
+    if (table) {
+      const foreignKey = table.foreignKeys.find(fk => fk.name === 'FKItemsSupplier');
+      if (foreignKey) {
+        await queryRunner.dropForeignKey('items', foreignKey);
+      }
     }
-  }
 
-  await queryRunner.dropTable('items');
+    await queryRunner.dropTable('items');
   }
 }

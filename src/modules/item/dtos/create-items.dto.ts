@@ -3,57 +3,58 @@ import { IsString, IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
 export class CreateItemDto {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  title: string; // alinhado com a entidade
 
   @IsString()
   @IsOptional()
   description?: string;
 
-  @IsString()
-  @IsOptional()
-  category?: string;
-
-  @IsString()
-  @IsOptional()
-  brand?: string;
-
   @IsNumber()
-  @IsOptional()
-  price?: number;
+  price: number; // obrigatório conforme entidade (não opcional)
 
   @IsString()
   @IsOptional()
-  currency?: string;
-
-  @IsNumber()
-  @IsOptional()
-  weight?: number;
+  externalId?: string;
 
   @IsString()
   @IsOptional()
-  weightUnit?: string;
-
-  @IsNumber()
-  @IsOptional()
-  stock?: number;
+  marketplace?: string; // ex: mercadolivre, olx, shopee
 
   @IsString()
   @IsOptional()
   condition?: string;
 
-  @IsString()
+  @IsNumber()
   @IsOptional()
-  location?: string;
+  soldCount?: number;
+
+  @IsNumber()
+  @IsOptional()
+  shippingPrice?: number;
 
   @IsString()
   @IsOptional()
-  imageUrl?: string;
+  status?: string; // ready | listed | sold
 
   @IsString()
   @IsOptional()
-  sku?: string;
+  itemLink?: string;
 
   @IsString()
   @IsOptional()
-  barcode?: string;
+  images?: string; // JSON string com URLs das imagens
+
+  @IsString()
+  @IsOptional()
+  importStage?: string; // draft, ready, listed etc.
+
+  @IsOptional()
+  isDraft?: boolean;
+
+  @IsOptional()
+  isSynced?: boolean;
+
+  @IsString()
+  @IsOptional()
+  createdBy?: string;
 }

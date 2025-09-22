@@ -34,6 +34,12 @@ class Item {
   @Column({ nullable: true })
   marketplace?: string; // "mercadolivre" | "olx" | "shopee"
 
+  @Column({ nullable: true })
+condition?: string;
+
+@Column({ name: 'sold_count', type: 'int', nullable: true })
+soldCount?: number;
+
   @Column({
     name: 'shipping_price',
     type: 'decimal',
