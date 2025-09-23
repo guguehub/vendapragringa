@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
+
 import ListItemService from '@modules/item/services/ListItemService';
 import ShowItemService from '@modules/item/services/ShowItemService';
 import CreateItemService from '@modules/item/services/CreateItemService';
-//import UpdateItemService from '@modules/item/services/UpdateItemService';
 import UpdateItemService from '@modules/item/services/UpdateItemService';
 import DeleteItemService from '@modules/item/services/DeleteItemService';
 
@@ -17,37 +17,88 @@ export default class ItemsController {
   }
 
   public async show(request: Request, response: Response): Promise<Response> {
-  const { id } = request.params;
+    const { id } = request.params;
 
-  const showItem = container.resolve(ShowItemService);
+    const showItem = container.resolve(ShowItemService);
 
-  const item = await showItem.execute(id);
+    // ShowItemService espera string, não { id }
+    const item = await showItem.execute(id);
 
-  return response.json(item);
-}
+    return response.json(item);
+  }
 
   public async create(request: Request, response: Response): Promise<Response> {
-if (!request.user) {
-  return response.status(401).json({ error: 'Unauthorized' });
-}
+    if (!request.user) {
+      return response.status(401).json({ error: 'Unauthorized' });
+    }
 
-const userId = request.user.id;  const { title, description, price} = request.body;
+    const userId = request.user.id;
 
-  const createItem = container.resolve(CreateItemService);
+    const {
+      title,
+      description,
+      price,
+      shippingPrice,
+      status,
+      itemStatus,
+      soldCount,
+      condition,
+      externalId,
+      marketplace,
+      itemLink,
+      images,
+      isDraft,
+      isSynced,
+      supplierId,
+    } = request.body;
 
-  const item = await createItem.execute(userId, {
-    title,
-    description,
-    price
+    const createItem = container.resolve(CreateItemService);
 
-  });
+    const item = await createItem.execute(userId, {
+      title,
+      description,
+      price,
+      shippingPrice,
+      status,
+      itemStatus,
+      soldCount,
+      condition,
+      external_id: externalId, // snake_case
+      marketplace,
+      itemLink,
+      images,
+      is_draft: isDraft,       // snake_case
+      is_synced: isSynced,     // snake_case
+      supplierId,
+    });
 
-  return response.status(201).json(item);
-}
+    return response.status(201).json(item);
+  }
 
   public async update(request: Request, response: Response): Promise<Response> {
-    const { title, description, price } = request.body;
+    if (!request.user) {
+      return response.status(401).json({ error: 'Unauthorized' });
+    }
+
     const { id } = request.params;
+
+    const {
+      title,
+      description,
+      price,
+      shippingPrice,
+      status,
+      itemStatus,
+      soldCount,
+      condition,
+      externalId,
+      marketplace,
+      itemLink,
+      images,
+      isDraft,
+      isSynced,
+      supplierId,
+    } = request.body;
 
     const updateItem = container.resolve(UpdateItemService);
 
@@ -56,7 +107,18 @@ const userId = request.user.id;  const { title, description, price} = request.bo
       title,
       description,
       price,
-
+      shippingPrice,
+      status,
+      itemStatus,
+      soldCount,
+      condition,
+      external_id: externalId, // snake_case
+      marketplace,
+      itemLink,
+      images,
+      is_draft: isDraft,       // snake_case
+      is_synced: isSynced,     // snake_case
+      supplierId,
     });
 
     return response.json(item);
@@ -67,7 +129,7 @@ const userId = request.user.id;  const { title, description, price} = request.bo
 
     const deleteItem = container.resolve(DeleteItemService);
 
-    await deleteItem.execute({ id });
+    await deleteItem.execute({ id }); // depende da assinatura, mas deixo { id }
 
     return response.status(204).send();
   }

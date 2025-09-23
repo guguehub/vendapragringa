@@ -1,8 +1,9 @@
+// src/modules/item/services/UpdateItemService.ts
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
-import Item from '@modules/item/infra/typeorm/entities/Item';
 import { IUpdateItem } from '../domain/models/IUpdateItems';
+import Item from '@modules/item/infra/typeorm/entities/Item';
 
 @injectable()
 class UpdateItemService {
@@ -12,19 +13,17 @@ class UpdateItemService {
   ) {}
 
   public async execute(data: IUpdateItem): Promise<Item> {
-    const { id } = data;
-
-    const item = await this.itemsRepository.findById(id);
+    const item = await this.itemsRepository.findById(data.id);
 
     if (!item) {
       throw new AppError('Item not found', 404);
     }
 
-    Object.assign(item, data); // Atualiza as propriedades do item com os dados recebidos
+    Object.assign(item, data);
 
-    const updatedItem = await this.itemsRepository.save(item);
+    await this.itemsRepository.save(item);
 
-    return updatedItem;
+    return item;
   }
 }
 

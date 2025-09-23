@@ -7,13 +7,16 @@ export interface IItem {
   description?: string;
   price: number;
   externalId?: string;
-  marketplace?: string;           // ex: "mercadolivre", "olx"
+  marketplace?: string;            // ex: "mercadolivre", "olx"
+  condition?: string;              // novo campo
+  soldCount?: number;              // novo campo
   shippingPrice?: number;
-  status: ItemStatus;              // <--- agora usa enum
+  status: ItemStatus;              // enum: ready | listed | sold
+  itemStatus?: string;             // novo campo (status do marketplace)
   itemLink?: string;
   lastScrapedAt?: Date;
-  images?: string[];               // JSON string convertida para array de URLs
-  importStage: 'draft' | string;   // mantém possibilidade de outros estágios
+  images?: string[];               // JSON string convertida para array
+  importStage: 'draft' | string;   // mantém flexibilidade para outros estágios
   isDraft: boolean;
   isSynced: boolean;
   supplier?: ISupplier;            // relação opcional

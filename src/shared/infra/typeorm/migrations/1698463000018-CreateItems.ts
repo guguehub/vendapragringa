@@ -64,6 +64,11 @@ export class CreateItems1698463000018 implements MigrationInterface {
             default: `'ready'`,
           },
           {
+            name: 'item_status',
+            type: 'varchar',
+            isNullable: true,
+          },
+          {
             name: 'item_link',
             type: 'varchar',
             isNullable: true,
@@ -75,8 +80,9 @@ export class CreateItems1698463000018 implements MigrationInterface {
           },
           {
             name: 'images',
-            type: 'text', // JSON string stored as text
+            type: 'text',
             isNullable: true,
+            comment: 'Armazena array como string JSON',
           },
           {
             name: 'import_stage',
@@ -122,7 +128,6 @@ export class CreateItems1698463000018 implements MigrationInterface {
       true,
     );
 
-    // Foreign Key para supplier_id
     await queryRunner.createForeignKey(
       'items',
       new TableForeignKey({
@@ -135,7 +140,6 @@ export class CreateItems1698463000018 implements MigrationInterface {
       }),
     );
 
-    // Unique constraint: external_id + marketplace
     await queryRunner.createUniqueConstraint(
       'items',
       new TableUnique({

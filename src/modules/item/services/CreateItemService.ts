@@ -2,29 +2,34 @@
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
-import Item from '@modules/item/infra/typeorm/entities/Item';
 import { ICreateItem } from '@modules/item/domain/models/ICreateItem';
-import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
+import Item from '@modules/item/infra/typeorm/entities/Item';
 
 @injectable()
 class CreateItemService {
   constructor(
     @inject('ItemsRepository')
     private itemsRepository: IItemsRepository,
-
-    @inject('UsersRepository')
-    private usersRepository: IUsersRepository,
   ) {}
 
-  public async execute(user_id: string, data: ICreateItem): Promise<Item> {
-    const user = await this.usersRepository.findById(user_id);
+  public async execute(userId: string, data: ICreateItem): Promise<Item> {
+    const { external_id, marketplace } = data;
 
-    if (!user) {
-      throw new AppError('User not found', 404);
+    // Evitar duplicata
+    if (external_id && marketplace) {
+      const existing = await this.itemsRepository.findByExternalId(
+        external_id,
+        marketplace,
+      );
+
+      if (existing) {
+        throw new AppError('Item already exists for this marketplace', 409);
+      }
     }
 
     const item = await this.itemsRepository.create({
       ...data,
+      created_by: userId,
     });
 
     return item;

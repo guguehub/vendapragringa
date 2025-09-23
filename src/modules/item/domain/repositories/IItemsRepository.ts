@@ -1,6 +1,5 @@
-// src/modules/item/domain/repositories/IItemsRepository.ts
-import { ICreateItem } from '../models/ICreateItem';
-import Item from '@modules/item/infra/typeorm/entities/Item';
+import Item from "@modules/item/infra/typeorm/entities/Item";
+import { ICreateItem } from "../models/ICreateItem";
 
 export interface IItemsRepository {
   create(data: ICreateItem): Promise<Item>;
@@ -9,6 +8,6 @@ export interface IItemsRepository {
   remove(item: Item): Promise<void>;
   findAll(): Promise<Item[]>;
 
-  // ❌ Removido findByUserId, pois Item é agora agnóstico/global
-  // findByUserId(userId: string): Promise<Item[]>;
+  // Novo método
+  findByExternalId(externalId: string, marketplace: string): Promise<Item | null>;
 }

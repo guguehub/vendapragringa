@@ -13,7 +13,7 @@ import {
 import Supplier from '../../../../suppliers/infra/typeorm/entities/Supplier';
 
 @Entity('items')
-@Unique(['externalId', 'marketplace']) // Garantia: um mesmo item não será duplicado para o mesmo marketplace
+@Unique(['externalId', 'marketplace']) // Garante que não haja duplicata no mesmo marketplace
 class Item {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -35,10 +35,10 @@ class Item {
   marketplace?: string; // "mercadolivre" | "olx" | "shopee"
 
   @Column({ nullable: true })
-condition?: string;
+  condition?: string; // novo | usado (quando disponível)
 
-@Column({ name: 'sold_count', type: 'int', nullable: true })
-soldCount?: number;
+  @Column({ name: 'sold_count', type: 'int', nullable: true })
+  soldCount?: number;
 
   @Column({
     name: 'shipping_price',
@@ -50,7 +50,12 @@ soldCount?: number;
   shippingPrice?: number;
 
   @Column({ default: 'ready' })
-  status: string; // ready | listed | sold
+  status: string; // ready | listed | sold (status interno da aplicação)
+
+  @Column({ name: 'item_status', nullable: true })
+  itemStatus?: string;
+  // Status real do anúncio no marketplace
+  // ex: "Ativo", "Pausado", "Encerrado", "Sob revisão", "Finalizado"
 
   @Column({ name: 'item_link', nullable: true })
   itemLink?: string;
@@ -58,8 +63,15 @@ soldCount?: number;
   @Column({ name: 'last_scraped_at', type: 'timestamp', nullable: true })
   lastScrapedAt?: Date;
 
-  @Column({ type: 'text', nullable: true })
-  images?: string; // JSON string (ex: ["url1","url2"])
+  @Column({
+    type: 'text',
+    nullable: true,
+    transformer: {
+      to: (value?: string[]) => (value ? JSON.stringify(value) : null),
+      from: (value?: string) => (value ? JSON.parse(value) : []),
+    },
+  })
+  images?: string[];
 
   @Column({ name: 'import_stage', default: 'draft' })
   importStage: string;
@@ -85,4 +97,5 @@ soldCount?: number;
   @UpdateDateColumn({ name: 'updated_at' })
   updated_at: Date;
 }
+
 export default Item;
