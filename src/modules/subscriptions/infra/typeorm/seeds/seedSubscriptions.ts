@@ -22,8 +22,8 @@ export default async function seedSubscriptions() {
 
     // Usuários de exemplo (UUIDs reais devem existir na tabela users)
     const users = [
-      { id: 'e405e589-eb20-496b-8281-485571b5bfce' },
-      { id: '1264758e-d94d-4a24-ac8f-617371482a89' },
+      { id: '6d2a6ed3-646e-430c-b7a6-76f4febeec9a' },
+      { id: '76603a2f-21a2-48f7-b0ea-d4732813c57d' },
     ];
 
     for (const user of users) {

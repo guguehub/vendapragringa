@@ -48,6 +48,11 @@ export class CreateItemDto {
   @IsOptional()
   importStage?: string; // draft, ready, listed etc.
 
+  @IsNumber()
+  @IsOptional()
+  quantity?: number;
+
+
   @IsOptional()
   isDraft?: boolean;
 

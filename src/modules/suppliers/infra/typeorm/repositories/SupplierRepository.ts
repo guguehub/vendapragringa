@@ -20,6 +20,7 @@ export class SupplierNotFoundError extends Error {
 }
 
 // Mapeamento entidade -> ISupplier
+// Mapeamento entidade -> ISupplier
 function mapSupplierEntityToISupplier(supplier: Supplier): ISupplier {
   return {
     id: supplier.id,
@@ -52,7 +53,7 @@ function mapSupplierEntityToISupplier(supplier: Supplier): ISupplier {
           status: i.status as ItemStatus,
           itemLink: i.itemLink,
           lastScrapedAt: i.lastScrapedAt,
-          images: i.images ? JSON.parse(i.images) : undefined,
+          images: i.images ?? undefined, // apenas 1 foto opcional
           importStage: i.importStage,
           isDraft: i.isDraft,
           isSynced: i.isSynced,
@@ -63,6 +64,7 @@ function mapSupplierEntityToISupplier(supplier: Supplier): ISupplier {
       ) ?? [],
   };
 }
+
 
 export default class SupplierRepository implements ISupplierRepository {
   private ormRepository: Repository<Supplier>;

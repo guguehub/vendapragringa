@@ -1,23 +1,21 @@
-import 'reflect-metadata';
+import 'reflect-metadata'; // necessário para TSyringe e TypeORM
+import '../../../shared/container'; // registrar todos os providers antes de usar controllers
 import express, { NextFunction, Request, Response } from 'express';
 import 'express-async-errors';
 import cors from 'cors';
 import session from 'express-session';
 import { errors } from 'celebrate';
+
 import routes from './routes';
 import AppError from '../../../shared/errors/AppError';
 import '../typeorm/data-source';
-import '../../../shared/container';
 import uploadConfig from '@config/upload';
 import rateLimiter from './middlewares/rateLimiter';
 import errorHandler from './middlewares/errorHandler';
 
 const app = express();
 
-app.use(errorHandler);
-
-
-// Configuração de session (necessária para /scrap/once)
+// Configuração de sessão (necessária para /scrap/once)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || 'default_secret',
@@ -31,13 +29,14 @@ app.use(cors());
 app.use(express.json());
 app.use(rateLimiter);
 app.use('/files', express.static(uploadConfig.directory));
+
+// ROTAS
 app.use(routes);
 
-// Errors do Celebrate
+// Celebrate errors
 app.use(errors());
 
-
-// Tratamento de erros
+// Middleware global de tratamento de erros
 app.use(
   (error: Error, request: Request, response: Response, next: NextFunction) => {
     if (error instanceof AppError) {
@@ -46,11 +45,16 @@ app.use(
         message: error.message,
       });
     }
+
+    console.error(error); // log completo no servidor
     return response.status(500).json({
       status: 'error',
-      message: console.error(error),
+      message: 'Internal server error',
     });
   },
 );
+
+// Se necessário, também pode usar um middleware final de errorHandler separado
+app.use(errorHandler);
 
 export { app };

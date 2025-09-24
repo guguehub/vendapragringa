@@ -1,10 +1,10 @@
 import AppError from '@shared/errors/AppError';
 import DiskStorageProvider from '@shared/providers/StorageProvider/DiskStorageProvider';
+// import S3StorageProvider from '@shared/providers/StorageProvider/S3StorageProvider'; // descomente quando implementar S3
 import { inject, injectable } from 'tsyringe';
 import { IUsersRepository } from '../domain/repositories/IUsersRepository';
 import { IUser } from '../domain/models/IUser';
 import { IUpdateUserAvatar } from '../domain/models/IUpdateUserAvatar';
-//import S3StorageProvider from '@shared/providers/StorageProvider/S3StorageProvider';
 import uploadConfig from '@config/upload';
 
 @injectable()
@@ -14,32 +14,30 @@ class UpdateUserAvatarService {
     private usersRepository: IUsersRepository,
   ) {}
 
-  public async execute({
-    user_id,
-    avatarFilename,
-  }: IUpdateUserAvatar): Promise<IUser> {
-    //const storageProvider = new DiskStorageProvider();
+  public async execute({ user_id, avatarFilename }: IUpdateUserAvatar): Promise<IUser> {
     const user = await this.usersRepository.findById(user_id);
 
     if (!user) {
-      throw new AppError('user not found');
+      throw new AppError('Usuário não encontrado.');
     }
 
-    if (uploadConfig.driver === 's3') {
-      const s3Provider = new S3StorageProvider();
-      if (user.avatar) {
-        await s3Provider.deleteFile(user.avatar);
-      }
-      const filename = await s3Provider.saveFile(avatarFilename);
-      user.avatar = filename;
+    // Escolha do provedor de armazenamento
+    let storageProvider;
+
+    if ('driver' in uploadConfig && uploadConfig.driver === 's3') {
+      // futuramente, quando S3 estiver implementado
+      // storageProvider = new S3StorageProvider();
+      throw new AppError('S3StorageProvider ainda não implementado.');
     } else {
-      const diskProvider = new DiskStorageProvider();
-      if (user.avatar) {
-        await diskProvider.deleteFile(user.avatar);
-      }
-      const filename = await diskProvider.saveFile(avatarFilename);
-      user.avatar = filename;
+      storageProvider = new DiskStorageProvider();
     }
+
+    if (user.avatar) {
+      await storageProvider.deleteFile(user.avatar);
+    }
+
+    const filename = await storageProvider.saveFile(avatarFilename);
+    user.avatar = filename;
 
     await this.usersRepository.save(user);
 

@@ -1,8 +1,10 @@
+import { injectable } from 'tsyringe';
 import { Repository, DataSource } from 'typeorm';
 import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
 import Item from '../entities/Item';
 import { ICreateItem } from '@modules/item/domain/models/ICreateItem';
 
+@injectable()
 class ItemsRepository implements IItemsRepository {
   private ormRepository: Repository<Item>;
 

@@ -1,30 +1,36 @@
 import { Request, Response } from 'express';
-//import DeleteUserService from '../services/DeleteUserService';
-import ShowProfileService from '../../../services/ShowProfileService';
-import UpdateProfileService from '../../../services/UpdateProfileService';
+import { container } from 'tsyringe';
 import { instanceToInstance } from 'class-transformer';
 
-import { container } from 'tsyringe';
+import ShowProfileService from '../../../services/ShowProfileService';
+import UpdateProfileService from '../../../services/UpdateProfileService';
 
 export default class ProfileController {
+  // Mostrar perfil do usuário autenticado
   public async show(request: Request, response: Response): Promise<Response> {
-    const showProfile = container.resolve(ShowProfileService);
+    if (!request.user) {
+      return response.status(401).json({ error: 'Usuário não autenticado.' });
+    }
+
     const user_id = request.user.id;
+    const showProfile = container.resolve(ShowProfileService);
 
-    //console.log(request.user.id);
+    const user = await showProfile.execute({ id: user_id });
 
-    const user = await showProfile.execute({ user_id });
 
     return response.json(instanceToInstance(user));
   }
 
+  // Atualizar perfil do usuário autenticado
   public async update(request: Request, response: Response): Promise<Response> {
-    const user_id = request.user.id;
+    if (!request.user) {
+      return response.status(401).json({ error: 'Usuário não autenticado.' });
+    }
 
+    const user_id = request.user.id;
     const { name, email, password, old_password } = request.body;
 
     const updateProfile = container.resolve(UpdateProfileService);
-
     const user = await updateProfile.execute({
       user_id,
       name,
@@ -38,13 +44,16 @@ export default class ProfileController {
 
   /*
   public async delete(request: Request, response: Response): Promise<Response> {
-    const { id } = request.params;
+    if (!request.user) {
+      return response.status(401).json({ error: 'Usuário não autenticado.' });
+    }
 
-    const deleteUser = new DeleteUserService();
+    const { id } = request.params;
+    const deleteUser = container.resolve(DeleteUserService);
 
     await deleteUser.execute({ id });
 
-    return response.json([]);
+    return response.status(204).send();
   }
   */
 }
