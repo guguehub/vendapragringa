@@ -5,12 +5,29 @@ import AppError from '@shared/errors/AppError';
 import { IUserItemsRepository } from '../domain/repositories/IUserItemsRepository';
 import { IUserItem } from '../domain/models/IUserItem';
 
-// DTO só com campos editáveis
+// DTO atualizado com campos editáveis + snapshots + finance
 interface IUpdateUserItemDTO {
   quantity?: number;
   notes?: string | null;
   import_stage?: 'draft' | 'pending' | 'ready' | 'listed' | 'sold';
   sync_status?: 'active' | 'paused' | 'sold_out';
+
+  // Snapshots
+  snapshotTitle?: string;
+  snapshotPrice?: number;
+  snapshotImages?: string;
+  snapshotMarketplace?: string;
+  snapshotExternalId?: string;
+
+  // Finance / eBay
+  ebay_fee_percent?: number;
+  use_custom_fee_percent?: boolean;
+  custom_fee_percent?: number;
+  ebay_fees_usd?: number;
+  sale_value_usd?: number;
+  exchange_rate?: number;
+  received_brl?: number;
+  item_profit_brl?: number;
 }
 
 @injectable()

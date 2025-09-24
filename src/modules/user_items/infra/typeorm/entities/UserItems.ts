@@ -7,10 +7,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-//import Item from '@modules/item/infra/typeorm/entities/Item';
-import Item from '../../../../item/infra/typeorm/entities/Item'
+import Item from '../../../../item/infra/typeorm/entities/Item';
 import User from '../../../../users/infra/typeorm/entities/User';
-
 
 @Entity('user_items')
 class UserItem {
@@ -23,17 +21,33 @@ class UserItem {
 
   @ManyToOne(() => User, user => user.userItems)
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user?: User;
 
   @Column({ name: 'item_id' })
   itemId: string;
 
   @ManyToOne(() => Item)
   @JoinColumn({ name: 'item_id' })
-  item: Item;
+  item?: Item;
 
-  @Column({ type: 'int', default: 1 }) // ou nullable: false
-quantity: number;
+  @Column({ type: 'int', default: 1 })
+  quantity: number;
+
+  // ----- Snapshot do Item -----
+  @Column({ nullable: true })
+  snapshotTitle?: string;
+
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  snapshotPrice?: number;
+
+  @Column({ type: 'text', nullable: true })
+  snapshotImages?: string; // JSON string do array de imagens
+
+  @Column({ nullable: true })
+  snapshotMarketplace?: string;
+
+  @Column({ nullable: true })
+  snapshotExternalId?: string;
 
   // ----- eBay Specific -----
   @Column({ nullable: true })
@@ -90,11 +104,11 @@ quantity: number;
   notes?: string;
 
   @Column({
-  type: 'varchar',
-  nullable: false,
-  default: 'draft',
-})
-import_stage: 'draft' | 'pending' | 'ready' | 'listed' | 'sold';
+    type: 'varchar',
+    nullable: false,
+    default: 'draft',
+  })
+  import_stage: 'draft' | 'pending' | 'ready' | 'listed' | 'sold';
 
   // ----- Metadata -----
   @CreateDateColumn()
