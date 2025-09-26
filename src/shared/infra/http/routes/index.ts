@@ -17,8 +17,11 @@ import scrapDevRouter from '@modules/scrap/infra/http/routes/scrapDev.routes';
 import userAdminRouter from '@modules/users/infra/http/routes/user.admin.routes'
 import itemScrapeLogRoutes from '@modules/item_scrape_log/infra/http/routes/itemScrapeLog.routes';
 import subscriptionRouter from '@modules/subscriptions/infra/http/routes/subscriptionRoutes';
+//import userItemsRouter from '@modules/user_items/infra/http/routes/user-items.routes';
 
 const routes = Router();
+
+//routes.use('/user_items', userItemsRouter);
 
 routes.use('/test-user', testRouter);
 routes.use('/saved-items', savedItemsRouter);

@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
   Unique,
 } from 'typeorm';
-import Supplier from '@modules/suppliers/infra/typeorm/entities/Supplier';
+import Supplier from '../../../../suppliers/infra/typeorm/entities/Supplier'
 
 @Entity('items')
 @Unique(['externalId', 'marketplace'])

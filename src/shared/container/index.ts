@@ -4,7 +4,7 @@ import { IProductsRepository } from '@modules/products/domain/repositories/IProd
 import ProductsRepository from '@modules/products/infra/typeorm/repositories/ProductsRepository';
 import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
 import UsersRepository from '@modules/users/infra/typeorm/repositories/UsersRepository';
-//import '@modules/users/providers';
+import '@modules/users/providers';
 import SubscriptionsRepository from '@modules/subscriptions/infra/typeorm/repositories/SubscriptionRepository';
 import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositories/ISubscriptionsRepository';
 import { ISavedItemsRepository } from '@modules/saved-items/domain/repositories/ISavedItemsRepository';
@@ -42,6 +42,7 @@ container.registerSingleton<IItemScrapeLogRepository>(
   'ItemScrapeLogRepository',
   ItemScrapeLogRepository,
 );
+
 
 container.registerInstance('DataSource', dataSource);
 
