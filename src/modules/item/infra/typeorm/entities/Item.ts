@@ -1,4 +1,3 @@
-// src/modules/items/infra/typeorm/entities/Item.ts
 import {
   Entity,
   Column,
@@ -9,16 +8,14 @@ import {
   UpdateDateColumn,
   Unique,
 } from 'typeorm';
-
-import Supplier from '../../../../suppliers/infra/typeorm/entities/Supplier';
+import Supplier from '@modules/suppliers/infra/typeorm/entities/Supplier';
 
 @Entity('items')
-@Unique(['externalId', 'marketplace']) // Garante que não haja duplicata no mesmo marketplace
+@Unique(['externalId', 'marketplace'])
 class Item {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  /** Dados do item cru do scraper */
   @Column()
   title: string;
 
@@ -32,10 +29,10 @@ class Item {
   externalId?: string;
 
   @Column({ nullable: true })
-  marketplace?: string; // "mercadolivre" | "olx" | "shopee"
+  marketplace?: string;
 
   @Column({ nullable: true })
-  condition?: string; // novo | usado (quando disponível)
+  condition?: string;
 
   @Column({ name: 'sold_count', type: 'int', nullable: true })
   soldCount?: number;
@@ -50,12 +47,10 @@ class Item {
   shippingPrice?: number;
 
   @Column({ default: 'ready' })
-  status: string; // ready | listed | sold (status interno da aplicação)
+  status: string;
 
   @Column({ name: 'item_status', nullable: true })
   itemStatus?: string;
-  // Status real do anúncio no marketplace
-  // ex: "Ativo", "Pausado", "Encerrado", "Sob revisão", "Finalizado"
 
   @Column({ name: 'item_link', nullable: true })
   itemLink?: string;
@@ -82,12 +77,10 @@ class Item {
   @Column({ name: 'is_synced', default: false })
   isSynced: boolean;
 
-  /** Relações */
   @ManyToOne(() => Supplier, supplier => supplier.items, { nullable: true })
   @JoinColumn({ name: 'supplier_id' })
   supplier?: Supplier;
 
-  /** Metadata */
   @Column({ name: 'created_by', default: 'system' })
   createdBy: string;
 

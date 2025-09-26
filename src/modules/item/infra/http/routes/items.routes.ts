@@ -76,7 +76,7 @@ itemsRouter.put(
       status: Joi.string().optional(),
       itemStatus: Joi.string().optional(),
       itemLink: Joi.string().uri().optional(),
-      images: Joi.array().items(Joi.string()).optional(),
+      images: Joi.array().items(Joi.string().uri()).optional(),
       importStage: Joi.string().optional(),
       isDraft: Joi.boolean().optional(),
       isSynced: Joi.boolean().optional(),

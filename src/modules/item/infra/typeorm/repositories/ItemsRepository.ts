@@ -1,4 +1,4 @@
-import { injectable } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 import { Repository, DataSource } from 'typeorm';
 import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
 import Item from '../entities/Item';
@@ -8,7 +8,10 @@ import { ICreateItem } from '@modules/item/domain/models/ICreateItem';
 class ItemsRepository implements IItemsRepository {
   private ormRepository: Repository<Item>;
 
-  constructor(private dataSource: DataSource) {
+  constructor(
+    @inject('DataSource')
+    private dataSource: DataSource,
+  ) {
     this.ormRepository = this.dataSource.getRepository(Item);
   }
 
@@ -22,6 +25,8 @@ class ItemsRepository implements IItemsRepository {
   }
 
   public async save(item: Item): Promise<Item> {
+      console.log('[ItemsRepository] Salvando item no banco:', item);
+
     return this.ormRepository.save(item);
   }
 

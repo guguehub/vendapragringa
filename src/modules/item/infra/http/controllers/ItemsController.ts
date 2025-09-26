@@ -10,127 +10,126 @@ import DeleteItemService from '@modules/item/services/DeleteItemService';
 export default class ItemsController {
   public async index(request: Request, response: Response): Promise<Response> {
     const listItems = container.resolve(ListItemService);
-
     const items = await listItems.execute();
-
     return response.json(items);
   }
 
   public async show(request: Request, response: Response): Promise<Response> {
     const { id } = request.params;
-
     const showItem = container.resolve(ShowItemService);
-
-    // ShowItemService espera string, não { id }
     const item = await showItem.execute(id);
-
     return response.json(item);
   }
 
   public async create(request: Request, response: Response): Promise<Response> {
-    if (!request.user) {
-      return response.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const userId = request.user.id;
-
-    const {
-      title,
-      description,
-      price,
-      shippingPrice,
-      status,
-      itemStatus,
-      soldCount,
-      condition,
-      externalId,
-      marketplace,
-      itemLink,
-      images,
-      isDraft,
-      isSynced,
-      supplierId,
-    } = request.body;
-
-    const createItem = container.resolve(CreateItemService);
-
-    const item = await createItem.execute(userId, {
-      title,
-      description,
-      price,
-      shippingPrice,
-      status,
-      itemStatus,
-      soldCount,
-      condition,
-      external_id: externalId, // snake_case
-      marketplace,
-      itemLink,
-      images,
-      is_draft: isDraft,       // snake_case
-      is_synced: isSynced,     // snake_case
-      supplierId,
-    });
-
-    return response.status(201).json(item);
+  if (!request.user) {
+    return response.status(401).json({ error: 'Unauthorized' });
   }
+
+  const userId = request.user.id;
+
+  const {
+    title,
+    description,
+    price,
+    shippingPrice,
+    status,
+    itemStatus,
+    soldCount,
+    condition,
+    externalId,
+    marketplace,
+    itemLink,
+    images,
+    isDraft,
+    isSynced,
+    supplierId,
+  } = request.body;
+
+  const createItem = container.resolve(CreateItemService);
+
+  const item = await createItem.execute(userId, {
+    title,
+    description,
+    price,
+    shippingPrice,
+    status,
+    itemStatus,
+    soldCount,
+    condition,
+    externalId,  // ✅ camelCase
+    marketplace,
+    itemLink,
+    images,
+    isDraft,
+    isSynced,
+    supplierId,
+  });
+
+  return response.status(201).json({
+    message: 'Item criado com sucesso',
+    item,
+  });
+}
+
 
   public async update(request: Request, response: Response): Promise<Response> {
-    if (!request.user) {
-      return response.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const { id } = request.params;
-
-    const {
-      title,
-      description,
-      price,
-      shippingPrice,
-      status,
-      itemStatus,
-      soldCount,
-      condition,
-      externalId,
-      marketplace,
-      itemLink,
-      images,
-      isDraft,
-      isSynced,
-      supplierId,
-    } = request.body;
-
-    const updateItem = container.resolve(UpdateItemService);
-
-    const item = await updateItem.execute({
-      id,
-      title,
-      description,
-      price,
-      shippingPrice,
-      status,
-      itemStatus,
-      soldCount,
-      condition,
-      external_id: externalId, // snake_case
-      marketplace,
-      itemLink,
-      images,
-      is_draft: isDraft,       // snake_case
-      is_synced: isSynced,     // snake_case
-      supplierId,
-    });
-
-    return response.json(item);
+  if (!request.user) {
+    return response.status(401).json({ error: 'Unauthorized' });
   }
+
+  const { id } = request.params;
+  const {
+    title,
+    description,
+    price,
+    shippingPrice,
+    status,
+    itemStatus,
+    soldCount,
+    condition,
+    externalId,
+    marketplace,
+    itemLink,
+    images,
+    isDraft,
+    isSynced,
+  } = request.body;
+
+  const updateItem = container.resolve(UpdateItemService);
+
+  const item = await updateItem.execute({
+    id,
+    title,
+    description,
+    price,
+    shippingPrice,
+    status,
+    itemStatus,
+    soldCount,
+    condition,
+    externalId, // ✅ camelCase
+    marketplace,
+    itemLink,
+    images,
+    isDraft,
+    isSynced,
+  });
+console.log('[ItemsController] Retornando item atualizado:', item);
+
+  return response.json({
+    message: 'Item atualizado com sucesso',
+    item,
+  });
+}
 
   public async delete(request: Request, response: Response): Promise<Response> {
-    const { id } = request.params;
+  const { id } = request.params;
+  const deleteItem = container.resolve(DeleteItemService);
+  await deleteItem.execute({ id });
 
-    const deleteItem = container.resolve(DeleteItemService);
 
-    await deleteItem.execute({ id }); // depende da assinatura, mas deixo { id }
 
-    return response.status(204).send();
-  }
+  return response.json({ message: 'Item removido com sucesso' });
+}
 }

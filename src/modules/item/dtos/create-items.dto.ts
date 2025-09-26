@@ -42,7 +42,7 @@ export class CreateItemDto {
 
   @IsString()
   @IsOptional()
-  images?: string; // JSON string com URLs das imagens
+  images?: string[]; // JSON string com URLs das imagens
 
   @IsString()
   @IsOptional()

@@ -1,22 +1,17 @@
-interface IUpdateItem {
-  id: string;               // obrigatório para identificar qual item atualizar
+export interface IUpdateItem {
+  id: string;
   title?: string;
   description?: string;
   price?: number;
-  itemStatus?: string;      // pode virar enum futuramente
+  itemStatus?: string;
   soldCount?: number;
-  condition?: string;       // pode virar enum futuramente
-  shippingPrice?:number;
+  condition?: string;
+  shippingPrice?: number;
   status?: string;
-  external_id?:string;
-  marketplace:string;
-  itemLink:string;
-  images?: string;
-    is_draft?: boolean;
-  is_synced?: boolean;
-  supplierId?: string;
-
-  // outros campos opcionais para atualização
+  externalId?: string;   // camelCase
+  marketplace?: string;
+  itemLink?: string;
+  images?: string[];
+  isDraft?: boolean;
+  isSynced?: boolean;
 }
-
-export { IUpdateItem };

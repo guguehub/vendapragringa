@@ -4,7 +4,7 @@ import { IProductsRepository } from '@modules/products/domain/repositories/IProd
 import ProductsRepository from '@modules/products/infra/typeorm/repositories/ProductsRepository';
 import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
 import UsersRepository from '@modules/users/infra/typeorm/repositories/UsersRepository';
-import '@modules/users/providers';
+//import '@modules/users/providers';
 import SubscriptionsRepository from '@modules/subscriptions/infra/typeorm/repositories/SubscriptionRepository';
 import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositories/ISubscriptionsRepository';
 import { ISavedItemsRepository } from '@modules/saved-items/domain/repositories/ISavedItemsRepository';
@@ -13,6 +13,7 @@ import ItemsRepository from '@modules/item/infra/typeorm/repositories/ItemsRepos
 import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
 import { ItemScrapeLogRepository } from '@modules/item_scrape_log/infra/typeorm/repositories/ItemScrapeLogRepository';
 import { IItemScrapeLogRepository } from '@modules/item_scrape_log/domain/repositories/IItemScrapeLogRepository';
+import dataSource from '@shared/infra/typeorm/data-source';
 
 container.registerSingleton<IProductsRepository>(
   'ProductsRepository',
@@ -41,3 +42,6 @@ container.registerSingleton<IItemScrapeLogRepository>(
   'ItemScrapeLogRepository',
   ItemScrapeLogRepository,
 );
+
+container.registerInstance('DataSource', dataSource);
+

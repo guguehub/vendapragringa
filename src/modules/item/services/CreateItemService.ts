@@ -1,4 +1,3 @@
-// src/modules/item/services/CreateItemService.ts
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
@@ -13,24 +12,40 @@ class CreateItemService {
   ) {}
 
   public async execute(userId: string, data: ICreateItem): Promise<Item> {
-    const { external_id, marketplace } = data;
+    const { externalId, marketplace } = data;
 
     // Evitar duplicata
-    if (external_id && marketplace) {
+    if (externalId && marketplace) {
       const existing = await this.itemsRepository.findByExternalId(
-        external_id,
+        externalId,
         marketplace,
       );
-
       if (existing) {
         throw new AppError('Item already exists for this marketplace', 409);
       }
     }
 
+    // Criação do item
     const item = await this.itemsRepository.create({
-      ...data,
-      created_by: userId,
-    });
+  title: data.title,
+  description: data.description,
+  price: data.price,
+  shippingPrice: data.shippingPrice,
+  status: data.status ?? 'ready',
+  itemStatus: data.itemStatus,
+  soldCount: data.soldCount,
+  condition: data.condition,
+  externalId: data.externalId,
+  marketplace: data.marketplace,
+  itemLink: data.itemLink,
+  images: data.images,
+  isDraft: data.isDraft ?? false,
+  isSynced: data.isSynced ?? false,
+  importStage: data.importStage ?? 'draft',
+  createdBy: userId,
+  supplierId: data.supplierId, // ✅ apenas supplierId
+});
+
 
     return item;
   }

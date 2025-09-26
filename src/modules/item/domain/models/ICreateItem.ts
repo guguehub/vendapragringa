@@ -2,22 +2,19 @@ export interface ICreateItem {
   title: string;
   price: number;
   description?: string;
-  external_id?: string;
-  marketplace?: string;           // "mercadolivre" | "olx" | ...
+  externalId?: string;        // camelCase
+  marketplace?: string;
   shippingPrice?: number;
-  status?: string;                // "ready" | "listed" | "sold"
+  status?: string;
   supplierId?: string;
-  itemStatus?: string;            // status do anúncio (raspagem ML)
-  soldCount?: number;             // quantidade vendida
-  condition?: string;             // novo | usado
-
+  itemStatus?: string;
+  soldCount?: number;
+  condition?: string;
   itemLink?: string;
-  importStage?: string;           // ex: "draft"
-  images?: string[];              // array direto no DTO
-
-  last_scraped_at?: Date;
-  is_draft?: boolean;
-  is_synced?: boolean;
-
-  created_by?: string;
+  importStage?: string;       // default 'draft'
+  images?: string[];
+  lastScrapedAt?: Date;
+  isDraft?: boolean;
+  isSynced?: boolean;
+  createdBy?: string;
 }
