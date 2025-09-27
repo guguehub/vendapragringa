@@ -6,6 +6,14 @@ export interface IUpdateUserItemDTO {
   sync_status?: 'active' | 'paused' | 'sold_out';
   notes?: string;
 
+  // Snapshots editáveis
+  snapshotTitle?: string;
+  snapshotPrice?: number;
+  snapshotImages?: string;
+  snapshotMarketplace?: string;
+  snapshotExternalId?: string;
+
+  // Finance / eBay
   ebay_fee_percent?: number;
   use_custom_fee_percent?: boolean;
   custom_fee_percent?: number;

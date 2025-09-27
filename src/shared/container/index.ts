@@ -14,6 +14,8 @@ import { IItemsRepository } from '@modules/item/domain/repositories/IItemsReposi
 import { ItemScrapeLogRepository } from '@modules/item_scrape_log/infra/typeorm/repositories/ItemScrapeLogRepository';
 import { IItemScrapeLogRepository } from '@modules/item_scrape_log/domain/repositories/IItemScrapeLogRepository';
 import dataSource from '@shared/infra/typeorm/data-source';
+import { IUserItemsRepository } from '@modules/user_items/domain/repositories/IUserItemsRepository';
+import { UserItemsRepository } from '@modules/user_items/infra/typeorm/repositories/UserItemsRepository';
 
 container.registerSingleton<IProductsRepository>(
   'ProductsRepository',
@@ -42,6 +44,11 @@ container.registerSingleton<IItemScrapeLogRepository>(
   'ItemScrapeLogRepository',
   ItemScrapeLogRepository,
 );
+
+container.registerSingleton<IUserItemsRepository>(
+  'UserItemsRepository',
+  UserItemsRepository
+)
 
 
 container.registerInstance('DataSource', dataSource);

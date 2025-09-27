@@ -1,3 +1,4 @@
+// src/modules/user_items/services/CreateUserItemService.ts
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 
@@ -5,12 +6,7 @@ import { IUserItemsRepository } from '../domain/repositories/IUserItemsRepositor
 import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
 import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
 import { IUserItem } from '../domain/models/IUserItem';
-
-interface ICreateUserItemDTO {
-  user_id: string;
-  item_id: string;
-  quantity?: number;
-}
+import { ICreateUserItemDTO } from '../dtos/ICreateUserItemDTO';
 
 @injectable()
 class CreateUserItemService {
@@ -29,7 +25,15 @@ class CreateUserItemService {
     user_id,
     item_id,
     quantity = 1,
+    notes,
   }: ICreateUserItemDTO): Promise<IUserItem> {
+    console.log('🚀 [CreateUserItemService] input:', {
+      user_id,
+      item_id,
+      quantity,
+      notes,
+    });
+
     if (quantity < 1) {
       throw new AppError('A quantidade deve ser pelo menos 1.');
     }
@@ -47,6 +51,7 @@ class CreateUserItemService {
 
     if (existingUserItem) {
       existingUserItem.quantity += quantity;
+      if (notes) existingUserItem.notes = notes;
       return this.userItemsRepository.save(existingUserItem);
     }
 
@@ -55,6 +60,7 @@ class CreateUserItemService {
       user_id,
       item_id,
       quantity,
+      notes,
       snapshotTitle: item.title,
       snapshotPrice: item.price,
       snapshotImages: item.images ? JSON.stringify(item.images) : undefined,
