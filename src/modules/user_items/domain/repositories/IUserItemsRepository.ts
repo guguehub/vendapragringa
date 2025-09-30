@@ -1,16 +1,20 @@
 // src/modules/user_items/domain/repositories/IUserItemsRepository.ts
-import { IUserItem } from '../models/IUserItem';
+import UserItem from '@modules/user_items/infra/typeorm/entities/UserItems';
 import { ICreateUserItemDTO } from '../../dtos/ICreateUserItemDTO';
 
-export interface IUserItemsRepository {
-  create(data: ICreateUserItemDTO): Promise<IUserItem>;
-  save(userItem: IUserItem): Promise<IUserItem>;
-  delete(id: string): Promise<void>; // ❌ podemos até deprecar em favor do remove
-  remove(userItem: IUserItem): Promise<void>; // ✅ novo
-  findById(id: string): Promise<IUserItem | null>;
-  findByUserAndItem(user_id: string, item_id: string): Promise<IUserItem | null>;
-  findByIdAndUser(id: string, user_id: string): Promise<IUserItem | null>; // ✅ novo
-  listByUser(user_id: string): Promise<IUserItem[]>;
-  update(id: string, data: Partial<IUserItem>): Promise<IUserItem>;
-  show(id: string): Promise<IUserItem | null>;
+export default interface IUserItemsRepository {
+  create(data: ICreateUserItemDTO): Promise<UserItem>;
+  save(userItem: UserItem): Promise<UserItem>;
+
+  findById(id: string): Promise<UserItem | null>;
+  findByUserId(user_id: string): Promise<UserItem[]>;
+  findByUserAndItem(user_id: string, item_id: string): Promise<UserItem | null>;
+  findByIdAndUser(id: string, user_id: string): Promise<UserItem | null>;
+  listByUser(user_id: string): Promise<UserItem[]>;
+
+  update(userItem: UserItem): Promise<UserItem>;
+  delete(id: string): Promise<void>;
+  remove(userItem: UserItem): Promise<void>;
+
+  show(id: string): Promise<UserItem | null>;
 }
