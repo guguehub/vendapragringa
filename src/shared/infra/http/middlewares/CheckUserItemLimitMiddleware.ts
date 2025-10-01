@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
+import { In, IsNull } from 'typeorm';
 import AppDataSource from '@shared/infra/typeorm/data-source';
 import UserItem from '@modules/user_items/infra/typeorm/entities/UserItems';
 import { Subscription } from '@modules/subscriptions/infra/typeorm/entities/Subscription';
-import { In, IsNull } from 'typeorm';
 import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
 import { SubscriptionTierLimits } from '@modules/subscriptions/enums/subscription-limits.enum';
 
@@ -25,10 +25,11 @@ export async function CheckUserItemLimitMiddleware(
   }
 
   try {
-    const userItemRepository = AppDataSource.getRepository(UserItem);
-    const subscriptionRepository = AppDataSource.getRepository(Subscription);
+    const userItemRepo = AppDataSource.getRepository(UserItem);
+    const subscriptionRepo = AppDataSource.getRepository(Subscription);
 
-    const subscription = await subscriptionRepository.findOne({
+    // Pega assinatura atual do usuário
+    const subscription = await subscriptionRepo.findOne({
       where: { user: { id: userId } },
       relations: ['user'],
     });
@@ -36,13 +37,13 @@ export async function CheckUserItemLimitMiddleware(
     const tier = (subscription?.tier as SubscriptionTier) ?? SubscriptionTier.FREE;
     const limit = SubscriptionTierLimits[tier];
 
-    // Conta itens ativos (import_stage válido + sync_status ativo ou null)
-    const userItemsCount = await userItemRepository.count({
-  where: [
-    { userId, importStage: In(mutableStages), syncStatus: 'active' },
-    { userId, importStage: In(mutableStages), syncStatus: IsNull() },
-  ],
-});
+    // Conta itens ativos: importStage em ativo + syncStatus ativo ou null
+    const userItemsCount = await userItemRepo.count({
+      where: [
+        { userId, importStage: In(mutableStages), syncStatus: 'active' },
+        { userId, importStage: In(mutableStages), syncStatus: IsNull() },
+      ],
+    });
 
     if (userItemsCount >= limit) {
       console.warn(

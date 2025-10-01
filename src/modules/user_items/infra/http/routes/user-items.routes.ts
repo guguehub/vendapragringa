@@ -4,17 +4,19 @@ import { celebrate, Joi, Segments } from 'celebrate';
 import isAuthenticated from '@shared/infra/http/middlewares/isAuthenticated';
 import { CheckUserItemLimitMiddleware } from '@shared/infra/http/middlewares/CheckUserItemLimitMiddleware';
 import UserItemsController from '../controllers/UserItemsController';
+import SaveAsUserItemController from '../controllers/SaveAsUserItemController';
 
 const userItemsRouter = Router();
 const userItemsController = new UserItemsController();
+const saveAsUserItemController = new SaveAsUserItemController();
 
-// Aplica auth em todas as rotas
+// 🔐 Aplica auth em todas as rotas
 userItemsRouter.use(isAuthenticated);
 
-// Listar todos os itens do usuário
+// 📌 Listar todos os itens do usuário
 userItemsRouter.get('/', userItemsController.index);
 
-// Mostrar um item específico
+// 📌 Mostrar um item específico
 userItemsRouter.get(
   '/:id',
   celebrate({
@@ -25,7 +27,7 @@ userItemsRouter.get(
   userItemsController.show,
 );
 
-// Criar novo item (com limite de plano + validação do body)
+// 📌 Criar novo item (manual) com limite + validação
 userItemsRouter.post(
   '/',
   CheckUserItemLimitMiddleware,
@@ -68,7 +70,23 @@ userItemsRouter.post(
   userItemsController.create,
 );
 
-// Atualizar item
+// 📌 Save As (criar baseado em Item existente)
+userItemsRouter.post(
+  '/save-as',
+  CheckUserItemLimitMiddleware,
+  celebrate({
+    [Segments.BODY]: Joi.object({
+      item_id: Joi.string().uuid().required(),
+      quantity: Joi.number().integer().min(1).default(1),
+      import_stage: Joi.string()
+        .valid('draft', 'pending', 'ready', 'listed', 'sold')
+        .default('draft'),
+    }),
+  }),
+  saveAsUserItemController.create,
+);
+
+// 📌 Atualizar item do usuário
 userItemsRouter.put(
   '/:id',
   celebrate({
@@ -89,7 +107,7 @@ userItemsRouter.put(
   userItemsController.update,
 );
 
-// Deletar item do usuário
+// 📌 Deletar item do usuário
 userItemsRouter.delete(
   '/:id',
   celebrate({

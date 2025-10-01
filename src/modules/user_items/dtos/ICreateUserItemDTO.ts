@@ -1,6 +1,4 @@
-// src/modules/user_items/dtos/ICreateUserItemDTO.ts
 export interface ICreateUserItemDTO {
-  // identificação
   user_id: string;
   item_id: string;
 
@@ -12,15 +10,14 @@ export interface ICreateUserItemDTO {
   import_stage?: 'draft' | 'pending' | 'ready' | 'listed' | 'sold';
   sync_status?: 'active' | 'paused' | 'sold_out';
 
-  // ----- Snapshot do Item (opcionais: se não vier, o service irá preencher a partir do Item) -----
+  // ----- Snapshot do Item -----
   snapshotTitle?: string;
   snapshotPrice?: number;
-  // pode aceitar array (string[]) no controller; aqui salvamos como string JSON.
   snapshotImages?: string | string[];
   snapshotMarketplace?: string;
   snapshotExternalId?: string;
 
-  // ----- eBay specific (opcionais) -----
+  // ----- eBay specific -----
   ebay_title?: string;
   ebay_link?: string;
   ebay_price?: number;
