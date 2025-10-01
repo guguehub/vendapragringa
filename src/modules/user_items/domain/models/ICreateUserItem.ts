@@ -1,16 +1,27 @@
+// src/modules/user_items/domain/models/ICreateUserItem.ts
 export interface ICreateUserItem {
   user_id: string;
   item_id: string;
+  quantity?: number;
+  notes?: string;
 
-  // eBay specifics
+  // Snapshot do Item
+  snapshotTitle?: string;
+  snapshotPrice?: number;
+  snapshotImages?: string[];
+  snapshotMarketplace?: string;
+  snapshotExternalId?: string;
+
+  // eBay Specific
   ebay_title?: string;
-  ebay_price_usd?: number;
+  ebay_link?: string;
+  ebay_price?: number;
+  ebay_shipping_weight_grams?: number;
   is_listed_on_ebay?: boolean;
   is_offer_enabled?: boolean;
   is_campaign_enabled?: boolean;
-  ebay_shipping_weight_grams?: number;
 
-  // Finance / Controle
+  // Finance Custom
   ebay_fee_percent?: number;
   use_custom_fee_percent?: boolean;
   custom_fee_percent?: number;
@@ -19,13 +30,8 @@ export interface ICreateUserItem {
   exchange_rate?: number;
   received_brl?: number;
   item_profit_brl?: number;
-  profit_estimate_brl?: number;
-  notes?: string;
 
+  // Controle
   sync_status?: 'active' | 'paused' | 'sold_out';
-  is_draft?: boolean;
-  is_synced?: boolean;
-
-  user_created_id?: string;
-  user_updated_id?: string;
+  import_stage?: 'draft' | 'pending' | 'ready' | 'listed' | 'sold';
 }

@@ -38,8 +38,8 @@ export default async function seedUserItemsAuto(dataSource: DataSource) {
         userItemsToInsert.push({
           userId: user.id,
           itemId: item.id,
-          import_stage: 'draft',
-          sync_status: 'active',
+          importStage: 'draft',
+          syncStatus: 'active',
           notes: 'Seed automática',
         });
       }

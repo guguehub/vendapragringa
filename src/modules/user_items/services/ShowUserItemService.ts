@@ -1,9 +1,8 @@
-// src/modules/user_items/services/ShowUserItemService.ts
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 
-import { IUserItemsRepository } from '../domain/repositories/IUserItemsRepository';
-import { IUserItem } from '../domain/models/IUserItem';
+import IUserItemsRepository from '../domain/repositories/IUserItemsRepository';
+import UserItem from '../infra/typeorm/entities/UserItems';
 
 @injectable()
 class ShowUserItemService {
@@ -12,8 +11,8 @@ class ShowUserItemService {
     private userItemsRepository: IUserItemsRepository,
   ) {}
 
-  public async execute(id: string, user_id: string): Promise<IUserItem> {
-    const userItem = await this.userItemsRepository.findByIdAndUser(id, user_id);
+  public async execute(id: string, userId: string): Promise<UserItem> {
+    const userItem = await this.userItemsRepository.findByIdAndUser(id, userId);
 
     if (!userItem) {
       throw new AppError('Item não encontrado ou não pertence ao usuário', 404);

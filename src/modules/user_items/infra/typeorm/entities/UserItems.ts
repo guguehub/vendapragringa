@@ -15,33 +15,32 @@ class UserItem {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // ----- Relacionamentos -----
-  @Column({ name: 'user_id' })
+  @Column()
   userId: string;
 
-  @ManyToOne(() => User, user => user.userItems)
-  @JoinColumn({ name: 'user_id' })
+  @ManyToOne(() => User, user => user.userItems, { eager: false })
+  @JoinColumn({ name: 'userId' })
   user?: User;
 
-  @Column({ name: 'item_id' })
+  @Column()
   itemId: string;
 
-  @ManyToOne(() => Item)
-  @JoinColumn({ name: 'item_id' })
+  @ManyToOne(() => Item, { eager: false })
+  @JoinColumn({ name: 'itemId' })
   item?: Item;
 
   @Column({ type: 'int', default: 1 })
   quantity: number;
 
-  // ----- Snapshot do Item -----
+  // Snapshot do Item
   @Column({ nullable: true })
   snapshotTitle?: string;
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   snapshotPrice?: number;
 
-  @Column({ type: 'text', nullable: true })
-  snapshotImages?: string; // JSON string do array de imagens
+  @Column({ type: 'jsonb', nullable: true })
+  snapshotImages?: string;
 
   @Column({ nullable: true })
   snapshotMarketplace?: string;
@@ -49,73 +48,69 @@ class UserItem {
   @Column({ nullable: true })
   snapshotExternalId?: string;
 
-  // ----- eBay Specific -----
+  // eBay Specific
   @Column({ nullable: true })
-  ebay_title?: string;
+  ebayTitle?: string;
 
   @Column({ nullable: true })
-  ebay_link?: string;
+  ebayLink?: string;
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  ebay_price?: number;
+  ebayPrice?: number;
 
   @Column('int', { nullable: true })
-  ebay_shipping_weight_grams?: number;
+  ebayShippingWeightGrams?: number;
 
-  @Column({ type: 'boolean', nullable: true })
-  is_listed_on_ebay?: boolean;
+  @Column({ type: 'boolean', default: false })
+  isListedOnEbay: boolean = false;
 
-  @Column({ type: 'boolean', nullable: true })
-  is_offer_enabled?: boolean;
+  @Column({ type: 'boolean', default: false })
+  isOfferEnabled: boolean = false;
 
-  @Column({ type: 'boolean', nullable: true })
-  is_campaign_enabled?: boolean;
+  @Column({ type: 'boolean', default: false })
+  isCampaignEnabled: boolean = false;
 
-  // ----- Finance Custom -----
+  // Finance Custom
   @Column('decimal', { precision: 5, scale: 2, nullable: true })
-  ebay_fee_percent?: number;
+  ebayFeePercent?: number;
 
-  @Column({ type: 'boolean', nullable: true })
-  use_custom_fee_percent?: boolean;
+  @Column({ type: 'boolean', default: false })
+  useCustomFeePercent: boolean = false;
 
   @Column('decimal', { precision: 5, scale: 2, nullable: true })
-  custom_fee_percent?: number;
+  customFeePercent?: number;
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  ebay_fees_usd?: number;
+  ebayFeesUsd?: number;
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  sale_value_usd?: number;
+  saleValueUsd?: number;
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  exchange_rate?: number;
+  exchangeRate?: number;
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  received_brl?: number;
+  receivedBrl?: number;
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  item_profit_brl?: number;
+  itemProfitBrl?: number;
 
-  // ----- Controle -----
+  // Controle
   @Column({ type: 'varchar', nullable: true })
-  sync_status?: 'active' | 'paused' | 'sold_out';
+  syncStatus?: 'active' | 'paused' | 'sold_out';
 
   @Column({ type: 'text', nullable: true })
   notes?: string;
 
-  @Column({
-    type: 'varchar',
-    nullable: false,
-    default: 'draft',
-  })
-  import_stage: 'draft' | 'pending' | 'ready' | 'listed' | 'sold';
+  @Column({ type: 'varchar', nullable: false, default: 'draft' })
+  importStage: 'draft' | 'pending' | 'ready' | 'listed' | 'sold';
 
-  // ----- Metadata -----
+  // Metadata
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updated_at: Date;
+  updatedAt: Date;
 }
 
 export default UserItem;

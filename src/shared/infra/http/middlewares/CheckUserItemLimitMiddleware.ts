@@ -38,11 +38,11 @@ export async function CheckUserItemLimitMiddleware(
 
     // Conta itens ativos (import_stage válido + sync_status ativo ou null)
     const userItemsCount = await userItemRepository.count({
-      where: [
-        { userId, import_stage: In(mutableStages), sync_status: 'active' },
-        { userId, import_stage: In(mutableStages), sync_status: IsNull() },
-      ],
-    });
+  where: [
+    { userId, importStage: In(mutableStages), syncStatus: 'active' },
+    { userId, importStage: In(mutableStages), syncStatus: IsNull() },
+  ],
+});
 
     if (userItemsCount >= limit) {
       console.warn(

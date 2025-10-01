@@ -1,12 +1,11 @@
-// src/modules/user_items/services/CreateUserItemService.ts
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 
-import { IUserItemsRepository } from '../domain/repositories/IUserItemsRepository';
 import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
 import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
-import { IUserItem } from '../domain/models/IUserItem';
 import { ICreateUserItemDTO } from '../dtos/ICreateUserItemDTO';
+import IUserItemsRepository from '../domain/repositories/IUserItemsRepository';
+import UserItem from '../infra/typeorm/entities/UserItems';
 
 @injectable()
 class CreateUserItemService {
@@ -21,18 +20,35 @@ class CreateUserItemService {
     private itemsRepository: IItemsRepository,
   ) {}
 
-  public async execute({
-    user_id,
-    item_id,
-    quantity = 1,
-    notes,
-  }: ICreateUserItemDTO): Promise<IUserItem> {
-    console.log('🚀 [CreateUserItemService] input:', {
+  public async execute(data: ICreateUserItemDTO): Promise<UserItem> {
+    const {
       user_id,
       item_id,
-      quantity,
+      quantity = 1,
       notes,
-    });
+      snapshotTitle: incomingSnapshotTitle,
+      snapshotPrice: incomingSnapshotPrice,
+      snapshotImages: incomingSnapshotImages,
+      snapshotMarketplace: incomingSnapshotMarketplace,
+      snapshotExternalId: incomingSnapshotExternalId,
+      ebay_title,
+      ebay_link,
+      ebay_price,
+      ebay_shipping_weight_grams,
+      is_listed_on_ebay,
+      is_offer_enabled,
+      is_campaign_enabled,
+      ebay_fee_percent,
+      use_custom_fee_percent,
+      custom_fee_percent,
+      ebay_fees_usd,
+      sale_value_usd,
+      exchange_rate,
+      received_brl,
+      item_profit_brl,
+      import_stage,
+      sync_status,
+    } = data;
 
     if (quantity < 1) {
       throw new AppError('A quantidade deve ser pelo menos 1.');
@@ -44,31 +60,92 @@ class CreateUserItemService {
     const item = await this.itemsRepository.findById(item_id);
     if (!item) throw new AppError('Item não encontrado.', 404);
 
-    const existingUserItem = await this.userItemsRepository.findByUserAndItem(
-      user_id,
-      item_id,
-    );
+    // verifica se já existe
+    const existing = await this.userItemsRepository.findByUserAndItem(user_id, item_id);
+    if (existing) {
+      existing.quantity = (existing.quantity || 0) + quantity;
+      if (notes !== undefined) existing.notes = notes;
 
-    if (existingUserItem) {
-      existingUserItem.quantity += quantity;
-      if (notes) existingUserItem.notes = notes;
-      return this.userItemsRepository.save(existingUserItem);
+      if (incomingSnapshotTitle !== undefined) existing.snapshotTitle = incomingSnapshotTitle;
+      if (incomingSnapshotPrice !== undefined) existing.snapshotPrice = incomingSnapshotPrice;
+      if (incomingSnapshotImages !== undefined) {
+        existing.snapshotImages = Array.isArray(incomingSnapshotImages)
+          ? JSON.stringify(incomingSnapshotImages)
+          : String(incomingSnapshotImages);
+      }
+      if (incomingSnapshotMarketplace !== undefined) existing.snapshotMarketplace = incomingSnapshotMarketplace;
+      if (incomingSnapshotExternalId !== undefined) existing.snapshotExternalId = incomingSnapshotExternalId;
+
+      if (ebay_title !== undefined) existing.ebayTitle = ebay_title;
+      if (ebay_link !== undefined) existing.ebayLink = ebay_link;
+      if (ebay_price !== undefined) existing.ebayPrice = ebay_price;
+      if (ebay_shipping_weight_grams !== undefined) existing.ebayShippingWeightGrams = ebay_shipping_weight_grams;
+      if (is_listed_on_ebay !== undefined) existing.isListedOnEbay = is_listed_on_ebay;
+      if (is_offer_enabled !== undefined) existing.isOfferEnabled = is_offer_enabled;
+      if (is_campaign_enabled !== undefined) existing.isCampaignEnabled = is_campaign_enabled;
+
+      if (ebay_fee_percent !== undefined) existing.ebayFeePercent = ebay_fee_percent;
+      if (use_custom_fee_percent !== undefined) existing.useCustomFeePercent = use_custom_fee_percent;
+      if (custom_fee_percent !== undefined) existing.customFeePercent = custom_fee_percent;
+      if (ebay_fees_usd !== undefined) existing.ebayFeesUsd = ebay_fees_usd;
+      if (sale_value_usd !== undefined) existing.saleValueUsd = sale_value_usd;
+      if (exchange_rate !== undefined) existing.exchangeRate = exchange_rate;
+      if (received_brl !== undefined) existing.receivedBrl = received_brl;
+      if (item_profit_brl !== undefined) existing.itemProfitBrl = item_profit_brl;
+
+      if (import_stage !== undefined) existing.importStage = import_stage;
+      if (sync_status !== undefined) existing.syncStatus = sync_status;
+
+      return this.userItemsRepository.save(existing);
     }
 
-    // Criando snapshot do item
-    const userItem = await this.userItemsRepository.create({
+    // prepara novo UserItem
+    const snapshotTitle = incomingSnapshotTitle ?? item.title ?? undefined;
+    const snapshotPrice = incomingSnapshotPrice ?? (item.price ? Number(item.price) : undefined);
+
+    let snapshotImagesString: string | undefined;
+    if (incomingSnapshotImages !== undefined) {
+      snapshotImagesString = Array.isArray(incomingSnapshotImages)
+        ? JSON.stringify(incomingSnapshotImages)
+        : String(incomingSnapshotImages);
+    } else if (item.images) {
+      snapshotImagesString = Array.isArray(item.images) ? JSON.stringify(item.images) : String(item.images);
+    }
+
+    const snapshotMarketplace = incomingSnapshotMarketplace ?? item.marketplace;
+    const snapshotExternalId = incomingSnapshotExternalId ?? item.externalId;
+
+    const createPayload: ICreateUserItemDTO = {
       user_id,
       item_id,
       quantity,
       notes,
-      snapshotTitle: item.title,
-      snapshotPrice: item.price,
-      snapshotImages: item.images ? JSON.stringify(item.images) : undefined,
-      snapshotMarketplace: item.marketplace,
-      snapshotExternalId: item.externalId,
-    });
+      snapshotTitle,
+      snapshotPrice,
+      snapshotImages: snapshotImagesString,
+      snapshotMarketplace,
+      snapshotExternalId,
+      ebay_title,
+      ebay_link,
+      ebay_price,
+      ebay_shipping_weight_grams,
+      is_listed_on_ebay,
+      is_offer_enabled,
+      is_campaign_enabled,
+      ebay_fee_percent,
+      use_custom_fee_percent,
+      custom_fee_percent,
+      ebay_fees_usd,
+      sale_value_usd,
+      exchange_rate,
+      received_brl,
+      item_profit_brl,
+      import_stage: import_stage ?? 'draft',
+      sync_status,
+    };
 
-    return this.userItemsRepository.save(userItem);
+    const created = await this.userItemsRepository.create(createPayload);
+    return this.userItemsRepository.save(created);
   }
 }
 
