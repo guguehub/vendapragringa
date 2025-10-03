@@ -1,3 +1,4 @@
+// src/modules/user_items/infra/http/routes/user-items.routes.ts
 import { Router } from 'express';
 import { celebrate, Joi, Segments } from 'celebrate';
 
@@ -10,13 +11,13 @@ const userItemsRouter = Router();
 const userItemsController = new UserItemsController();
 const saveAsUserItemController = new SaveAsUserItemController();
 
-// 🔐 Aplica auth em todas as rotas
+// Aplica autenticação em todas as rotas
 userItemsRouter.use(isAuthenticated);
 
-// 📌 Listar todos os itens do usuário
+// Listar todos os itens do usuário
 userItemsRouter.get('/', userItemsController.index);
 
-// 📌 Mostrar um item específico
+// Mostrar item específico
 userItemsRouter.get(
   '/:id',
   celebrate({
@@ -27,14 +28,14 @@ userItemsRouter.get(
   userItemsController.show,
 );
 
-// 📌 Criar novo item (manual) com limite + validação
+// Criar novo item do usuário
 userItemsRouter.post(
   '/',
   CheckUserItemLimitMiddleware,
   celebrate({
     [Segments.BODY]: Joi.object({
       item_id: Joi.string().uuid().required(),
-      quantity: Joi.number().integer().min(1).required(),
+      quantity: Joi.number().integer().min(1).optional(),
       notes: Joi.string().allow(null, '').optional(),
       sync_status: Joi.string().valid('active', 'paused', 'sold_out').optional(),
       import_stage: Joi.string()
@@ -43,21 +44,19 @@ userItemsRouter.post(
 
       snapshotTitle: Joi.string().optional(),
       snapshotPrice: Joi.number().optional(),
-      snapshotImages: Joi.alternatives()
-        .try(Joi.string(), Joi.array().items(Joi.string()))
-        .optional(),
+      snapshotImages: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
       snapshotMarketplace: Joi.string().optional(),
       snapshotExternalId: Joi.string().optional(),
 
       ebay_title: Joi.string().optional(),
       ebay_link: Joi.string().optional(),
-      ebay_price: Joi.number().optional(),
-      ebay_shipping_weight_grams: Joi.number().optional(),
+      ebay_price: Joi.number().allow(null).optional(),
+      ebay_shipping_weight_grams: Joi.number().allow(null).optional(),
       is_listed_on_ebay: Joi.boolean().optional(),
       is_offer_enabled: Joi.boolean().optional(),
       is_campaign_enabled: Joi.boolean().optional(),
 
-      ebay_fee_percent: Joi.number().optional(),
+      ebay_fee_percent: Joi.number().allow(null).optional(),
       use_custom_fee_percent: Joi.boolean().optional(),
       custom_fee_percent: Joi.number().allow(null).optional(),
       ebay_fees_usd: Joi.number().allow(null).optional(),
@@ -70,50 +69,42 @@ userItemsRouter.post(
   userItemsController.create,
 );
 
-// 📌 Save As (criar baseado em Item existente)
+// Criar user item a partir de um item existente (Save As)
 userItemsRouter.post(
-  '/save-as',
+  '/save_as',
   CheckUserItemLimitMiddleware,
   celebrate({
     [Segments.BODY]: Joi.object({
       item_id: Joi.string().uuid().required(),
-      quantity: Joi.number().integer().min(1).default(1),
+      quantity: Joi.number().integer().min(1).optional(),
       import_stage: Joi.string()
         .valid('draft', 'pending', 'ready', 'listed', 'sold')
-        .default('draft'),
+        .optional(),
     }),
   }),
   saveAsUserItemController.create,
 );
 
-// 📌 Atualizar item do usuário
+// Atualizar item do usuário
 userItemsRouter.put(
   '/:id',
   celebrate({
-    [Segments.PARAMS]: {
-      id: Joi.string().uuid().required(),
-    },
+    [Segments.PARAMS]: { id: Joi.string().uuid().required() },
     [Segments.BODY]: Joi.object({
       quantity: Joi.number().integer().min(1).optional(),
       notes: Joi.string().allow(null, '').optional(),
-      import_stage: Joi.string()
-        .valid('draft', 'pending', 'ready', 'listed', 'sold')
-        .optional(),
-      sync_status: Joi.string()
-        .valid('active', 'paused', 'sold_out')
-        .optional(),
+      import_stage: Joi.string().valid('draft', 'pending', 'ready', 'listed', 'sold').optional(),
+      sync_status: Joi.string().valid('active', 'paused', 'sold_out').optional(),
     }),
   }),
   userItemsController.update,
 );
 
-// 📌 Deletar item do usuário
+// Deletar item do usuário
 userItemsRouter.delete(
   '/:id',
   celebrate({
-    [Segments.PARAMS]: {
-      id: Joi.string().uuid().required(),
-    },
+    [Segments.PARAMS]: { id: Joi.string().uuid().required() },
   }),
   userItemsController.delete,
 );
