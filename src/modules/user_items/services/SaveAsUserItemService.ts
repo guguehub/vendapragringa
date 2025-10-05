@@ -23,7 +23,12 @@ export default class SaveAsUserItemService {
     private itemsRepository: IItemsRepository,
   ) {}
 
-  public async execute({ user_id, item_id, quantity = 1, import_stage = 'draft' }: IRequest): Promise<UserItem> {
+  public async execute({
+    user_id,
+    item_id,
+    quantity = 1,
+    import_stage = 'draft',
+  }: IRequest): Promise<UserItem> {
     // 1. Verifica se o item existe
     const item = await this.itemsRepository.findById(item_id);
 
@@ -31,7 +36,20 @@ export default class SaveAsUserItemService {
       throw new AppError('Item não encontrado', 404);
     }
 
-    // 2. Monta DTO a partir do Item
+    // 2. Verifica se já existe um vínculo user_id + item_id
+    const alreadyExists = await this.userItemsRepository.findByUserAndItem(
+      user_id,
+      item_id,
+    );
+
+    if (alreadyExists) {
+      throw new AppError(
+        'vItem com Id já existente. Para salvar novamente efetue uma nova raspagem.',
+        400,
+      );
+    }
+
+    // 3. Monta DTO a partir do Item
     const data: ICreateUserItemDTO = {
       user_id,
       item_id,
@@ -41,18 +59,20 @@ export default class SaveAsUserItemService {
       // Snapshot
       snapshotTitle: item.title,
       snapshotPrice: item.price,
-      snapshotImages: Array.isArray(item.images) ? item.images : JSON.parse(item.images || '[]'),
+      snapshotImages: Array.isArray(item.images)
+        ? item.images
+        : JSON.parse(item.images || '[]'),
       snapshotMarketplace: item.marketplace,
       snapshotExternalId: item.externalId,
 
-      // Flags iniciais (default)
+      // Flags iniciais (defaults)
       is_listed_on_ebay: false,
       is_offer_enabled: false,
       is_campaign_enabled: false,
       use_custom_fee_percent: false,
     };
 
-    // 3. Cria o UserItem
+    // 4. Cria o UserItem (apenas insert, nunca update)
     const userItem = await this.userItemsRepository.create(data);
 
     return userItem;

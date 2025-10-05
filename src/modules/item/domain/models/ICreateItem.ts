@@ -1,3 +1,5 @@
+import Supplier from '@modules/suppliers/infra/typeorm/entities/Supplier';
+
 export interface ICreateItem {
   title: string;
   price: number;
@@ -7,6 +9,7 @@ export interface ICreateItem {
   shippingPrice?: number;
   status?: string;
   supplierId?: string;
+  supplier?: Supplier;        // ✅ permite passar o objeto Supplier ao criar
   itemStatus?: string;
   soldCount?: number;
   condition?: string;

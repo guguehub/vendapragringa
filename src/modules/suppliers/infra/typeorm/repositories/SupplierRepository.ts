@@ -19,13 +19,24 @@ export class SupplierNotFoundError extends Error {
   }
 }
 
-// Mapeamento entidade -> ISupplier
-// Mapeamento entidade -> ISupplier
+// Mapeamento string -> enum IMarketplaces
+function mapMarketplace(mp?: string): IMarketplaces {
+  switch (mp?.toLowerCase()) {
+    case 'mercadolivre':
+      return IMarketplaces.MERCADO_LIVRE;
+    case 'olx':
+      return IMarketplaces.OLX;
+    default:
+      return IMarketplaces.CUSTOM;
+  }
+}
+
+// Mapeia entidade Supplier para interface ISupplier
 function mapSupplierEntityToISupplier(supplier: Supplier): ISupplier {
   return {
     id: supplier.id,
     name: supplier.name,
-    marketplace: supplier.marketplace ?? IMarketplaces.CUSTOM, // default para CUSTOM
+    marketplace: supplier.marketplace ?? IMarketplaces.CUSTOM,
     external_id: supplier.external_id,
     email: supplier.email,
     link: supplier.link,
@@ -41,30 +52,27 @@ function mapSupplierEntityToISupplier(supplier: Supplier): ISupplier {
     created_at: supplier.created_at,
     updated_at: supplier.updated_at,
     items:
-      supplier.items?.map(
-        (i: Item): IItem => ({
-          id: i.id,
-          title: i.title,
-          description: i.description,
-          price: i.price,
-          externalId: i.externalId,
-          marketplace: i.marketplace,
-          shippingPrice: i.shippingPrice,
-          status: i.status as ItemStatus,
-          itemLink: i.itemLink,
-          lastScrapedAt: i.lastScrapedAt,
-          images: i.images ?? undefined, // apenas 1 foto opcional
-          importStage: i.importStage,
-          isDraft: i.isDraft,
-          isSynced: i.isSynced,
-          createdBy: i.createdBy,
-          created_at: i.created_at,
-          updated_at: i.updated_at,
-        }),
-      ) ?? [],
+      supplier.items?.map((i: Item): IItem => ({
+        id: i.id,
+        title: i.title,
+        description: i.description,
+        price: i.price,
+        externalId: i.externalId,
+        marketplace: i.marketplace,
+        shippingPrice: i.shippingPrice,
+        status: i.status as ItemStatus,
+        itemLink: i.itemLink,
+        lastScrapedAt: i.lastScrapedAt,
+        images: i.images ?? undefined,
+        importStage: i.importStage,
+        isDraft: i.isDraft,
+        isSynced: i.isSynced,
+        createdBy: i.createdBy,
+        created_at: i.created_at,
+        updated_at: i.updated_at,
+      })) ?? [],
   };
 }
-
 
 export default class SupplierRepository implements ISupplierRepository {
   private ormRepository: Repository<Supplier>;
@@ -78,11 +86,12 @@ export default class SupplierRepository implements ISupplierRepository {
       ...data,
       status: data.status ?? SupplierStatus.ACTIVE,
       is_active: data.is_active ?? true,
+      marketplace: data.marketplace ?? IMarketplaces.CUSTOM,
     });
 
     supplier.items = [];
-
     await this.ormRepository.save(supplier);
+
     return mapSupplierEntityToISupplier(supplier);
   }
 
@@ -106,6 +115,7 @@ export default class SupplierRepository implements ISupplierRepository {
       zip_code: data.zip_code ?? supplier.zip_code,
       status: data.status ?? supplier.status,
       is_active: data.is_active ?? supplier.is_active,
+      marketplace: data.marketplace ?? supplier.marketplace,
     });
 
     await this.ormRepository.save(supplier);
@@ -137,10 +147,13 @@ export default class SupplierRepository implements ISupplierRepository {
 
   public async findByExternalId(
     external_id: string,
-    marketplace: IMarketplaces,
+    marketplace: string,
   ): Promise<ISupplier | null> {
     const supplier = await this.ormRepository.findOne({
-      where: { external_id, marketplace },
+      where: {
+        external_id,
+        marketplace: mapMarketplace(marketplace),
+      },
       relations: ['items'],
     });
     if (!supplier) return null;
@@ -152,17 +165,15 @@ export default class SupplierRepository implements ISupplierRepository {
       order: { name: 'ASC' },
       relations: ['items'],
     });
-
     return suppliers.map(mapSupplierEntityToISupplier);
   }
 
   public async findGlobals(): Promise<ISupplier[]> {
     const suppliers = await this.ormRepository.find({
-      where: { user_id: undefined }, // TypeORM aceita undefined para campos opcionais
+      where: { user_id: undefined },
       order: { name: 'ASC' },
       relations: ['items'],
     });
-
     return suppliers.map(mapSupplierEntityToISupplier);
   }
 
@@ -172,7 +183,6 @@ export default class SupplierRepository implements ISupplierRepository {
       order: { name: 'ASC' },
       relations: ['items'],
     });
-
     return suppliers.map(mapSupplierEntityToISupplier);
   }
 }

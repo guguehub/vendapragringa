@@ -14,8 +14,10 @@ class UserItemsRepository implements IUserItemsRepository {
     this.ormRepository = AppDataSource.getRepository(UserItem);
   }
 
+  /**
+   * Cria um novo UserItem no banco (sempre insert).
+   */
   public async create(data: ICreateUserItemDTO): Promise<UserItem> {
-    // mapeia camelCase
     const mappedData = {
       ...data,
       userId: data.user_id,
@@ -24,14 +26,21 @@ class UserItemsRepository implements IUserItemsRepository {
         ? JSON.stringify(data.snapshotImages)
         : data.snapshotImages,
     };
+
     const userItem = this.ormRepository.create(mappedData);
     return this.ormRepository.save(userItem);
   }
 
+  /**
+   * Salva alterações em um UserItem existente (pode virar insert se não tiver PK).
+   */
   public async save(userItem: UserItem): Promise<UserItem> {
     return this.ormRepository.save(userItem);
   }
 
+  /**
+   * Alias para save (mantido por compatibilidade).
+   */
   public async update(userItem: UserItem): Promise<UserItem> {
     return this.ormRepository.save(userItem);
   }
