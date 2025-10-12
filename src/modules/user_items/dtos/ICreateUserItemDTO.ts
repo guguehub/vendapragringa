@@ -1,23 +1,20 @@
 export interface ICreateUserItemDTO {
   user_id: string;
   item_id: string;
-
-  // controle básico
   quantity?: number;
   notes?: string;
 
-  // import / controle
   import_stage?: 'draft' | 'pending' | 'ready' | 'listed' | 'sold';
   sync_status?: 'active' | 'paused' | 'sold_out';
 
-  // ----- Snapshot do Item -----
+  // Snapshot
   snapshotTitle?: string;
   snapshotPrice?: number;
-  snapshotImages?: string | string[];
+  snapshotImages?: string[]; // corrigido: remover string | string[]
   snapshotMarketplace?: string;
   snapshotExternalId?: string;
 
-  // ----- eBay specific -----
+  // eBay
   ebay_title?: string;
   ebay_link?: string;
   ebay_price?: number;
@@ -26,7 +23,9 @@ export interface ICreateUserItemDTO {
   is_offer_enabled?: boolean;
   is_campaign_enabled?: boolean;
 
-  // ----- Financeiro/Custom -----
+  // Financeiro
+  offerAmount?: number;
+  campaignPercent?: number;
   ebay_fee_percent?: number;
   use_custom_fee_percent?: boolean;
   custom_fee_percent?: number;

@@ -7,19 +7,19 @@ async function seedAdmin() {
 
   const repo = dataSource.getRepository(User);
 
-  let adminUser = await repo.findOne({ where: { email: 'testador@teste3.com' } });
+  let adminUser = await repo.findOne({ where: { email: 'admin@vendapragringa.com' } });
 
-  const passwordHash = await hash('123456', 8);
+  const passwordHash = await hash('admin123', 8);
 
   if (!adminUser) {
     adminUser = repo.create({
-      name: 'Testador3',
-      email: 'testador@teste3.com',
+      name: 'Admin Master',
+      email: 'admin@vendapragringa.com',
       password: passwordHash,
       is_admin: true,
     });
     await repo.save(adminUser);
-    console.log('✅ Admin user created: testador@teste3.com / 123456');
+    console.log('✅ Admin user created: admin@vendapragringa.com ');
   } else if (!adminUser.is_admin) {
     adminUser.is_admin = true;
     await repo.save(adminUser);

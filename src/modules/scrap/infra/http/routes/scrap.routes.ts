@@ -3,6 +3,7 @@ import { ScrapOrchestratorService } from '@modules/scrap/services/ScrapOrchestra
 import identifyUser from '@shared/infra/http/middlewares/identifyUser';
 import isAuthenticated from '@shared/infra/http/middlewares/isAuthenticated';
 import { CheckUserItemLimitMiddleware } from '@shared/infra/http/middlewares/CheckUserItemLimitMiddleware';
+import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
 
 const scrapRoutes = Router();
 const orchestrator = new ScrapOrchestratorService();
@@ -46,7 +47,10 @@ scrapRoutes.get(
     }
 
     try {
-      const result = await orchestrator.processUrls([url], userId);
+      const result = await orchestrator.processUrls([url], {
+  id: userId,
+  tier: req.user?.subscription?.tier ?? SubscriptionTier.FREE,
+});
       return res.json(result[0]);
     } catch (err: any) {
       return res

@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe';
-import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
+import  IItemsRepository  from '@modules/item/domain/repositories/IItemsRepository';
 import { IListItem } from '@modules/item/domain/models/IListItem';
 
 @injectable()

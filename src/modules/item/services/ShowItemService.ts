@@ -1,7 +1,7 @@
 // src/modules/item/services/ShowItemService.ts
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
-import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
+import  IItemsRepository  from '@modules/item/domain/repositories/IItemsRepository';
 import { IItem } from '@modules/item/domain/models/IItem';
 import Item from '@modules/item/infra/typeorm/entities/Item';
 import { IMarketplaces } from '@modules/suppliers/domain/models/IMarketplaces';

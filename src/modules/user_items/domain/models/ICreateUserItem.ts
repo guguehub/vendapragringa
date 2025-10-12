@@ -30,6 +30,8 @@ export interface ICreateUserItem {
   exchange_rate?: number;
   received_brl?: number;
   item_profit_brl?: number;
+  offerAmount?: number;
+  campaignPercent?: number;
 
   // Controle
   sync_status?: 'active' | 'paused' | 'sold_out';

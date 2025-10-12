@@ -40,7 +40,7 @@ class UserItem {
   snapshotPrice?: number;
 
   @Column({ name: 'snapshot_images', type: 'jsonb', nullable: true })
-  snapshotImages?: string;
+  snapshotImages?: string[];
 
   @Column({ name: 'snapshot_marketplace', nullable: true })
   snapshotMarketplace?: string;
@@ -67,8 +67,14 @@ class UserItem {
   @Column({ name: 'is_offer_enabled', type: 'boolean', default: false })
   isOfferEnabled: boolean = false;
 
+  @Column('decimal', { name: 'offer_amount', precision: 10, scale: 2, nullable: true })
+  offerAmount?: number;
+
   @Column({ name: 'is_campaign_enabled', type: 'boolean', default: false })
   isCampaignEnabled: boolean = false;
+
+  @Column('decimal', { name: 'campaign_percent', precision: 5, scale: 2, nullable: true })
+  campaignPercent?: number;
 
   // Finance Custom
   @Column('decimal', { name: 'ebay_fee_percent', precision: 5, scale: 2, nullable: true })

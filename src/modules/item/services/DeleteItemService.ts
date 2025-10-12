@@ -1,6 +1,6 @@
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
-import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
+import  IItemsRepository  from '@modules/item/domain/repositories/IItemsRepository';
 
 @injectable()
 class DeleteItemService {

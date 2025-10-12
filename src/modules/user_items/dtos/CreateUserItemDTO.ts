@@ -36,6 +36,10 @@ export class CreateUserItemDTO {
   @IsOptional() @IsBoolean() is_offer_enabled?: boolean;
   @IsOptional() @IsBoolean() is_campaign_enabled?: boolean;
 
+  // NOVOS CAMPOS (Financeiro / Promoção)
+  @IsOptional() @IsNumber() offerAmount?: number;
+  @IsOptional() @IsNumber() campaignPercent?: number;
+
   // Financeiro
   @IsOptional() @IsNumber() ebay_fee_percent?: number;
   @IsOptional() @IsBoolean() use_custom_fee_percent?: boolean;

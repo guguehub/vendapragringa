@@ -1,7 +1,7 @@
 // src/modules/item/services/UserItemService.ts
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
-import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
+import  IItemsRepository  from '@modules/item/domain/repositories/IItemsRepository';
 import Item from '@modules/item/infra/typeorm/entities/Item';
 import { IUser } from '@modules/users/domain/models/IUser';
 import { ICreateItem } from '../domain/models/ICreateItem';

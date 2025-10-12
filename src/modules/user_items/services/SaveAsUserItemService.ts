@@ -4,7 +4,7 @@ import AppError from '@shared/errors/AppError';
 import UserItem from '../infra/typeorm/entities/UserItems';
 import IUserItemsRepository from '../domain/repositories/IUserItemsRepository';
 import { ICreateUserItemDTO } from '../dtos/ICreateUserItemDTO';
-import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
+import  IItemsRepository  from '@modules/item/domain/repositories/IItemsRepository';
 
 interface IRequest {
   user_id: string;

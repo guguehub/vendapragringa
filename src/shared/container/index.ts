@@ -10,12 +10,14 @@ import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositor
 import { ISavedItemsRepository } from '@modules/saved-items/domain/repositories/ISavedItemsRepository';
 import { SavedItemsRepository } from '@modules/saved-items/infra/typeorm/repositories/SavedItemsRepository';
 import ItemsRepository from '@modules/item/infra/typeorm/repositories/ItemsRepository';
-import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
+import IItemsRepository from '@modules/item/domain/repositories/IItemsRepository';
 import { ItemScrapeLogRepository } from '@modules/item_scrape_log/infra/typeorm/repositories/ItemScrapeLogRepository';
 import { IItemScrapeLogRepository } from '@modules/item_scrape_log/domain/repositories/IItemScrapeLogRepository';
 import dataSource from '@shared/infra/typeorm/data-source';
 import IUserItemsRepository from '@modules/user_items/domain/repositories/IUserItemsRepository';
 import UserItemsRepository from '@modules/user_items/infra/typeorm/repositories/UserItemsRepository';
+import SupplierRepository from '@modules/suppliers/infra/typeorm/repositories/SupplierRepository';
+import { ISupplierRepository } from '@modules/suppliers/domain/repositories/ISupplierRepository';
 
 container.registerSingleton<IProductsRepository>(
   'ProductsRepository',
@@ -49,6 +51,11 @@ container.registerSingleton<IUserItemsRepository>(
   'UserItemsRepository',
   UserItemsRepository
 )
+
+container.registerSingleton<ISupplierRepository>(
+  'SuppliersRepository',
+  SupplierRepository,
+);
 
 
 container.registerInstance('DataSource', dataSource);

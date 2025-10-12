@@ -1,6 +1,6 @@
 import { inject, injectable } from 'tsyringe';
 import { IUpdateItem } from '../domain/models/IUpdateItems';
-import { IItemsRepository } from '@modules/item/domain/repositories/IItemsRepository';
+import  IItemsRepository  from '@modules/item/domain/repositories/IItemsRepository';
 import AppError from '@shared/errors/AppError';
 //import Item from '../typeorm/entities/Item';
 import Item from '../infra/typeorm/entities/Item';

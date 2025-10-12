@@ -21,6 +21,8 @@ export interface ICreateUserItem {
   item_profit_brl?: number;
   profit_estimate_brl?: number;
   notes?: string;
+  offerAmount?: number;
+  campaignPercent?: number;
 
   sync_status?: 'active' | 'paused' | 'sold_out';
   is_draft?: boolean;
