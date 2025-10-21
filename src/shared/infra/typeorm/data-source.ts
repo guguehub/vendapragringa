@@ -16,6 +16,7 @@ import { Subscription } from '../../../modules/subscriptions/infra/typeorm/entit
 import ItemScrapeLog from '../../../modules/item_scrape_log/infra/typeorm/entities/ItemScrapeLog'
 
 // Shipping entities
+import UserAddress from '../../../modules/users/infra/typeorm/entities/UserAddress';
 import ShippingType from '../../../modules/shipping/infra/typeorm/entities/ShippingType';
 import ShippingZone from '../../../modules/shipping/infra/typeorm/entities/ShippingZone';
 import ShippingWeight from '../../../modules/shipping/infra/typeorm/entities/ShippingWeight';
@@ -41,6 +42,7 @@ const dataSource = new DataSource({
 
   entities: [
     User,
+    UserAddress,
     UserToken,
     SavedItem,
     UserItem,

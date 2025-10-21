@@ -26,7 +26,10 @@
         "test:tier": "ts-node -r tsconfig-paths/register src/__tests__/subscriptions/subscription-tier-validation.test.ts",
   "dev:scrapy": "ts-node -r tsconfig-paths/register src/modules/scrap/scrapy.ts",
 
+    "make:user_item_log": "ts-node scripts/createUserItemLogModule.ts",
 
+
+      "seed:missing-subscriptions": "ts-node-dev -r tsconfig-paths/register src/modules/subscriptions/infra/typeorm/seeds/seedMissingSubscriptions.ts",
       "seed:tiers": "ts-node -r tsconfig-paths/register src/modules/subscriptions/infra/typeorm/seeds/seedSubscriptions.ts",
       "seed:plans": "ts-node -r tsconfig-paths/register src/modules/products/infra/typeorm/seeds/scripts/seedPlans.ts",
     "check-schema": "ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js schema:log -d src/shared/infra/typeorm/data-source.ts",

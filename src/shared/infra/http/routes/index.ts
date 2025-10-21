@@ -23,6 +23,8 @@ import subscriptionRouter from '@modules/subscriptions/infra/http/routes/subscri
 
 import { ensureTier } from '../middlewares/ensureTier';
 import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
+import addressRouter from '@modules/users/infra/http/routes/address.routes';
+
 
 const routes = Router();
 
@@ -57,5 +59,8 @@ routes.use('/test-user', testRouter);
 routes.get('/area-prata', ensureTier(SubscriptionTier.SILVER), (req, res) => {
   res.json({ message: 'Conteúdo disponível para usuários SILVER ou superior' });
 });
+
+// ===== User Addresses =====
+routes.use('/users/addresses', addressRouter);
 
 export default routes;

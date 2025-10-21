@@ -1,5 +1,13 @@
-// src/modules/item_scrape_log/infra/typeorm/entities/ItemScrapeLog.ts
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import User from '@modules/users/infra/typeorm/entities/User';
+import Item from '@modules/item/infra/typeorm/entities/Item';
 
 @Entity('item_scrape_logs')
 class ItemScrapeLog {
@@ -9,8 +17,16 @@ class ItemScrapeLog {
   @Column()
   item_id: string;
 
+  @ManyToOne(() => Item)
+  @JoinColumn({ name: 'item_id' })
+  item: Item;
+
   @Column({ nullable: true })
   user_id?: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'user_id' })
+  user?: User;
 
   @Column({ nullable: true })
   ip_address?: string;

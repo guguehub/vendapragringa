@@ -10,6 +10,11 @@ export interface IUser {
   hasUsedFreeScrap: boolean;
   is_admin: boolean ;
 
+  scrape_count: number;
+scrape_balance: number;
+daily_bonus_count: number;
+item_limit:number
+
   items?: IItem[];               // Items associated with the user
   subscription?: ISubscription;  // 👈 relação com Subscription
 

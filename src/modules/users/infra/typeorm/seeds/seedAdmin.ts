@@ -1,14 +1,13 @@
 import { hash } from 'bcryptjs';
-import dataSource from '@shared/infra/typeorm/data-source';
+import AppDataSource from '@shared/infra/typeorm/data-source';
 import User from '../entities/User';
 
 async function seedAdmin() {
-  if (!dataSource.isInitialized) await dataSource.initialize();
+  if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
-  const repo = dataSource.getRepository(User);
+  const repo = AppDataSource.getRepository(User);
 
   let adminUser = await repo.findOne({ where: { email: 'admin@vendapragringa.com' } });
-
   const passwordHash = await hash('admin123', 8);
 
   if (!adminUser) {
@@ -19,19 +18,21 @@ async function seedAdmin() {
       is_admin: true,
     });
     await repo.save(adminUser);
-    console.log('✅ Admin user created: admin@vendapragringa.com ');
+    console.log('✅ Admin user criado: admin@vendapragringa.com');
   } else if (!adminUser.is_admin) {
     adminUser.is_admin = true;
     await repo.save(adminUser);
     console.log('✅ Admin user atualizado para is_admin = true');
   } else {
-    console.log('Admin já existe com is_admin = true, pulando seed.');
+    console.log('⚙️ Admin já existe com is_admin = true, sem alterações.');
   }
+
+  await AppDataSource.destroy();
 }
 
 seedAdmin()
   .then(() => process.exit(0))
   .catch(err => {
-    console.error(err);
+    console.error('❌ Erro ao rodar seedAdmin:', err);
     process.exit(1);
   });

@@ -1,4 +1,3 @@
-// src/shared/infra/typeorm/migrations/1699999999999-CreateItemScrapeLogs.ts
 
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 

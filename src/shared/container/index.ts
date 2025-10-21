@@ -18,6 +18,8 @@ import IUserItemsRepository from '@modules/user_items/domain/repositories/IUserI
 import UserItemsRepository from '@modules/user_items/infra/typeorm/repositories/UserItemsRepository';
 import SupplierRepository from '@modules/suppliers/infra/typeorm/repositories/SupplierRepository';
 import { ISupplierRepository } from '@modules/suppliers/domain/repositories/ISupplierRepository';
+import { IUserItemLogRepository } from '@modules/user_item_log/domain/repositories/IUserItemLogRepository';
+import { UserItemLogRepository } from '@modules/user_item_log/infra/typeorm/repositories/UserItemLogRepository';
 
 container.registerSingleton<IProductsRepository>(
   'ProductsRepository',
@@ -50,6 +52,11 @@ container.registerSingleton<IItemScrapeLogRepository>(
 container.registerSingleton<IUserItemsRepository>(
   'UserItemsRepository',
   UserItemsRepository
+)
+
+container.registerSingleton<IUserItemLogRepository>(
+  'UserItemLogRepository',
+  UserItemLogRepository,
 )
 
 container.registerSingleton<ISupplierRepository>(

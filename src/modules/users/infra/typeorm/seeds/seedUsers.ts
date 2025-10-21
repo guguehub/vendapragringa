@@ -1,57 +1,67 @@
 import { DataSource } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import bcrypt from 'bcryptjs';
+import { hash } from 'bcryptjs';
 import User from '../entities/User';
 import AppDataSource from '@shared/infra/typeorm/data-source';
 
 export async function seedUsers(connection?: DataSource): Promise<void> {
   const dataSource = connection || AppDataSource;
+  if (!dataSource.isInitialized) await dataSource.initialize();
 
   const userRepository = dataSource.getRepository(User);
 
   console.log('🌱 [Seed] Iniciando seed de usuários...');
 
-  // Usuários padrão (pode ajustar livremente)
-  const defaultUsers = [
+  const users = [
     {
       id: uuidv4(),
       name: 'Admin Master',
       email: 'admin@vendapragringa.com',
-      password: await bcrypt.hash('admin123', 8),
-      avatar: null,
+      password: await hash('admin123', 8),
+      is_admin: true,
+      hasUsedFreeScrap: false,
+      scrape_count: 0,
+      scrape_balance: 0,
+      daily_bonus_count: 0,
+      item_limit: 0,
     },
     {
       id: uuidv4(),
       name: 'Usuário de Teste',
-      email: 'teste@vendapragringa.com',
-      password: await bcrypt.hash('123456', 8),
-      avatar: null,
+      email: 'user@vendapragringa.com',
+      password: await hash('123456', 8),
+      is_admin: false,
+      hasUsedFreeScrap: false,
+      scrape_count: 0,
+      scrape_balance: 0,
+      daily_bonus_count: 0,
+      item_limit: 0,
     },
   ];
 
-  for (const user of defaultUsers) {
+  for (const user of users) {
     const exists = await userRepository.findOne({ where: { email: user.email } });
 
     if (!exists) {
-      await userRepository.save(user);
-      console.log(`✅ [Seed] Usuário criado: ${user.email}`);
+      await userRepository.save(userRepository.create(user)); // ✅ converte em entidade e evita erro de tipagem
+      console.log(`✅ Usuário criado: ${user.email}`);
     } else {
-      console.log(`⚠️ [Seed] Usuário já existe: ${user.email}`);
+      console.log(`⚠️ Usuário já existe: ${user.email}`);
     }
   }
 
-  console.log('🎉 [Seed] Seed de usuários finalizada com sucesso!');
+  console.log('🎉 [Seed] Seed de usuários finalizada!');
 }
 
-// Execução direta (caso rode via script npm)
 if (require.main === module) {
   AppDataSource.initialize()
-    .then(async (connection) => {
+    .then(async connection => {
       await seedUsers(connection);
       await connection.destroy();
-      console.log('🔌 Conexão finalizada.');
+      console.log('🔌 Conexão encerrada.');
     })
-    .catch((error) => {
-      console.error('❌ Erro ao rodar seedUsers:', error);
+    .catch(err => {
+      console.error('❌ Erro ao rodar seedUsers:', err);
+      process.exit(1);
     });
 }
