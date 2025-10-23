@@ -1,59 +1,57 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
-//import '@modules/item_scrape_log/providers'; // importa o provider para registrar no container
-
 
 // Entities
-import User from '../../../modules/users/infra/typeorm/entities/User';
-import UserToken from '../../../modules/users/infra/typeorm/entities/UserToken';
-import Product from '../../../modules/products/infra/typeorm/entities/Product';
-import Supplier from '../../../modules/suppliers/infra/typeorm/entities/Supplier';
-import Item from '../../../modules/item/infra/typeorm/entities/Item';
-import { SavedItem } from '../../../modules/saved-items/infra/typeorm/entities/SavedItem';
-import { Subscription } from '../../../modules/subscriptions/infra/typeorm/entities/Subscription';
+import User from '@modules/users/infra/typeorm/entities/User';
+import UserToken from '@modules/users/infra/typeorm/entities/UserToken';
+import UserAddress from '@modules/users/infra/typeorm/entities/UserAddress';
 
-//Log
-import ItemScrapeLog from '../../../modules/item_scrape_log/infra/typeorm/entities/ItemScrapeLog'
+import Product from '@modules/products/infra/typeorm/entities/Product';
+import Supplier from '@modules/suppliers/infra/typeorm/entities/Supplier';
+import Item from '@modules/item/infra/typeorm/entities/Item';
+import { SavedItem } from '@modules/saved-items/infra/typeorm/entities/SavedItem';
+import UserItem from '@modules/user_items/infra/typeorm/entities/UserItems';
 
-// Shipping entities
-import UserAddress from '../../../modules/users/infra/typeorm/entities/UserAddress';
-import ShippingType from '../../../modules/shipping/infra/typeorm/entities/ShippingType';
-import ShippingZone from '../../../modules/shipping/infra/typeorm/entities/ShippingZone';
-import ShippingWeight from '../../../modules/shipping/infra/typeorm/entities/ShippingWeight';
-import ShippingPrice from '../../../modules/shipping/infra/typeorm/entities/ShippingPrice';
-import ShippingZoneCountry from '../../../modules/shipping/infra/typeorm/entities/ShippingZoneCountries';
-import UserItem from '../../../modules/user_items/infra/typeorm/entities/UserItems'
+import { Subscription } from '@modules/subscriptions/infra/typeorm/entities/Subscription';
 
-console.log('🌐 Env vars (verificação):', {
+import ItemScrapeLog from '@modules/item_scrape_log/infra/typeorm/entities/ItemScrapeLog';
+
+// Shipping
+import ShippingType from '@modules/shipping/infra/typeorm/entities/ShippingType';
+import ShippingZone from '@modules/shipping/infra/typeorm/entities/ShippingZone';
+import ShippingWeight from '@modules/shipping/infra/typeorm/entities/ShippingWeight';
+import ShippingPrice from '@modules/shipping/infra/typeorm/entities/ShippingPrice';
+import ShippingZoneCountry from '@modules/shipping/infra/typeorm/entities/ShippingZoneCountries';
+import UserQuota from '@modules/user_quota/infra/typeorm/entities/UserQuota';
+
+// 🧩 Debug
+console.log('🧩 Environment loaded:', {
   host: process.env.TYPEORM_HOST,
-  port: process.env.TYPEORM_PORT,
-  user: process.env.TYPEORM_USERNAME,
-  pass: process.env.TYPEORM_PASSWORD,
   db: process.env.TYPEORM_DATABASE,
+  user: process.env.TYPEORM_USERNAME,
+  port: process.env.TYPEORM_PORT,
 });
 
 const dataSource = new DataSource({
   type: 'postgres',
-  host: process.env.TYPEORM_HOST,
+  host: process.env.TYPEORM_HOST || 'localhost',
   port: Number(process.env.TYPEORM_PORT) || 5432,
-  username: process.env.TYPEORM_USERNAME,
-  password: process.env.TYPEORM_PASSWORD,
-  database: process.env.TYPEORM_DATABASE,
+  username: process.env.TYPEORM_USERNAME || 'postgres',
+  password: process.env.TYPEORM_PASSWORD || 'docker',
+  database: process.env.TYPEORM_DATABASE || 'apivendas',
 
   entities: [
     User,
-    UserAddress,
+    UserQuota,
     UserToken,
+    UserAddress,
+    Product,
+    Supplier,
+    Item,
     SavedItem,
     UserItem,
-    Product,
-    Item,
-    Supplier,
     Subscription,
-
     ItemScrapeLog,
-
-    // Shipping
     ShippingType,
     ShippingZone,
     ShippingWeight,
@@ -63,23 +61,21 @@ const dataSource = new DataSource({
 
   migrations: ['src/shared/infra/typeorm/migrations/*.ts'],
 
-  synchronize: false,
+  synchronize: false, // nunca em prod
   migrationsRun: false,
-  logging: false,
+  logging: process.env.NODE_ENV === 'development',
 });
 
-// Se rodar diretamente: testar conexão
+// Executa conexão se rodado diretamente
 if (require.main === module) {
   dataSource
     .initialize()
     .then(() => {
-      console.log('✅ DataSource has been initialized!');
-
+      console.log('✅ TypeORM DataSource conectado com sucesso!');
     })
     .catch(err => {
-      console.error('❌ Error during Data Source initialization:', err);
+      console.error('❌ Erro ao inicializar DataSource:', err);
     });
 }
 
-// ⚠️ Exportação necessária para o TypeORM CLI funcionar
-export default dataSource ;
+export default dataSource;

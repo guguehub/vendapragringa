@@ -20,6 +20,10 @@ import SupplierRepository from '@modules/suppliers/infra/typeorm/repositories/Su
 import { ISupplierRepository } from '@modules/suppliers/domain/repositories/ISupplierRepository';
 import { IUserItemLogRepository } from '@modules/user_item_log/domain/repositories/IUserItemLogRepository';
 import { UserItemLogRepository } from '@modules/user_item_log/infra/typeorm/repositories/UserItemLogRepository';
+import IUserQuotasRepository from '@modules/user_quota/domain/repositories/IUserQuotaRepository';
+import UserQuotasRepository from '@modules/users/infra/typeorm/repositories/UserQuotasRepository';
+import CreateUserQuotaService from '@modules/user_quota/services/CreateUserQuotaService';
+
 
 container.registerSingleton<IProductsRepository>(
   'ProductsRepository',
@@ -63,6 +67,13 @@ container.registerSingleton<ISupplierRepository>(
   'SuppliersRepository',
   SupplierRepository,
 );
+
+container.registerSingleton<IUserQuotasRepository>(
+  'UserQuotasRepository',
+  UserQuotasRepository,
+);
+
+container.registerSingleton('CreateUserQuotaService', CreateUserQuotaService);
 
 
 container.registerInstance('DataSource', dataSource);

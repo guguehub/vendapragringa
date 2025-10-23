@@ -11,14 +11,19 @@
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/shared/infra/typeorm/data-source.ts",
     "typeorm:migration:container": "PG_HOST=db REDIS_HOST=redis APP_API_URL=localhost:3333 ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/shared/infra/typeorm/data-source.ts",
     "dev:docker": "docker compose down && docker compose up",
-    "dev:getin": "docker exec -it apivendas-app bash",
+    "dev:getin": "docker exec -it vendapragringa-app bash",
     "dev:container": "ts-node -r tsconfig-paths/register --transpile-only src/shared/infra/http/server.ts",
-    "pgcli": "docker exec -it apivendas-db psql -U postgres -d apivendas",
+    "pgcli": "docker exec -it vendapragringa-db psql -U postgres -d vendapragringa",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
     "test": "jest",
     "check:ts": "tsc --noEmit",
     "tsc:watch": "tsc --noEmit --watch",
+
+    "dev:logs": "docker logs -f vendapragringa-app",
+  "dev:restart": "docker-compose restart app",
+  "dev:rebuild": "docker-compose up -d --build",
+
     "dev:check": "tsc --noEmit && yarn dev:watch",
       "dev:build": "docker compose build --no-cache",
         "dev:build:light": "docker compose build",
@@ -28,12 +33,13 @@
 
     "make:user_item_log": "ts-node scripts/createUserItemLogModule.ts",
 
+      "seed:user-quotas": "ts-node src/modules/user_quota/infra/typeorm/seeds/seedUserQuotas.ts",
 
       "seed:missing-subscriptions": "ts-node-dev -r tsconfig-paths/register src/modules/subscriptions/infra/typeorm/seeds/seedMissingSubscriptions.ts",
       "seed:tiers": "ts-node -r tsconfig-paths/register src/modules/subscriptions/infra/typeorm/seeds/seedSubscriptions.ts",
       "seed:plans": "ts-node -r tsconfig-paths/register src/modules/products/infra/typeorm/seeds/scripts/seedPlans.ts",
     "check-schema": "ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js schema:log -d src/shared/infra/typeorm/data-source.ts",
-    "seed:shipping": "ts-node src/modules/shipping/infra/typeorm/seeds/runSeeds.ts",
+    "seed:shipping": "ts-node -r tsconfig-paths/register src/modules/shipping/infra/typeorm/seeds/runSeeds.ts",
     "seed:admin": "ts-node -r tsconfig-paths/register src/modules/users/infra/typeorm/seeds/seedAdmin.ts",
     "seed:user-items": "ts-node-dev -r tsconfig-paths/register src/modules/user_items/infra/typeorm/seeds/runSeedUserItemsAuto.ts",
     "seed:items": "ts-node-dev -r tsconfig-paths/register src/modules/item/infra/typeorm/seeds/seedItems.ts",
