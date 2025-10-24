@@ -16,20 +16,28 @@ export default async function seedShippingPricesProducts(
   const zonesRepository = new ShippingZonesRepository(dataSource);
   const weightsRepository = new ShippingWeightsRepository(dataSource);
 
-  // 1. Buscar tipo "product"
+  // 🧩 Verifica se já existem registros
+  const existing = await pricesRepository.findAll();
+  if (existing.length > 0) {
+    console.log('[Seed] Preços de frete já existentes. Pulando...');
+    return;
+  }
+
+  // 1️⃣ Buscar tipo "product"
   const productType = await typesRepository.findByCode(ShippingTypeCode.PRODUCT);
   if (!productType) {
     console.error('❌ Tipo "product" não encontrado. Abortando seed de preços.');
     return;
   }
 
+  // 2️⃣ Buscar faixas de peso
   const weights = await weightsRepository.findAll();
   if (!weights.length) {
     console.error('❌ Nenhuma faixa de peso encontrada. Abortando seed de preços.');
     return;
   }
 
-  // 2. Tabela de preços (exemplo adaptado Correios)
+  // 3️⃣ Tabela de preços (adaptada Correios)
   const regionGroupPrices = {
     I: [
       { maxWeight: 100, price: 55.05 },
@@ -78,11 +86,11 @@ export default async function seedShippingPricesProducts(
     ],
   };
 
-  // 3. Códigos que são zonas (não países)
+  // 4️⃣ Zonas que não correspondem a países
   const ZONE_CODES = new Set(['EU', 'LATAM', 'ASIA', 'ME']);
-
   const pricesData: ICreateShippingPriceDTO[] = [];
 
+  // 5️⃣ Construção dos registros
   for (const regionCode of Object.keys(regionGroups)) {
     if (!isRegionCode(regionCode)) {
       console.warn(`⚠️ Código de região inválido ignorado: ${regionCode}`);
@@ -97,7 +105,6 @@ export default async function seedShippingPricesProducts(
       continue;
     }
 
-    // Buscar zona pelo código da região
     const zone = ZONE_CODES.has(regionCode)
       ? await zonesRepository.findByCode(regionCode)
       : await zonesRepository.findByCountryCode(regionCode);
@@ -121,7 +128,6 @@ export default async function seedShippingPricesProducts(
         continue;
       }
 
-      // Agora todos os campos são garantidos
       pricesData.push({
         type_id: productType.id,
         zone_id: zone.id,
@@ -131,14 +137,12 @@ export default async function seedShippingPricesProducts(
     }
   }
 
+  // 6️⃣ Inserção
   if (!pricesData.length) {
     console.warn('⚠️ Nenhum preço válido encontrado. Nada foi inserido.');
     return;
   }
 
   await pricesRepository.createMany(pricesData);
-
-  console.log(
-    `✅ [Seed] Preços de frete para produtos inseridos com sucesso! (${pricesData.length} registros)`,
-  );
+  console.log(`✅ [Seed] Preços de frete para produtos inseridos com sucesso! (${pricesData.length} registros)`);
 }

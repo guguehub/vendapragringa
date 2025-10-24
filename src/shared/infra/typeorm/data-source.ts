@@ -63,7 +63,7 @@ const dataSource = new DataSource({
 
   synchronize: false, // nunca em prod
   migrationsRun: false,
-  logging: process.env.NODE_ENV === 'development',
+  logging: ['error', 'warn'], // ou false para suprimir tudo,
 });
 
 // Executa conexão se rodado diretamente
