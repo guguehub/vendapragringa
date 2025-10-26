@@ -1,4 +1,3 @@
-
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -45,13 +44,27 @@ export class Subscription {
   start_date: Date | null;
 
   @Column({ type: 'timestamp', nullable: true })
-  expires_at: Date | null; // fim de validade do plano
+  expires_at: Date | null;
 
   @Column({ type: 'boolean', default: false })
-  isTrial: boolean; // nova flag para trial
+  isTrial: boolean;
 
   @Column({ type: 'timestamp', nullable: true })
-  cancelled_at: Date | null; // nova coluna para histórico de cancelamento
+  cancelled_at: Date | null;
+
+  /**
+   * 💰 Saldo de raspagens disponíveis
+   * Atualizado ao fazer upgrade de tier e incrementado pelos bônus diários ou recarga mensal.
+   */
+  @Column('integer', { default: 0 })
+  scrape_balance: number;
+
+  /**
+   * 📊 Contador total de raspagens realizadas (não é resetado)
+   * Útil para estatísticas e auditorias.
+   */
+  @Column('integer', { default: 0 })
+  total_scrapes_used: number;
 
   @ManyToOne(() => User, user => user.subscriptions, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })

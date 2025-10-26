@@ -8,7 +8,7 @@ import { SubscriptionStatus } from '../enums/subscription-status.enum';
 
 interface IRequest {
   userId: string;
-  tier: string; // pode vir como string do request
+  tier: string;
 }
 
 @injectable()
@@ -19,23 +19,15 @@ export default class UpgradeSubscriptionServiceUser {
   ) {}
 
   public async execute({ userId, tier }: IRequest): Promise<Subscription> {
-    console.log('[DEBUG][USER] Atualizando assinatura do usuário:', userId, 'para tier:', tier);
+    if (!tier || typeof tier !== 'string') throw new AppError('Tier is required', 400);
+    const normalizedTier = tier.toLowerCase() as SubscriptionTier;
 
-    if (!tier || typeof tier !== 'string') {
-      throw new AppError('Tier is required and must be a string', 400);
-    }
-
-    const normalizedTier = tier.toLowerCase();
-
-    if (!Object.values(SubscriptionTier).includes(normalizedTier as SubscriptionTier)) {
+    if (!Object.values(SubscriptionTier).includes(normalizedTier))
       throw new AppError(`Invalid tier: ${tier}`, 400);
-    }
 
     let subscription = await this.subscriptionsRepository.findByUserId(userId);
 
-    // Se não existir assinatura, cria FREE automaticamente
     if (!subscription) {
-      console.log('[DEBUG][USER] Nenhuma assinatura encontrada, criando FREE automaticamente');
       subscription = await this.subscriptionsRepository.create({
         userId,
         tier: SubscriptionTier.FREE,
@@ -43,32 +35,39 @@ export default class UpgradeSubscriptionServiceUser {
         start_date: new Date(),
         expires_at: null,
         isTrial: false,
+        scrape_balance: 0,
       });
     }
 
-    // Atualiza assinatura
-    subscription.tier = normalizedTier as SubscriptionTier;
+    const previousBalance = subscription.scrape_balance || 0;
+    const bonus =
+      normalizedTier === SubscriptionTier.BRONZE
+        ? 100
+        : normalizedTier === SubscriptionTier.SILVER
+        ? 300
+        : normalizedTier === SubscriptionTier.GOLD
+        ? 600
+        : normalizedTier === SubscriptionTier.INFINITY
+        ? 999999
+        : 0;
+
+    subscription.scrape_balance = previousBalance + bonus;
+    subscription.tier = normalizedTier;
     subscription.status = SubscriptionStatus.ACTIVE;
     subscription.updated_at = new Date();
 
-    if (normalizedTier === SubscriptionTier.INFINITY) {
-      subscription.expires_at = null;
-    } else if (normalizedTier === SubscriptionTier.FREE) {
+    if ([SubscriptionTier.FREE, SubscriptionTier.INFINITY].includes(normalizedTier)) {
       subscription.expires_at = null;
     } else {
-      // Para planos pagos normais, define 1 ano de validade
       subscription.expires_at = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
     }
 
-    subscription = await this.subscriptionsRepository.save(subscription);
+    await this.subscriptionsRepository.save(subscription);
 
-    // Invalida cache do usuário
     const cacheKey = `user-subscription-${userId}`;
     await RedisCache.invalidate(cacheKey);
-    console.log('[CACHE INVALIDATED][USER] Chave removida:', cacheKey);
 
-    console.log('[DEBUG][USER] Assinatura atualizada com sucesso:', subscription.id);
-
+    console.log('[USER] Upgrade concluído. Novo saldo:', subscription.scrape_balance);
     return subscription;
   }
 }

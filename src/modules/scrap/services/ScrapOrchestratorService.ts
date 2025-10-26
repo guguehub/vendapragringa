@@ -26,7 +26,7 @@ export class ScrapOrchestratorService {
       // ✅ Checa quota antes da raspagem (inclui daily bonus)
       await userQuotaService.checkQuota(user.id, user.tier);
 
-      // ⚠ Limite total de itens salvos
+      // ⚠ Limite total de itens salvos por usuário
       const existingCount = await itemRepository.count({ where: { createdBy: user.id } });
       const maxAllowed = SubscriptionTierLimits[user.tier] ?? SubscriptionTierLimits[SubscriptionTier.FREE];
       if (existingCount >= maxAllowed) {

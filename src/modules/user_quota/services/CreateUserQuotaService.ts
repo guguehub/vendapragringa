@@ -28,33 +28,28 @@ class CreateUserQuotaService {
     saved_items_limit = 100,
     scrape_logs_limit = 200,
   }: IRequest): Promise<UserQuota> {
-    // 🔍 Verifica se o usuário existe
+    // 🔍 Verifica existência do usuário
     const user = await this.usersRepository.findById(user_id);
-    if (!user) {
-      throw new AppError('Usuário não encontrado.');
-    }
+    if (!user) throw new AppError('Usuário não encontrado.');
 
-    // 🚫 Evita duplicar quotas
+    // 🚫 Evita duplicatas
     const existingQuota = await this.userQuotasRepository.findByUserId(user_id);
-    if (existingQuota) {
-      throw new AppError('O usuário já possui quotas registradas.');
-    }
+    if (existingQuota) throw new AppError('O usuário já possui quotas registradas.');
 
-    // 🧩 Determina o tier do usuário
-    // Caso não tenha assinatura ativa, assume "free"
+    // 🧩 Determina o tier atual (ou FREE)
     const tier = user.subscription?.tier || SubscriptionTier.FREE;
 
-    // 📊 Obtém valores iniciais do tier (saldo inicial)
+    // ⚙️ Busca valores iniciais configurados para o tier
     const tierDefaults = QuotaInitialValues[tier] || QuotaInitialValues.free;
 
-    // 🧮 Cria e salva quota inicial usando o repositório
+    // 🧮 Cria quota inicial
     const quota = await this.userQuotasRepository.create({
       user_id,
       saved_items_limit,
       scrape_logs_limit,
       scrape_count: 0,
-      scrape_balance: tierDefaults.scrape_balance, // saldo inicial conforme tier
-      daily_bonus_count: 0, // começa zerado (cron credita depois)
+      scrape_balance: tierDefaults.scrape_balance,
+      daily_bonus_count: 0, // o cron diário credita depois
       item_limit: 0,
     });
 

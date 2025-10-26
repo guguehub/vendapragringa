@@ -1,5 +1,5 @@
 // src/modules/subscriptions/dtos/update-subscription.dto.ts
-import { IsEnum, IsOptional, IsUUID, IsDateString, IsBoolean } from 'class-validator';
+import { IsEnum, IsOptional, IsUUID, IsDateString, IsBoolean, IsInt, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { SubscriptionTier } from '../enums/subscription-tier.enum';
 import { SubscriptionStatus } from '../enums/subscription-status.enum';
@@ -47,4 +47,12 @@ export class UpdateSubscriptionDto {
   @IsOptional()
   @IsDateString({}, { message: 'cancelled_at must be a valid ISO date string' })
   cancelled_at?: string;
+
+  /**
+   * Ajuste manual do saldo de raspagens (admin)
+   */
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  scrape_balance?: number;
 }

@@ -23,7 +23,7 @@ export default class UpdateUserQuotaOnTierChangeService {
       throw new AppError(`No quota defaults found for tier: ${newTier}`);
     }
 
-    quota.scrape_balance = tierDefaults.scrape_balance;
+    quota.scrape_balance += tierDefaults.scrape_balance;
     quota.daily_bonus_count = 0; // O cron aplicará o novo bônus
     quota.scrape_count = 0; // opcional: resetar o contador diário
 

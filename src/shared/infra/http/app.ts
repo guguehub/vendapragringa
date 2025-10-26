@@ -5,7 +5,7 @@ import "express-async-errors";
 import cors from "cors";
 import session from "express-session";
 import { errors } from "celebrate";
-
+import '@shared/infra/cron'; // ✅ Importa e inicializa todos os CRONs
 import routes from "./routes";
 import AppError from "../../../shared/errors/AppError";
 import "../typeorm/data-source";
@@ -14,12 +14,12 @@ import rateLimiter from "./middlewares/rateLimiter";
 import errorHandler from "./middlewares/errorHandler";
 
 // Cron de daily bonus
-import { scheduleDailyBonus } from "../cron/dailyBonus.cron";
+//import { scheduleDailyBonus } from "../cron/dailyBonus.cron";
 
 const app = express();
 
 // Inicializa cron de daily bonus
-scheduleDailyBonus();
+//scheduleDailyBonus();
 
 // Configuração de sessão (necessária para /scrap/once)
 app.use(

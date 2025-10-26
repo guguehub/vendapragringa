@@ -43,7 +43,7 @@ export class ScrapController {
     const userQuotaService = container.resolve(UserQuotaService);
 
     try {
-      // ✅ Check quota antes de qualquer raspagem
+      // ✅ Checagem de quota antes da raspagem
       await userQuotaService.checkQuota(user.id, userTier);
 
       // ⚙️ Orquestra raspagem

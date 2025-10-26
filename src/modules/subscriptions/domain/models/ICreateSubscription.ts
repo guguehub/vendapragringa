@@ -9,4 +9,6 @@ export interface ICreateSubscription {
   expires_at?: Date | null;
   isTrial?: boolean;           // default false
   cancelled_at?: Date | null;  // default null
+  scrape_balance?: number; // default 0
+
 }

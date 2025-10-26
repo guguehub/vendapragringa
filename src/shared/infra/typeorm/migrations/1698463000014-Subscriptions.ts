@@ -8,16 +8,16 @@ import {
 
 export class Subscriptions1698463000014 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Cria enums
-    await queryRunner.query(
-      `CREATE TYPE "subscriptions_status_enum" AS ENUM ('active', 'cancelled', 'expired')`,
-    );
+    // --- Criação dos ENUMs ---
+    await queryRunner.query(`
+      CREATE TYPE "subscriptions_status_enum" AS ENUM ('active', 'cancelled', 'expired')
+    `);
 
-    await queryRunner.query(
-      `CREATE TYPE "subscriptions_tier_enum" AS ENUM ('free', 'bronze', 'silver', 'gold', 'infinity')`,
-    );
+    await queryRunner.query(`
+      CREATE TYPE "subscriptions_tier_enum" AS ENUM ('free', 'bronze', 'silver', 'gold', 'infinity')
+    `);
 
-    // Cria tabela subscriptions
+    // --- Criação da Tabela ---
     await queryRunner.createTable(
       new Table({
         name: 'subscriptions',
@@ -26,18 +26,25 @@ export class Subscriptions1698463000014 implements MigrationInterface {
             name: 'id',
             type: 'uuid',
             isPrimary: true,
-            isGenerated: true,
             generationStrategy: 'uuid',
+            isGenerated: true,
           },
           {
             name: 'status',
-            type: `"subscriptions_status_enum"`,
-            default: "'active'",
+            type: '"subscriptions_status_enum"',
+            default: `'active'`,
           },
           {
             name: 'tier',
-            type: `"subscriptions_tier_enum"`,
-            default: "'free'",
+            type: '"subscriptions_tier_enum"',
+            default: `'free'`,
+          },
+          {
+            name: 'scrape_balance',
+            type: 'integer',
+            default: 0,
+            comment:
+              'Saldo de raspagens do plano atual; atualizado ao fazer upgrade/downgrade ou renovar',
           },
           {
             name: 'start_date',
@@ -80,7 +87,7 @@ export class Subscriptions1698463000014 implements MigrationInterface {
       true,
     );
 
-    // Index em userId
+    // --- Índices ---
     await queryRunner.createIndex(
       'subscriptions',
       new TableIndex({
@@ -89,7 +96,6 @@ export class Subscriptions1698463000014 implements MigrationInterface {
       }),
     );
 
-    // Index em tier (útil para queries por plano)
     await queryRunner.createIndex(
       'subscriptions',
       new TableIndex({
@@ -98,7 +104,7 @@ export class Subscriptions1698463000014 implements MigrationInterface {
       }),
     );
 
-    // FK para users.id
+    // --- Chave estrangeira ---
     await queryRunner.createForeignKey(
       'subscriptions',
       new TableForeignKey({
@@ -112,27 +118,24 @@ export class Subscriptions1698463000014 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     const table = await queryRunner.getTable('subscriptions');
+    if (!table) return;
 
-    if (!table) {
-      throw new Error('Table "subscriptions" not found');
-    }
-
-    // Drop FK
-    const foreignKey = table.foreignKeys.find(fk =>
+    // --- Drop FK ---
+    const fk = table.foreignKeys.find(fk =>
       fk.columnNames.includes('userId'),
     );
-    if (foreignKey) {
-      await queryRunner.dropForeignKey('subscriptions', foreignKey);
+    if (fk) {
+      await queryRunner.dropForeignKey('subscriptions', fk);
     }
 
-    // Drop indexes
+    // --- Drop Índices ---
     await queryRunner.dropIndex('subscriptions', 'IDX_SUBSCRIPTIONS_USERID');
     await queryRunner.dropIndex('subscriptions', 'IDX_SUBSCRIPTIONS_TIER');
 
-    // Drop tabela
+    // --- Drop da Tabela ---
     await queryRunner.dropTable('subscriptions');
 
-    // Drop enums
+    // --- Drop dos ENUMs ---
     await queryRunner.query(`DROP TYPE "subscriptions_status_enum"`);
     await queryRunner.query(`DROP TYPE "subscriptions_tier_enum"`);
   }

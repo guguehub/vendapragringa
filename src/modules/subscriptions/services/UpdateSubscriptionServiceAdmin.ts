@@ -14,70 +14,62 @@ export default class UpdateSubscriptionServiceAdmin {
   ) {}
 
   public async execute(data: UpdateSubscriptionDto): Promise<void> {
-    const { subscriptionId, tier, status, expires_at, isTrial, cancelled_at } = data;
+    const { subscriptionId, tier, status, expires_at, isTrial, cancelled_at, scrape_balance } = data;
 
-    if (!subscriptionId) {
-      throw new AppError('subscriptionId is required for admin update');
-    }
+    if (!subscriptionId) throw new AppError('subscriptionId is required for admin update');
 
     const subscription = await this.subscriptionsRepository.findById(subscriptionId);
+    if (!subscription) throw new AppError('Subscription not found');
 
-    if (!subscription) {
-      throw new AppError('Subscription not found');
-    }
+    console.log('[ADMIN] Atualizando assinatura:', subscription.id);
 
-    console.log('[DEBUG][ADMIN] Atualizando assinatura:', subscription.id, 'para usuário:', subscription.userId);
-
-    // Atualiza tier se fornecido
+    // Atualiza tier
     if (tier) {
-      if (typeof tier !== 'string') {
-        throw new AppError('Tier must be a string', 400);
-      }
-      console.log('Enum SubscriptionTier:', Object.values(SubscriptionTier));
-
-      const normalizedTier = tier.toLowerCase();
-      console.log('Normalized tier:', normalizedTier);
-
-      if (!Object.values(SubscriptionTier).includes(normalizedTier as SubscriptionTier)) {
+      const normalizedTier = tier.toLowerCase() as SubscriptionTier;
+      if (!Object.values(SubscriptionTier).includes(normalizedTier)) {
         throw new AppError(`Invalid tier: ${tier}`, 400);
       }
-      subscription.tier = normalizedTier as SubscriptionTier;
 
-      // Ajusta expiration
-      if (normalizedTier === SubscriptionTier.INFINITY) {
-        subscription.expires_at = null;
-      } else if (normalizedTier === SubscriptionTier.FREE) {
+      const previousBalance = subscription.scrape_balance || 0;
+      const bonus =
+        normalizedTier === SubscriptionTier.BRONZE
+          ? 100
+          : normalizedTier === SubscriptionTier.SILVER
+          ? 300
+          : normalizedTier === SubscriptionTier.GOLD
+          ? 600
+          : normalizedTier === SubscriptionTier.INFINITY
+          ? 999999
+          : 0;
+
+      subscription.scrape_balance = previousBalance + bonus;
+      subscription.tier = normalizedTier;
+
+      if ([SubscriptionTier.FREE, SubscriptionTier.INFINITY].includes(normalizedTier)) {
         subscription.expires_at = null;
       } else {
         subscription.expires_at = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
       }
-
-      console.log('[DEBUG][ADMIN] Tier atualizado para:', normalizedTier);
     }
 
-    // Atualiza status se fornecido
+    // Atualiza status e flags
     if (status) {
       if (!Object.values(SubscriptionStatus).includes(status)) {
         throw new AppError(`Invalid status: ${status}`, 400);
       }
       subscription.status = status;
-      console.log('[DEBUG][ADMIN] Status atualizado para:', status);
     }
 
-    // Atualiza expires_at manual se fornecido (apenas admin)
     if (expires_at) subscription.expires_at = new Date(expires_at);
     if (cancelled_at) subscription.cancelled_at = new Date(cancelled_at);
     if (isTrial !== undefined) subscription.isTrial = isTrial;
+    if (scrape_balance !== undefined) subscription.scrape_balance = scrape_balance;
 
     subscription.updated_at = new Date();
-
     await this.subscriptionsRepository.save(subscription);
 
-    // Invalida cache do usuário
     const cacheKey = `user-subscription-${subscription.userId}`;
     await RedisCache.invalidate(cacheKey);
-    console.log('[CACHE INVALIDATED][ADMIN] Chave removida:', cacheKey);
-
-    console.log('[DEBUG][ADMIN] Assinatura atualizada com sucesso:', subscription.id);
+    console.log('[ADMIN] Cache invalidado:', cacheKey);
   }
 }
