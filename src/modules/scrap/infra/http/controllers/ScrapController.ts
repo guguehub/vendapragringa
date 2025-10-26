@@ -12,21 +12,18 @@ export class ScrapController {
   public async scrapeUrls(req: Request, res: Response): Promise<Response> {
     const { urls } = req.body;
 
-    // 🧩 Validação básica de entrada
     if (!Array.isArray(urls) || urls.length === 0) {
       throw new AppError("Nenhuma URL fornecida.", 400);
     }
 
-    // 🔐 Garantir que há usuário autenticado
     if (!req.user) {
       throw new AppError("Usuário não autenticado.", 401);
     }
 
     const user = req.user!;
-    const userTier: SubscriptionTier =
-      user.subscription?.tier ?? SubscriptionTier.FREE;
+    const userTier: SubscriptionTier = user.subscription?.tier ?? SubscriptionTier.FREE;
 
-    // 📊 Limites de URLs simultâneas por plano
+    // Limite de URLs simultâneas por plano
     const limits: Record<SubscriptionTier, number> = {
       [SubscriptionTier.FREE]: 5,
       [SubscriptionTier.BRONZE]: 10,
@@ -43,19 +40,17 @@ export class ScrapController {
       );
     }
 
-    // 🧮 1️⃣ Checar cotas antes da raspagem
     const userQuotaService = container.resolve(UserQuotaService);
-    await userQuotaService.checkQuota(user.id, userTier);
 
     try {
-      // ⚙️ 2️⃣ Executar o orquestrador de scraping
+      // ✅ Check quota antes de qualquer raspagem
+      await userQuotaService.checkQuota(user.id, userTier);
+
+      // ⚙️ Orquestra raspagem
       const results = await this.scrapOrchestratorService.processUrls(urls, {
         id: user.id,
         tier: userTier,
       });
-
-      // 🧾 3️⃣ Consumir 1 unidade de cota após a raspagem bem-sucedida
-      await userQuotaService.consumeScrape(user.id);
 
       return res.json(results);
     } catch (error) {

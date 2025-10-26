@@ -23,7 +23,7 @@ export class ScrapOrchestratorService {
     const userQuotaService = user ? container.resolve(UserQuotaService) : null;
 
     if (user && userQuotaService) {
-      // ✅ Checa quota antes da raspagem
+      // ✅ Checa quota antes da raspagem (inclui daily bonus)
       await userQuotaService.checkQuota(user.id, user.tier);
 
       // ⚠ Limite total de itens salvos
@@ -38,23 +38,25 @@ export class ScrapOrchestratorService {
       const cacheKey = `scraped:${url}`;
       let scrapedItem: IScrapedItem | null = await this.cache.get<IScrapedItem>(cacheKey);
 
-      if (scrapedItem) {
-        console.log(`[CACHE HIT] ${url}`);
-      } else {
-        console.log(`[CACHE MISS] Raspando: ${url}`);
+      if (!scrapedItem) {
         try {
           scrapedItem = await this.scraper.scrape(url);
           await this.cache.set(cacheKey, scrapedItem, 12 * 60 * 60); // 12h TTL
-
-          if (user && userQuotaService) {
-            // ✅ Consome quota após cada raspagem
-            await userQuotaService.consumeScrape(user.id);
-            console.log(`[QUOTA] Consumo registrado para usuário ${user.id}`);
-          }
-
         } catch (err) {
           console.error(`[SCRAPER ERROR] Falha ao raspar ${url}:`, err);
           continue;
+        }
+      } else {
+        console.log(`[CACHE HIT] ${url}`);
+      }
+
+      if (user && scrapedItem && userQuotaService) {
+        try {
+          // ✅ Consome quota após cada raspagem
+          await userQuotaService.consumeScrape(user.id);
+          console.log(`[QUOTA] Consumo registrado para usuário ${user.id}`);
+        } catch (err) {
+          console.error(`[QUOTA ERROR] Falha ao consumir quota para ${user.id}:`, err);
         }
       }
 

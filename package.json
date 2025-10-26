@@ -13,31 +13,26 @@
     "dev:docker": "docker compose down && docker compose up",
     "dev:getin": "docker exec -it vendapragringa-app bash",
     "dev:container": "ts-node -r tsconfig-paths/register --transpile-only src/shared/infra/http/server.ts",
-    "pgcli": "docker exec -it vendapragringa-db psql -U postgres -d vendapragringa",
+    "pgcli": "docker exec -it vendapragringa-db psql -U postgres -d apivendas",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
     "test": "jest",
     "check:ts": "tsc --noEmit",
     "tsc:watch": "tsc --noEmit --watch",
-
     "dev:logs": "docker logs -f vendapragringa-app",
-  "dev:restart": "docker-compose restart app",
-  "dev:rebuild": "docker-compose up -d --build",
-
+    "dev:restart": "docker-compose restart app",
+    "dev:rebuild": "docker-compose up -d --build",
     "dev:check": "tsc --noEmit && yarn dev:watch",
-      "dev:build": "docker compose build --no-cache",
-        "dev:build:light": "docker compose build",
-          "dev:build:light-reset": "rm -rf .docker/dbdata && docker compose build",
-        "test:tier": "ts-node -r tsconfig-paths/register src/__tests__/subscriptions/subscription-tier-validation.test.ts",
-  "dev:scrapy": "ts-node -r tsconfig-paths/register src/modules/scrap/scrapy.ts",
-
+    "dev:build": "docker compose build --no-cache",
+    "dev:build:light": "docker compose build",
+    "dev:build:light-reset": "rm -rf .docker/dbdata && docker compose build",
+    "test:tier": "ts-node -r tsconfig-paths/register src/__tests__/subscriptions/subscription-tier-validation.test.ts",
+    "dev:scrapy": "ts-node -r tsconfig-paths/register src/modules/scrap/scrapy.ts",
     "make:user_item_log": "ts-node scripts/createUserItemLogModule.ts",
-
-      "seed:user-quotas": "ts-node src/modules/user_quota/infra/typeorm/seeds/seedUserQuotas.ts",
-
-      "seed:missing-subscriptions": "ts-node-dev -r tsconfig-paths/register src/modules/subscriptions/infra/typeorm/seeds/seedMissingSubscriptions.ts",
-      "seed:tiers": "ts-node -r tsconfig-paths/register src/modules/subscriptions/infra/typeorm/seeds/seedSubscriptions.ts",
-      "seed:plans": "ts-node -r tsconfig-paths/register src/modules/products/infra/typeorm/seeds/scripts/seedPlans.ts",
+    "seed:user-quotas": "ts-node src/modules/user_quota/infra/typeorm/seeds/seedUserQuotas.ts",
+    "seed:missing-subscriptions": "ts-node-dev -r tsconfig-paths/register src/modules/subscriptions/infra/typeorm/seeds/seedMissingSubscriptions.ts",
+    "seed:tiers": "ts-node -r tsconfig-paths/register src/modules/subscriptions/infra/typeorm/seeds/seedSubscriptions.ts",
+    "seed:plans": "ts-node -r tsconfig-paths/register src/modules/products/infra/typeorm/seeds/scripts/seedPlans.ts",
     "check-schema": "ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js schema:log -d src/shared/infra/typeorm/data-source.ts",
     "seed:shipping": "ts-node -r tsconfig-paths/register src/modules/shipping/infra/typeorm/seeds/runSeeds.ts",
     "seed:admin": "ts-node -r tsconfig-paths/register src/modules/users/infra/typeorm/seeds/seedAdmin.ts",
@@ -46,8 +41,6 @@
     "seed:suppliers": "ts-node-dev -r tsconfig-paths/register src/modules/suppliers/infra/typeorm/seeds/seedSuppliers.ts",
     "seed:users": "ts-node-dev -r tsconfig-paths/register src/modules/users/infra/typeorm/seeds/seedUsers.ts",
     "seed:core": "yarn seed:users && yarn seed:tiers && yarn seed:items && yarn seed:shipping"
-
-
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.5",
@@ -80,6 +73,7 @@
     "axios": "^1.8.2",
     "bcryptjs": "^2.4.3",
     "celebrate": "^15.0.1",
+    "chalk": "4",
     "cheerio": "1.0.0-rc.10",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
@@ -94,6 +88,7 @@
     "ioredis": "^5.4.1",
     "jsonwebtoken": "^8.5.1",
     "multer": "1.4.5-lts.1",
+    "node-cron": "^4.2.1",
     "node-fetch": "2",
     "nodemailer": "^6.9.8",
     "pg": "8.5.1",

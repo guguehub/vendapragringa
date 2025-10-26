@@ -21,8 +21,8 @@ import { ISupplierRepository } from '@modules/suppliers/domain/repositories/ISup
 import { IUserItemLogRepository } from '@modules/user_item_log/domain/repositories/IUserItemLogRepository';
 import { UserItemLogRepository } from '@modules/user_item_log/infra/typeorm/repositories/UserItemLogRepository';
 import IUserQuotasRepository from '@modules/user_quota/domain/repositories/IUserQuotaRepository';
-import UserQuotasRepository from '@modules/users/infra/typeorm/repositories/UserQuotasRepository';
 import CreateUserQuotaService from '@modules/user_quota/services/CreateUserQuotaService';
+import UserQuotasRepository from '@modules/user_quota/infra/typeorm/repositories/UserQuotaRepository';
 
 
 container.registerSingleton<IProductsRepository>(
@@ -73,8 +73,11 @@ container.registerSingleton<IUserQuotasRepository>(
   UserQuotasRepository,
 );
 
-container.registerSingleton('CreateUserQuotaService', CreateUserQuotaService);
-
+// ⬇️ Registra o serviço para injeção via token
+container.registerSingleton<CreateUserQuotaService>(
+  'CreateUserQuotaService',
+  CreateUserQuotaService,
+);
 
 container.registerInstance('DataSource', dataSource);
 

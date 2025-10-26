@@ -1,4 +1,3 @@
-// src/modules/users/services/CreateUserService.ts
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 
@@ -6,7 +5,6 @@ import { IUsersRepository } from '../domain/repositories/IUsersRepository';
 import { ICreateUser } from '../domain/models/ICreateUser';
 import { IUser } from '../domain/models/IUser';
 import { IHashProvider } from '../providers/HashProvider/models/IHashProvider';
-
 import CreateUserQuotaService from '@modules/user_quota/services/CreateUserQuotaService';
 
 @injectable()
@@ -19,35 +17,34 @@ class CreateUserService {
     private hashProvider: IHashProvider,
 
     @inject('CreateUserQuotaService')
-    private createUserQuota: CreateUserQuotaService,
+    private createUserQuotaService: CreateUserQuotaService,
   ) {}
 
   public async execute({ name, email, password }: ICreateUser): Promise<IUser> {
-    // 1️⃣ Verifica se o email já existe
+    // 1️⃣ Verifica duplicidade de e-mail
     const emailExists = await this.usersRepository.findByEmail(email);
     if (emailExists) {
       throw new AppError('Email address already used.');
     }
 
-    // 2️⃣ Gera hash da senha
+    // 2️⃣ Criptografa a senha
     const hashedPassword = await this.hashProvider.generateHash(password);
 
-    // 3️⃣ Cria o usuário com os campos básicos
+    // 3️⃣ Cria o usuário (apenas com campos definidos no ICreateUser)
     const user = await this.usersRepository.create({
       name,
       email,
       password: hashedPassword,
-      avatar: undefined, // opcional
     });
 
-    // 4️⃣ Inicializa quotas e contadores automaticamente
-    await this.createUserQuota.execute({
+    // 4️⃣ Cria quotas iniciais automaticamente
+    await this.createUserQuotaService.execute({
       user_id: user.id,
-      saved_items_limit: 100,  // limite padrão de itens salvos
-      scrape_logs_limit: 200,  // limite padrão de raspagens
+      saved_items_limit: 100,
+      scrape_logs_limit: 200,
     });
 
-    // 5️⃣ Retorna usuário completo
+    // 5️⃣ Retorna o usuário criado
     return user;
   }
 }

@@ -19,11 +19,10 @@ class UsersRepository implements IUsersRepository {
   }
 
   public async create({ name, email, password }: ICreateUser): Promise<User> {
-    const user = this.ormRepository.create({ name, email, password });
-
-    await this.ormRepository.save(user);
-    return user;
-  }
+  const user = this.ormRepository.create({ name, email, password });
+  await this.ormRepository.save(user);
+  return user;
+}
 
   async save(user: User): Promise<IUser> {
     await this.ormRepository.save(user);
