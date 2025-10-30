@@ -1,8 +1,8 @@
-// src/modules/item_scrape_log/domain/repositories/IItemScrapeLogRepository.ts
-import { IItemScrapeLog } from '../models/IItemScrapeLog';
+import { ICreateItemScrapeLogDTO } from '../../dtos/ICreateItemScrapeLogDTO';
+import ItemScrapeLog from '../../infra/typeorm/entities/ItemScrapeLog';
 
 export interface IItemScrapeLogRepository {
-  create(log: IItemScrapeLog): Promise<IItemScrapeLog>;
-  listByItemId(item_id: string): Promise<IItemScrapeLog[]>;
+  create(data: ICreateItemScrapeLogDTO): Promise<ItemScrapeLog>;
+  listByItemId(item_id: string): Promise<ItemScrapeLog[]>;
   countUniqueUsers(item_id: string): Promise<number>;
 }

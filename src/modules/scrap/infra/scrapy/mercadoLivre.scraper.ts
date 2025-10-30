@@ -1,16 +1,27 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
+import { container } from "tsyringe";
+
 import { IScrapedItem } from "../../domain/models/IScrapedItem";
 import { IScraperService } from "../../domain/services/IScraperService";
+import UserQuotaService from "@modules/user_quota/services/UserQuotaService";
+import { SubscriptionTier } from "@modules/subscriptions/enums/subscription-tier.enum";
 
-// Delay simples para uso em múltiplas URLs
+/**
+ * Função utilitária para delay entre requisições
+ */
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-// --- Helpers de extração/normalização ---
-
+/**
+ * Limpa e normaliza URL
+ */
 function sanitizeUrl(raw: string): string {
-  return raw.replace(/[<>]/g, "").trim(); // remove < >
+  return raw.replace(/[<>]/g, "").trim();
 }
+
+/**
+ * --- Extração de dados do HTML ---
+ */
 
 function extractTitle($: cheerio.CheerioAPI): string | null {
   return (
@@ -24,7 +35,6 @@ function extractTitle($: cheerio.CheerioAPI): string | null {
 function normalizeBrazilianMoney(text: string): string | null {
   if (!text) return null;
   const moneyRegex = /(?:R\$\s*)?(\d{1,3}(?:\.\d{3})*|\d+)(?:,(\d{2}))?/g;
-
   let bestMatch: { whole: string; cents?: string } | null = null;
   let match: RegExpExecArray | null;
 
@@ -85,10 +95,7 @@ function extractShippingInfo($: cheerio.CheerioAPI): string {
   if (freeShip.includes("grátis")) return "Frete grátis";
 
   const shippingCost =
-    $(".ui-pdp-shipping__option .andes-money-amount__fraction")
-      .first()
-      .text()
-      .trim() ||
+    $(".ui-pdp-shipping__option .andes-money-amount__fraction").first().text().trim() ||
     $(".ui-pdp-shipping-summary__text").first().text().trim() ||
     $(".shipping-method-title").first().text().trim();
 
@@ -103,11 +110,10 @@ function extractStatus($: cheerio.CheerioAPI): string {
     { selector: ".ui-pdp-main-actions__closed", status: "Encerrado" },
     { selector: ".ui-pdp-main-actions__inactive", status: "Inativo" },
     { selector: ".ui-pdp-main-actions__under-review", status: "Sob revisão" },
-    { selector: ".ui-pdp-main-actions__payment-required", status: "Pagamento pendente" },
-    { selector: ".ui-pdp-main-actions__finished", status: "Anúncio finalizado" },
   ];
 
-  for (const { selector, status } of possibles) if ($(selector).length > 0) return status;
+  for (const { selector, status } of possibles)
+    if ($(selector).length > 0) return status;
 
   const subtitle = $(".ui-pdp-header__subtitle").text().trim() || $(".item-conditions").text().trim();
   if (subtitle) return subtitle;
@@ -125,13 +131,15 @@ function extractItemId(url: string, $: cheerio.CheerioAPI): string | null {
     /item_id=([A-Z0-9]+)/i,
     /_JM#([A-Z0-9]+)/i,
   ];
-
   for (const p of patterns) {
     const match = url.match(p);
     if (match?.[1]) return match[1];
   }
 
-  const metaId = $('meta[itemprop="productID"]').attr("content") || $('meta[property="og:url"]').attr("content");
+  const metaId =
+    $('meta[itemprop="productID"]').attr("content") ||
+    $('meta[property="og:url"]').attr("content");
+
   if (metaId) {
     const m = metaId.match(/(MLB[A-Z0-9]+)/i);
     if (m) return m[0];
@@ -143,8 +151,9 @@ function extractItemId(url: string, $: cheerio.CheerioAPI): string | null {
   return null;
 }
 
-// --- Scraper ---
-
+/**
+ * --- SCRAPER PRINCIPAL ---
+ */
 export class MercadoLivreScraper implements IScraperService {
   async scrape(url: string): Promise<IScrapedItem> {
     const targetUrl = sanitizeUrl(url);
@@ -165,13 +174,13 @@ export class MercadoLivreScraper implements IScraperService {
     try {
       const { data: html } = await axios.get(targetUrl, {
         headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         },
         timeout: 5000,
       });
 
       const $ = cheerio.load(html);
-
       const title = extractTitle($);
       const normalizedPrice = extractPrice($);
       const description = extractDescription($);
@@ -179,30 +188,19 @@ export class MercadoLivreScraper implements IScraperService {
       let itemStatus = extractStatus($);
       const itemId = extractItemId(targetUrl, $);
 
-      // --- Regra de negócio: nunca passar null para price ---
-      let finalPrice: string;
-      const noStockMsg = $("body").text().includes("Este produto está indisponível no momento.");
+      const noStockMsg = $("body").text().includes("indisponível");
       const priceHidden = $(".price").attr("state") === "HIDDEN";
 
-      if (normalizedPrice && parseFloat(normalizedPrice) > 1) {
-        finalPrice = normalizedPrice;
-      } else {
-        finalPrice = "0.00";
-      }
+      const finalPrice =
+        normalizedPrice && parseFloat(normalizedPrice) > 1
+          ? normalizedPrice
+          : "0.00";
 
-      if (noStockMsg || priceHidden) {
-        itemStatus = "Inativo";
-      }
+      if (noStockMsg || priceHidden) itemStatus = "Inativo";
 
-      // Log simples para debug
-      console.log(`[Scrap] ${targetUrl}`);
-      console.log(`  Title : ${title}`);
-      console.log(`  Price : ${finalPrice}`);
-      console.log(`  Status: ${itemStatus}`);
-
+      console.log(`[Scrap] ${targetUrl} ✅`);
       return { title, price: finalPrice, description, shippingInfo, itemStatus, url: targetUrl, itemId };
     } catch (error: any) {
-      const errorDetails = error?.message || "Erro desconhecido ao raspar";
       return {
         title: null,
         price: "0.00",
@@ -211,21 +209,41 @@ export class MercadoLivreScraper implements IScraperService {
         itemStatus: "error",
         url: targetUrl,
         itemId: null,
-        errorDetails,
+        errorDetails: error?.message || "Erro desconhecido ao raspar",
       };
     }
   }
 
-  async processUrls(urls: string[], delayMs = 1000): Promise<IScrapedItem[]> {
+  /**
+   * Raspagem de múltiplas URLs com controle de cotas
+   */
+  async processUrls(urls: string[], userId?: string, delayMs = 1000): Promise<IScrapedItem[]> {
     const results: IScrapedItem[] = [];
-    let counter = 1;
-    for (const u of urls) {
-      console.log(`\n[Process] ${counter}/${urls.length} -> ${u}`);
+    const quotaService = container.resolve(UserQuotaService);
+
+    if (!userId) {
+      console.warn("⚠️ Nenhum userId informado. As cotas não serão debitadas.");
+    }
+
+    for (let i = 0; i < urls.length; i++) {
+      const u = urls[i];
+      console.log(`\n🔎 [Process] ${i + 1}/${urls.length} -> ${u}`);
+
+      if (userId) {
+        const quotaOk = await quotaService.checkQuota(userId, SubscriptionTier.FREE); // ou conforme tier real
+        if (!quotaOk) {
+          console.log(`🚫 Limite de raspagens atingido para o usuário ${userId}.`);
+          break;
+        }
+        await quotaService.consumeScrape(userId);
+      }
+
       await delay(delayMs);
       const item = await this.scrape(u);
       results.push(item);
-      counter++;
     }
+
+    console.log(`\n✅ Raspagem finalizada. Total processado: ${results.length}`);
     return results;
   }
 }

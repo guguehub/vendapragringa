@@ -1,4 +1,3 @@
-
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
 export class CreateItemScrapeLogs1748923630000 implements MigrationInterface {
@@ -17,7 +16,7 @@ export class CreateItemScrapeLogs1748923630000 implements MigrationInterface {
           {
             name: 'item_id',
             type: 'uuid',
-            isNullable: false,
+            isNullable: true,
           },
           {
             name: 'user_id',
@@ -35,9 +34,27 @@ export class CreateItemScrapeLogs1748923630000 implements MigrationInterface {
             default: false,
           },
           {
+            name: 'action',
+            type: 'varchar',
+            isNullable: true,
+            comment: 'Tipo da ação (ex: SCRAPE_USED, DAILY_BONUS_RESET)',
+          },
+          {
+            name: 'details',
+            type: 'text',
+            isNullable: true,
+          },
+          {
+            name: 'timestamp',
+            type: 'timestamp',
+            default: 'now()',
+            comment: 'Data/hora da ação de scrape',
+          },
+          {
             name: 'created_at',
             type: 'timestamp',
             default: 'now()',
+            comment: 'Data/hora de criação do registro',
           },
         ],
         foreignKeys: [
@@ -46,7 +63,7 @@ export class CreateItemScrapeLogs1748923630000 implements MigrationInterface {
             columnNames: ['item_id'],
             referencedTableName: 'items',
             referencedColumnNames: ['id'],
-            onDelete: 'CASCADE',
+            onDelete: 'SET NULL',
             onUpdate: 'CASCADE',
           },
           {

@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import { container } from 'tsyringe';
+import '@shared/container';
 
-import dataSource from '@shared/infra/typeorm/data-source';
-
+import dataSource from '../../../../../shared/infra/typeorm/data-source';
 import CreateUserQuotaService from '@modules/user_quota/services/CreateUserQuotaService';
 import UsersRepository from '@modules/users/infra/typeorm/repositories/UsersRepository';
 import UserQuotasRepository from '../repositories/UserQuotaRepository';

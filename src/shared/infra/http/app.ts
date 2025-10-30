@@ -1,14 +1,16 @@
 import "reflect-metadata"; // necessário para TSyringe e TypeORM
 import "../../../shared/container"; // registrar todos os providers antes de usar controllers
+import "../typeorm/data-source";
+
+import '@shared/infra/cron'; // ✅ Importa e inicializa todos os CRONs
+
 import express, { NextFunction, Request, Response } from "express";
 import "express-async-errors";
 import cors from "cors";
 import session from "express-session";
 import { errors } from "celebrate";
-import '@shared/infra/cron'; // ✅ Importa e inicializa todos os CRONs
 import routes from "./routes";
 import AppError from "../../../shared/errors/AppError";
-import "../typeorm/data-source";
 import uploadConfig from "@config/upload";
 import rateLimiter from "./middlewares/rateLimiter";
 import errorHandler from "./middlewares/errorHandler";

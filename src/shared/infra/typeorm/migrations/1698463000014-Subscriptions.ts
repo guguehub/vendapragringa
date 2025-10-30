@@ -47,6 +47,12 @@ export class Subscriptions1698463000014 implements MigrationInterface {
               'Saldo de raspagens do plano atual; atualizado ao fazer upgrade/downgrade ou renovar',
           },
           {
+              name: 'total_scrapes_used',
+              type: 'integer',
+              default: 0,
+              comment: 'Total de raspagens já utilizadas (histórico cumulativo)',
+},
+          {
             name: 'start_date',
             type: 'timestamp',
             isNullable: true,

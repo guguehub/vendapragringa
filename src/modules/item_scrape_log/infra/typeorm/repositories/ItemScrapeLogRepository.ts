@@ -1,9 +1,10 @@
-// src/modules/item_scrape_log/infra/typeorm/repositories/ItemScrapeLogRepository.ts
 import { Repository } from 'typeorm';
 import { IItemScrapeLogRepository } from '@modules/item_scrape_log/domain/repositories/IItemScrapeLogRepository';
 import { IItemScrapeLog } from '@modules/item_scrape_log/domain/models/IItemScrapeLog';
+import { ICreateItemScrapeLogDTO } from '@modules/item_scrape_log/dtos/ICreateItemScrapeLogDTO';
 import ItemScrapeLog from '../entities/ItemScrapeLog';
 import dataSource from '@shared/infra/typeorm/data-source';
+import { ItemScrapeAction } from '@modules/item_scrape_log/enums/item-scrape-action.enum';
 
 export class ItemScrapeLogRepository implements IItemScrapeLogRepository {
   private ormRepository: Repository<ItemScrapeLog>;
@@ -12,23 +13,33 @@ export class ItemScrapeLogRepository implements IItemScrapeLogRepository {
     this.ormRepository = dataSource.getRepository(ItemScrapeLog);
   }
 
-  public async create(log: IItemScrapeLog): Promise<IItemScrapeLog> {
-    const itemLog = this.ormRepository.create(log);
-    await this.ormRepository.save(itemLog);
-    return itemLog;
+  public async create(data: ICreateItemScrapeLogDTO): Promise<ItemScrapeLog> {
+    // 🧠 Garante tipos corretos e campos defaults
+    const entity = this.ormRepository.create({
+      item_id: data.item_id,
+      user_id: data.user_id,
+      ip_address: data.ip_address,
+      listed_on_ebay: data.listed_on_ebay ?? false,
+      action: data.action ?? ItemScrapeAction.SCRAPE_USED,
+      details: data.details,
+      created_at: data.timestamp ?? new Date(),
+    });
+
+    return this.ormRepository.save(entity);
   }
 
-  public async listByItemId(item_id: string): Promise<IItemScrapeLog[]> {
+  public async listByItemId(item_id: string): Promise<ItemScrapeLog[]> {
     return this.ormRepository.find({ where: { item_id } });
   }
 
   public async countUniqueUsers(item_id: string): Promise<number> {
-    return this.ormRepository
+    const result = await this.ormRepository
       .createQueryBuilder('log')
       .where('log.item_id = :item_id', { item_id })
       .andWhere('log.user_id IS NOT NULL')
       .select('COUNT(DISTINCT log.user_id)', 'count')
-      .getRawOne()
-      .then(result => Number(result.count));
+      .getRawOne();
+
+    return Number(result?.count || 0);
   }
 }

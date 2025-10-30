@@ -29,7 +29,7 @@
     "test:tier": "ts-node -r tsconfig-paths/register src/__tests__/subscriptions/subscription-tier-validation.test.ts",
     "dev:scrapy": "ts-node -r tsconfig-paths/register src/modules/scrap/scrapy.ts",
     "make:user_item_log": "ts-node scripts/createUserItemLogModule.ts",
-    "seed:user-quotas": "ts-node src/modules/user_quota/infra/typeorm/seeds/seedUserQuotas.ts",
+  "seed:user-quotas": "ts-node -r tsconfig-paths/register src/modules/user_quota/infra/typeorm/seeds/seedUserQuotas.ts",
     "seed:missing-subscriptions": "ts-node-dev -r tsconfig-paths/register src/modules/subscriptions/infra/typeorm/seeds/seedMissingSubscriptions.ts",
     "seed:tiers": "ts-node -r tsconfig-paths/register src/modules/subscriptions/infra/typeorm/seeds/seedSubscriptions.ts",
     "seed:plans": "ts-node -r tsconfig-paths/register src/modules/products/infra/typeorm/seeds/scripts/seedPlans.ts",
@@ -42,7 +42,13 @@
     "seed:users": "ts-node-dev -r tsconfig-paths/register src/modules/users/infra/typeorm/seeds/seedUsers.ts",
     "seed:core": "yarn seed:users && yarn seed:tiers && yarn seed:items && yarn seed:shipping",
 
-      "cron:test": "ts-node src/shared/infra/cron/index.ts"
+      "test:quota": "ts-node src/scripts/testQuotaFlow.ts",
+
+      "cron:test": "ts-node src/shared/infra/cron/index.ts",
+      "cron:daily": "ts-node src/shared/infra/cron/dailyBonus.cron.ts",
+  "cron:monthly": "ts-node src/shared/infra/cron/monthlyQuota.cron.ts",
+  "typeorm:migration:subscriptions": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run --dataSource ./src/shared/infra/typeorm/data-source.ts"
+
 
   },
   "devDependencies": {
