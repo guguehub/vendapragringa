@@ -23,10 +23,7 @@ export class ScrapOrchestratorService {
     const userQuotaService = user ? container.resolve(UserQuotaService) : null;
 
     if (user && userQuotaService) {
-      // ✅ Checa quota antes da raspagem (inclui daily bonus)
       await userQuotaService.checkQuota(user.id, user.tier);
-
-      // ⚠ Limite total de itens salvos por usuário
       const existingCount = await itemRepository.count({ where: { createdBy: user.id } });
       const maxAllowed = SubscriptionTierLimits[user.tier] ?? SubscriptionTierLimits[SubscriptionTier.FREE];
       if (existingCount >= maxAllowed) {
@@ -41,7 +38,7 @@ export class ScrapOrchestratorService {
       if (!scrapedItem) {
         try {
           scrapedItem = await this.scraper.scrape(url);
-          await this.cache.set(cacheKey, scrapedItem, 12 * 60 * 60); // 12h TTL
+          await this.cache.set(cacheKey, scrapedItem, 12 * 60 * 60);
         } catch (err) {
           console.error(`[SCRAPER ERROR] Falha ao raspar ${url}:`, err);
           continue;
@@ -52,9 +49,15 @@ export class ScrapOrchestratorService {
 
       if (user && scrapedItem && userQuotaService) {
         try {
-          // ✅ Consome quota após cada raspagem
           await userQuotaService.consumeScrape(user.id);
           console.log(`[QUOTA] Consumo registrado para usuário ${user.id}`);
+
+          // 🔹 LOG saldo atualizado após consumo
+          const subscriptionCacheKey = `user-subscription-${user.id}`;
+          const cachedSub: any = await this.cache.get(subscriptionCacheKey);
+          if (cachedSub?.subscription) {
+            console.log(`[QUOTA STATUS] userId: ${user.id}, saldo: ${cachedSub.subscription.scrape_balance}, total usados: ${cachedSub.subscription.total_scrapes_used}`);
+          }
         } catch (err) {
           console.error(`[QUOTA ERROR] Falha ao consumir quota para ${user.id}:`, err);
         }

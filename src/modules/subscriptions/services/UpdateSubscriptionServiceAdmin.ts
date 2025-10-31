@@ -5,27 +5,36 @@ import { ISubscriptionRepository } from '../domain/repositories/ISubscriptionsRe
 import { UpdateSubscriptionDto } from '../dtos/update-subscription.dto';
 import { SubscriptionTier } from '../enums/subscription-tier.enum';
 import { SubscriptionStatus } from '../enums/subscription-status.enum';
+import UpgradeUserTierService from '@modules/users/services/UpgradeUserTierService';
 
 @injectable()
 export default class UpdateSubscriptionServiceAdmin {
   constructor(
     @inject('SubscriptionRepository')
     private subscriptionsRepository: ISubscriptionRepository,
+
+    @inject(UpgradeUserTierService)
+    private upgradeUserTierService: UpgradeUserTierService,
   ) {}
 
   public async execute(data: UpdateSubscriptionDto): Promise<void> {
     const { subscriptionId, tier, status, expires_at, isTrial, cancelled_at, scrape_balance } = data;
 
-    if (!subscriptionId) throw new AppError('subscriptionId is required for admin update');
+    if (!subscriptionId) {
+      throw new AppError('subscriptionId is required for admin update');
+    }
 
     const subscription = await this.subscriptionsRepository.findById(subscriptionId);
-    if (!subscription) throw new AppError('Subscription not found');
+    if (!subscription) {
+      throw new AppError('Subscription not found');
+    }
 
     console.log('[ADMIN] Atualizando assinatura:', subscription.id);
 
-    // Atualiza tier
+    // 🔹 Atualiza o tier e saldo acumulado
     if (tier) {
       const normalizedTier = tier.toLowerCase() as SubscriptionTier;
+
       if (!Object.values(SubscriptionTier).includes(normalizedTier)) {
         throw new AppError(`Invalid tier: ${tier}`, 400);
       }
@@ -50,9 +59,12 @@ export default class UpdateSubscriptionServiceAdmin {
       } else {
         subscription.expires_at = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
       }
+
+      // 🔸 Atualiza também o tier do usuário e suas quotas
+      await this.upgradeUserTierService.execute(subscription.userId, normalizedTier);
     }
 
-    // Atualiza status e flags
+    // 🔹 Atualiza status e flags administrativas
     if (status) {
       if (!Object.values(SubscriptionStatus).includes(status)) {
         throw new AppError(`Invalid status: ${status}`, 400);

@@ -3,4 +3,5 @@ export enum ItemScrapeAction {
   DAILY_BONUS_RESET = 'DAILY_BONUS_RESET',
   QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
   BONUS_GRANTED = 'BONUS_GRANTED',
+  SCRAPE_BONUS = 'SCRAPE_BONUS', // ✅ Novo, usado no UserQuotaService
 }

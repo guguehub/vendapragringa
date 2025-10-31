@@ -21,7 +21,7 @@ class CreateItemScrapeLogService {
     timestamp = new Date(),
   }: ICreateItemScrapeLogDTO): Promise<ItemScrapeLog> {
     const log = await this.itemScrapeLogRepository.create({
-      item_id,
+      item_id: item_id || null,
       user_id,
       ip_address,
       listed_on_ebay,

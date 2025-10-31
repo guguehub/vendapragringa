@@ -1,6 +1,5 @@
 import { Repository } from 'typeorm';
 import { IItemScrapeLogRepository } from '@modules/item_scrape_log/domain/repositories/IItemScrapeLogRepository';
-import { IItemScrapeLog } from '@modules/item_scrape_log/domain/models/IItemScrapeLog';
 import { ICreateItemScrapeLogDTO } from '@modules/item_scrape_log/dtos/ICreateItemScrapeLogDTO';
 import ItemScrapeLog from '../entities/ItemScrapeLog';
 import dataSource from '@shared/infra/typeorm/data-source';
@@ -14,15 +13,14 @@ export class ItemScrapeLogRepository implements IItemScrapeLogRepository {
   }
 
   public async create(data: ICreateItemScrapeLogDTO): Promise<ItemScrapeLog> {
-    // 🧠 Garante tipos corretos e campos defaults
     const entity = this.ormRepository.create({
-      item_id: data.item_id,
+      item_id: data.item_id ?? null, // ✅ garante compatibilidade com string | null
       user_id: data.user_id,
       ip_address: data.ip_address,
       listed_on_ebay: data.listed_on_ebay ?? false,
       action: data.action ?? ItemScrapeAction.SCRAPE_USED,
       details: data.details,
-      created_at: data.timestamp ?? new Date(),
+      timestamp: data.timestamp ?? new Date(), // ✅ mantém compatível com DTO
     });
 
     return this.ormRepository.save(entity);

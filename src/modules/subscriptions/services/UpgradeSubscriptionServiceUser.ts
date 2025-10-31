@@ -5,6 +5,7 @@ import { ISubscriptionRepository } from '../domain/repositories/ISubscriptionsRe
 import { Subscription } from '../infra/typeorm/entities/Subscription';
 import { SubscriptionTier } from '../enums/subscription-tier.enum';
 import { SubscriptionStatus } from '../enums/subscription-status.enum';
+import UpgradeUserTierService from '@modules/users/services/UpgradeUserTierService';
 
 interface IRequest {
   userId: string;
@@ -16,14 +17,21 @@ export default class UpgradeSubscriptionServiceUser {
   constructor(
     @inject('SubscriptionRepository')
     private subscriptionsRepository: ISubscriptionRepository,
+
+    @inject(UpgradeUserTierService)
+    private upgradeUserTierService: UpgradeUserTierService,
   ) {}
 
   public async execute({ userId, tier }: IRequest): Promise<Subscription> {
-    if (!tier || typeof tier !== 'string') throw new AppError('Tier is required', 400);
+    if (!tier || typeof tier !== 'string') {
+      throw new AppError('Tier is required', 400);
+    }
+
     const normalizedTier = tier.toLowerCase() as SubscriptionTier;
 
-    if (!Object.values(SubscriptionTier).includes(normalizedTier))
+    if (!Object.values(SubscriptionTier).includes(normalizedTier)) {
       throw new AppError(`Invalid tier: ${tier}`, 400);
+    }
 
     let subscription = await this.subscriptionsRepository.findByUserId(userId);
 
@@ -64,6 +72,10 @@ export default class UpgradeSubscriptionServiceUser {
 
     await this.subscriptionsRepository.save(subscription);
 
+    // 🔸 Atualiza quotas e tier do usuário
+    await this.upgradeUserTierService.execute(userId, normalizedTier);
+
+    // 🔹 Limpa cache
     const cacheKey = `user-subscription-${userId}`;
     await RedisCache.invalidate(cacheKey);
 

@@ -1,19 +1,15 @@
 import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
 import { SubscriptionStatus } from '@modules/subscriptions/enums/subscription-status.enum';
 
-export interface ISubscription {
+export interface ISubscriptionSerialized {
   id: string;
   userId: string;
   tier: SubscriptionTier;
   status: SubscriptionStatus;
-  start_date?: Date | null;
-  expires_at?: Date | null;
+  start_date: string | null;
+  expires_at: string | null;
   isTrial: boolean;
-  cancelled_at?: Date | null;
-  created_at: Date;
-  updated_at: Date;
-
-  // 🔹 Campos de quota para compatibilidade com populateSubscription
-  scrape_balance?: number;
-  total_scrapes_used?: number;
+  cancelled_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
