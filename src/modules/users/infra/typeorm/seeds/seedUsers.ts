@@ -37,6 +37,18 @@ export async function seedUsers(connection?: DataSource): Promise<void> {
       daily_bonus_count: 0,
       item_limit: 0,
     },
+    {
+      id: uuidv4(),
+      name: 'Testador',
+      email: 'user@venuser@teste.com',
+      password: await hash('123456', 8),
+      is_admin: false,
+      hasUsedFreeScrap: false,
+      scrape_count: 0,
+      scrape_balance: 0,
+      daily_bonus_count: 0,
+      item_limit: 0,
+    },
   ];
 
   for (const user of users) {
