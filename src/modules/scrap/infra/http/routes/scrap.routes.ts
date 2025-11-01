@@ -4,6 +4,7 @@ import identifyUser from '@shared/infra/http/middlewares/identifyUser';
 import isAuthenticated from '@shared/infra/http/middlewares/isAuthenticated';
 import { CheckUserItemLimitMiddleware } from '@shared/infra/http/middlewares/CheckUserItemLimitMiddleware';
 import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
+import populateSubscription from '@shared/infra/http/middlewares/populateSubscription';
 
 const scrapRoutes = Router();
 const orchestrator = new ScrapOrchestratorService();
@@ -37,6 +38,7 @@ scrapRoutes.get(
   '/',
   identifyUser,
   isAuthenticated,
+  populateSubscription,
   CheckUserItemLimitMiddleware,
   async (req, res) => {
     const { url } = req.query;

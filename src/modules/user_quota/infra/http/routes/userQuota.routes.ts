@@ -3,12 +3,15 @@ import UserQuotaController from '../controllers/UserQuotaController';
 import isAuthenticated from '@shared/infra/http/middlewares/isAuthenticated';
 import { ensureTier } from '@shared/infra/http/middlewares/ensureTier';
 import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
+import populateSubscription from '@shared/infra/http/middlewares/populateSubscription';
 
 const router = Router();
 const controller = new UserQuotaController();
 
 // Middleware obrigatório: usuário autenticado
 router.use(isAuthenticated);
+router.use(populateSubscription); // 👈 novo
+
 
 // Checa quota – disponível para todos os tiers
 router.get('/check', controller.checkQuota.bind(controller));

@@ -47,7 +47,10 @@
       "cron:test": "ts-node src/shared/infra/cron/index.ts",
       "cron:daily": "ts-node src/shared/infra/cron/dailyBonus.cron.ts",
   "cron:monthly": "ts-node src/shared/infra/cron/monthlyQuota.cron.ts",
-  "typeorm:migration:subscriptions": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run --dataSource ./src/shared/infra/typeorm/data-source.ts"
+  "typeorm:migration:subscriptions": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run --dataSource ./src/shared/infra/typeorm/data-source.ts",
+
+    "test:scrap": "bash ./scripts/test-scrap-flow.sh"
+
 
 
   },

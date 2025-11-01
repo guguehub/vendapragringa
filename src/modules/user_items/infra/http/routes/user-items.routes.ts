@@ -6,6 +6,7 @@ import isAuthenticated from '@shared/infra/http/middlewares/isAuthenticated';
 import { CheckUserItemLimitMiddleware } from '@shared/infra/http/middlewares/CheckUserItemLimitMiddleware';
 import UserItemsController from '../controllers/UserItemsController';
 import SaveAsUserItemController from '../controllers/SaveAsUserItemController';
+import populateSubscription from '@shared/infra/http/middlewares/populateSubscription';
 
 const userItemsRouter = Router();
 const userItemsController = new UserItemsController();
@@ -13,6 +14,8 @@ const saveAsUserItemController = new SaveAsUserItemController();
 
 // Aplica autenticação em todas as rotas
 userItemsRouter.use(isAuthenticated);
+userItemsRouter.use(populateSubscription);
+
 
 // Listar todos os itens do usuário
 userItemsRouter.get('/', userItemsController.index);
