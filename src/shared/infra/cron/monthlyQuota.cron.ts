@@ -12,10 +12,10 @@ import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier
  */
 const MonthlyQuotaPerTier: Record<SubscriptionTier, number> = {
   [SubscriptionTier.FREE]: 0,
-  [SubscriptionTier.BRONZE]: 100,
-  [SubscriptionTier.SILVER]: 300,
-  [SubscriptionTier.GOLD]: 600,
-  [SubscriptionTier.INFINITY]: 999999,
+  [SubscriptionTier.BRONZE]: 5,
+  [SubscriptionTier.SILVER]: 10,
+  [SubscriptionTier.GOLD]: 15,
+  [SubscriptionTier.INFINITY]: 9999, // prático para teste
 };
 
 /**

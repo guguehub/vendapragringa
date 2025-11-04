@@ -26,8 +26,8 @@ export default async function seedUserQuotas(): Promise<void> {
     if (!existingQuota) {
       await createUserQuota.execute({
         user_id: user.id,
-        saved_items_limit: 100,
-        scrape_logs_limit: 200,
+        saved_items_limit: 10,
+        scrape_logs_limit: 5,
       });
       createdCount++;
       console.log(`✅ Quota criada para usuário: ${user.email}`);

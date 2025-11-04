@@ -40,7 +40,7 @@ export async function seedUsers(connection?: DataSource): Promise<void> {
     {
       id: uuidv4(),
       name: 'Testador',
-      email: 'user@venuser@teste.com',
+      email: 'user@teste.com',
       password: await hash('123456', 8),
       is_admin: false,
       hasUsedFreeScrap: false,

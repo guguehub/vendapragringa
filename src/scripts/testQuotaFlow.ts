@@ -1,9 +1,9 @@
 import 'reflect-metadata';
 import { container } from 'tsyringe';
-import dataSource from '../src/shared/infra/typeorm/data-source';
-import CreateItemScrapeLogService from '../src/modules/item_scrape_log/services/CreateItemScrapeLogService';
-import { ItemScrapeAction } from '../src/modules/item_scrape_log/enums/item-scrape-action.enum';
-import UserQuotaService from '../src/modules/user_quota/services/UserQuotaService';
+import dataSource from '../shared/infra/typeorm/data-source';
+import CreateItemScrapeLogService from '../modules/item_scrape_log/services/CreateItemScrapeLogService';
+import { ItemScrapeAction } from '../modules/item_scrape_log/enums/item-scrape-action.enum';
+import UserQuotaService from '../modules/user_quota/services/UserQuotaService';
 
 async function testQuotaFlow() {
   await dataSource.initialize();

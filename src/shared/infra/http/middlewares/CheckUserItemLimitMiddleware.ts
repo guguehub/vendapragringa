@@ -35,7 +35,7 @@ export async function CheckUserItemLimitMiddleware(
     });
 
     const tier = (subscription?.tier as SubscriptionTier) ?? SubscriptionTier.FREE;
-    const limit = SubscriptionTierLimits[tier];
+    const limit = SubscriptionTierLimits[tier.toUpperCase() as keyof typeof SubscriptionTierLimits];
 
     // Conta itens ativos: importStage em ativo + syncStatus ativo ou null
     const userItemsCount = await userItemRepo.count({
