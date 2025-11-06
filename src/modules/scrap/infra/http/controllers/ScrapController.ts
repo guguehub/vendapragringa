@@ -1,14 +1,11 @@
 import { Request, Response } from "express";
 import { container } from "tsyringe";
-
 import { ScrapOrchestratorService } from "../../../services/ScrapOrchestratorService";
 import UserQuotaService from "@modules/user_quota/services/UserQuotaService";
 import { SubscriptionTier } from "@modules/subscriptions/enums/subscription-tier.enum";
 import AppError from "@shared/errors/AppError";
 
 export class ScrapController {
-  constructor(private scrapOrchestratorService: ScrapOrchestratorService) {}
-
   public async scrapeUrls(req: Request, res: Response): Promise<Response> {
     const { urls } = req.body;
 
@@ -23,7 +20,6 @@ export class ScrapController {
     const user = req.user!;
     const userTier: SubscriptionTier = user.subscription?.tier ?? SubscriptionTier.FREE;
 
-    // Limite de URLs simultâneas por plano
     const limits: Record<SubscriptionTier, number> = {
       [SubscriptionTier.FREE]: 5,
       [SubscriptionTier.BRONZE]: 10,
@@ -34,20 +30,15 @@ export class ScrapController {
 
     const maxUrls = limits[userTier];
     if (urls.length > maxUrls) {
-      throw new AppError(
-        `Seu plano permite processar no máximo ${maxUrls} URLs por vez.`,
-        400,
-      );
+      throw new AppError(`Seu plano permite processar no máximo ${maxUrls} URLs por vez.`, 400);
     }
 
     const userQuotaService = container.resolve(UserQuotaService);
+    const scrapOrchestratorService = container.resolve(ScrapOrchestratorService);
 
     try {
-      // ✅ Checagem de quota antes da raspagem
       await userQuotaService.checkQuota(user.id, userTier);
-
-      // ⚙️ Orquestra raspagem
-      const results = await this.scrapOrchestratorService.processUrls(urls, {
+      const results = await scrapOrchestratorService.processUrls(urls, {
         id: user.id,
         tier: userTier,
       });

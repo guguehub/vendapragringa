@@ -1,8 +1,8 @@
 # Usa imagem base leve do Node
 FROM node:18-alpine
 
-# Instala bash e outras ferramentas básicas
-RUN apk add --no-cache bash
+# Instala bash e jq
+RUN apk add --no-cache bash jq
 
 # Cria diretório de trabalho e define como diretório atual
 WORKDIR /home/node/app

@@ -1,24 +1,43 @@
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 
 declare global {
-  // status de scrap por usuário
   var scrapStatus: Record<string, boolean>;
 }
 
 global.scrapStatus = global.scrapStatus || {};
 
-export default class ScrapDevController {
-  public async reset(request: Request, response: Response): Promise<Response> {
-    const { userId } = request.body; // ou request.params / request.query, depende da tua rota
-
-    if (!userId) {
-      return response.status(400).json({ error: 'userId é obrigatório' });
+export class ScrapDevController {
+  /**
+   * 🔄 Reseta a flag de raspagem única (rota anônima)
+   */
+  public async resetOnce(req: Request, res: Response): Promise<Response> {
+    if (!(req as any).session) {
+      return res.status(400).json({ message: "Sessão não encontrada." });
     }
 
-    global.scrapStatus[userId] = false;
+    (req as any).session.scrapedOnce = false;
 
-    return response.json({
-      message: `Scrap status resetado para usuário ${userId}!`
+    return res.json({
+      message: "Flag de raspagem anônima resetada com sucesso!",
+    });
+  }
+
+  /**
+   * 🔁 Reseta o status de raspagem ou quota de um usuário (modo dev)
+   */
+  public async resetScrap(req: Request, res: Response): Promise<Response> {
+    const { email, userId } = req.body;
+
+    if (!email && !userId) {
+      return res.status(400).json({ message: "Informe email ou userId." });
+    }
+
+    // ⚙️ Aqui você pode integrar futuramente com UserQuotaService.resetQuota()
+    const key = email || userId;
+    global.scrapStatus[key] = false;
+
+    return res.json({
+      message: `Status de raspagem resetado para ${key}`,
     });
   }
 }

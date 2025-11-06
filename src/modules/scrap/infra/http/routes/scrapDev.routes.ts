@@ -1,50 +1,19 @@
-import { Router } from 'express';
-import { celebrate, Joi, Segments } from 'celebrate';
-import  AppDataSource from '@shared/infra/typeorm/data-source'
-import User from '@modules/users/infra/typeorm/entities/User';
+import { Router } from "express";
+import { ScrapDevController } from "../controllers/ScrapDevController";
 
-const scrapDevRouter = Router();
+const scrapDevRoutes = Router();
+const scrapDevController = new ScrapDevController();
 
-// Rota dev: resetar flag de raspagem grátis
-scrapDevRouter.post(
-  '/reset-scrap',
-  celebrate({
-    [Segments.BODY]: {
-      email: Joi.string().email().required(),
-    },
-  }),
-  async (req, res) => {
-    const { email } = req.body;
+/**
+ * ✅ Rota: Resetar flag de raspagem única (anônima)
+ * Exemplo: POST /scrap-dev/reset-once
+ */
+scrapDevRoutes.post("/reset-once", (req, res) => scrapDevController.resetOnce(req, res));
 
-    try {
-      const usersRepository = AppDataSource.getRepository(User);
+/**
+ * ✅ Rota: Resetar cotas de raspagem do usuário (modo dev)
+ * Exemplo: POST /scrap-dev/reset-scrap
+ */
+scrapDevRoutes.post("/reset-scrap", (req, res) => scrapDevController.resetScrap(req, res));
 
-      const user = await usersRepository.findOneBy({ email });
-
-      if (!user) {
-        return res.status(404).json({ message: 'Usuário não encontrado' });
-      }
-
-      user.hasUsedFreeScrap = false;
-      await usersRepository.save(user);
-
-      return res.json({ message: 'Status resetado com sucesso' });
-    } catch (error: any) {
-      return res.status(500).json({ message: error.message || 'Erro interno' });
-    }
-  },
-);
-// Resetar a flag de sessão do /scrap/once (precisa enviar o mesmo cookie da sessão)
-scrapDevRouter.post('/reset-once', (req, res) => {
-  // se não houver cookie/sessão, não dá pra resetar
-  if (!req.session) {
-    return res
-      .status(400)
-      .json({ message: 'Sessão inexistente. Envie o cookie da sessão.' });
-  }
-
-  req.session.scrapedOnce = false;
-  return res.json({ message: 'Flag scrapedOnce resetada com sucesso.' });
-});
-
-export default scrapDevRouter;
+export default scrapDevRoutes;

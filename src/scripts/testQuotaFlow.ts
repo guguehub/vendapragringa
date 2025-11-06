@@ -4,13 +4,23 @@ import dataSource from '../shared/infra/typeorm/data-source';
 import CreateItemScrapeLogService from '../modules/item_scrape_log/services/CreateItemScrapeLogService';
 import { ItemScrapeAction } from '../modules/item_scrape_log/enums/item-scrape-action.enum';
 import UserQuotaService from '../modules/user_quota/services/UserQuotaService';
+import User from '../modules/users/infra/typeorm/entities/User';
 
 async function testQuotaFlow() {
   await dataSource.initialize();
 
-  const user_id = 'user-test-uuid';
-  const item_id = 'item-test-uuid';
+  // 🔎 Busca usuário real por e-mail (usa a seed)
+  const userRepository = dataSource.getRepository(User);
+  const user = await userRepository.findOne({ where: { email: 'user@vendapragringa.com' } });
 
+  if (!user) {
+    console.error('❌ Usuário não encontrado. Rode seedUsers antes.');
+    await dataSource.destroy();
+    return;
+  }
+
+  const user_id = user.id;
+  const item_id = 'item-test-uuid'; // ou gere uuidv4() se quiser
   const quotaService = container.resolve(UserQuotaService);
   const logService = container.resolve(CreateItemScrapeLogService);
 
