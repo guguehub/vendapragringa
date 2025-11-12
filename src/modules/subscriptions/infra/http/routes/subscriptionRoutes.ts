@@ -36,7 +36,7 @@ subscriptionRouter.put(
  */
 subscriptionRouter.put(
   '/update',
-  isAuthenticated, populateSubscription,
+  isAuthenticated,
   isAdmin,
   subscriptionController.update,
 );

@@ -1,0 +1,47 @@
+
+🚀 Iniciando teste automatizado de raspagem (VENDAPRAGRINGA)...
+
+===========================================================
+1️⃣  TESTE: RASPAGEM ANÔNIMA (/scrap/once)
+
+===========================================================
+{
+  "title": null,
+  "price": "0.00",
+  "description": null,
+  "shippingInfo": null,
+  "itemStatus": "error",
+  "url": "https://produto.mercadolivre.com.br/MLB-123456789",
+  "itemId": null,
+  "errorDetails": "Request failed with status code 400"
+}
+
+===========================================================
+2️⃣  TENTATIVA DE SEGUNDA RASPAGEM (DEVE FALHAR)
+
+===========================================================
+{
+  "message": "Você já utilizou sua raspagem gratuita. Faça login para salvar e continuar."
+}
+
+===========================================================
+3️⃣  RESETANDO FLAG DE RASPAGEM (modo dev)
+
+===========================================================
+{
+  "message": "Flag de raspagem anônima resetada com sucesso!"
+}
+
+===========================================================
+4️⃣  LOGIN DO USUÁRIO DE TESTE
+
+===========================================================
+✅ Token obtido e salvo com sucesso.
+
+===========================================================
+5️⃣  RESETANDO COTAS DO USUÁRIO (modo dev)
+
+===========================================================
+{
+  "message": "Status de raspagem resetado para user@teste.com"
+}

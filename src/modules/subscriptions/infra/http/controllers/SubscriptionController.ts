@@ -1,3 +1,4 @@
+// src/modules/subscriptions/infra/http/controllers/SubscriptionController.ts
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
@@ -21,10 +22,7 @@ export default class SubscriptionController {
       if (!userId) throw new AppError('UserId is required for creating subscription', 400);
 
       const createService = container.resolve(CreateSubscriptionService);
-      const subscription = await createService.execute({
-        userId,
-        tier,
-      });
+      const subscription = await createService.execute({ userId, tier });
 
       // Atualiza cache após criação
       const checkStatusService = container.resolve(CheckSubscriptionStatusService);
@@ -32,7 +30,8 @@ export default class SubscriptionController {
 
       return response.status(201).json(subscription);
     } catch (error: unknown) {
-      if (error instanceof AppError) return response.status(error.statusCode).json({ error: error.message });
+      if (error instanceof AppError)
+        return response.status(error.statusCode).json({ error: error.message });
       return response.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -60,7 +59,8 @@ export default class SubscriptionController {
         subscription: subscriptionStatus.subscription,
       });
     } catch (error: unknown) {
-      if (error instanceof AppError) return response.status(error.statusCode).json({ error: error.message });
+      if (error instanceof AppError)
+        return response.status(error.statusCode).json({ error: error.message });
       return response.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -70,24 +70,33 @@ export default class SubscriptionController {
    */
   public async update(request: Request, response: Response): Promise<Response> {
     try {
-      const { subscriptionId, tier, status, expires_at, isTrial, cancelled_at } =
+      const { subscriptionId, tier, status, expires_at, isTrial, cancelled_at, scrape_balance } =
         request.body as UpdateSubscriptionDto;
 
       if (!subscriptionId) throw new AppError('subscriptionId is required for update', 400);
 
       const updateService = container.resolve(UpdateSubscriptionServiceAdmin);
-      await updateService.execute({ subscriptionId, tier, status, expires_at, isTrial, cancelled_at });
+      const updatedSubscription = await updateService.execute({
+        subscriptionId,
+        tier,
+        status,
+        expires_at,
+        isTrial,
+        cancelled_at,
+        scrape_balance,
+      });
 
-      // Busca subscription pelo userId do subscription atualizado
-      const subscriptionRepo = container.resolve(CheckSubscriptionStatusService);
-      const subscriptionStatus = await subscriptionRepo.execute(subscriptionId); // ⚠️ Aqui passamos subscriptionId
+      // Atualiza cache e retorna a assinatura atualizada
+      const checkStatusService = container.resolve(CheckSubscriptionStatusService);
+      const subscriptionStatus = await checkStatusService.execute(updatedSubscription.userId);
 
       return response.json({
         message: 'Subscription updated successfully',
         subscription: subscriptionStatus.subscription,
       });
     } catch (error: unknown) {
-      if (error instanceof AppError) return response.status(error.statusCode).json({ error: error.message });
+      if (error instanceof AppError)
+        return response.status(error.statusCode).json({ error: error.message });
       return response.status(500).json({ error: 'Internal server error' });
     }
   }

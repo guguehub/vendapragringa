@@ -17,7 +17,7 @@ export default class UpdateSubscriptionServiceAdmin {
     private upgradeUserTierService: UpgradeUserTierService,
   ) {}
 
-  public async execute(data: UpdateSubscriptionDto): Promise<void> {
+  public async execute(data: UpdateSubscriptionDto) {
     const { subscriptionId, tier, status, expires_at, isTrial, cancelled_at, scrape_balance } = data;
 
     if (!subscriptionId) {
@@ -31,57 +31,63 @@ export default class UpdateSubscriptionServiceAdmin {
 
     console.log('[ADMIN] Atualizando assinatura:', subscription.id);
 
-    // 🔹 Atualiza o tier e saldo acumulado
+    /**
+     * 🔹 Atualiza o tier e saldo acumulado
+     */
     if (tier) {
-      const normalizedTier = tier.toLowerCase() as SubscriptionTier;
-
-      if (!Object.values(SubscriptionTier).includes(normalizedTier)) {
-        throw new AppError(`Invalid tier: ${tier}`, 400);
-      }
-
       const previousBalance = subscription.scrape_balance || 0;
-      const bonus =
-        normalizedTier === SubscriptionTier.BRONZE
-          ? 100
-          : normalizedTier === SubscriptionTier.SILVER
-          ? 300
-          : normalizedTier === SubscriptionTier.GOLD
-          ? 600
-          : normalizedTier === SubscriptionTier.INFINITY
-          ? 999999
-          : 0;
+
+      const bonusMap: Record<SubscriptionTier, number> = {
+        [SubscriptionTier.FREE]: 0,
+        [SubscriptionTier.BRONZE]: 100,
+        [SubscriptionTier.SILVER]: 300,
+        [SubscriptionTier.GOLD]: 600,
+        [SubscriptionTier.INFINITY]: 999999,
+      };
+
+      const bonus = bonusMap[tier] ?? 0;
 
       subscription.scrape_balance = previousBalance + bonus;
-      subscription.tier = normalizedTier;
+      subscription.tier = tier;
 
-      if ([SubscriptionTier.FREE, SubscriptionTier.INFINITY].includes(normalizedTier)) {
+      // Se for plano vitalício ou gratuito, não expira
+      if ([SubscriptionTier.FREE, SubscriptionTier.INFINITY].includes(tier)) {
         subscription.expires_at = null;
       } else {
+        // Caso contrário, renova por 1 ano
         subscription.expires_at = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
       }
 
       // 🔸 Atualiza também o tier do usuário e suas quotas
-      await this.upgradeUserTierService.execute(subscription.userId, normalizedTier);
+      await this.upgradeUserTierService.execute(subscription.userId, tier);
     }
 
-    // 🔹 Atualiza status e flags administrativas
-    if (status) {
-      if (!Object.values(SubscriptionStatus).includes(status)) {
-        throw new AppError(`Invalid status: ${status}`, 400);
-      }
-      subscription.status = status;
-    }
-
+    /**
+     * 🔹 Atualiza status e flags administrativas
+     */
+    if (status) subscription.status = status;
     if (expires_at) subscription.expires_at = new Date(expires_at);
     if (cancelled_at) subscription.cancelled_at = new Date(cancelled_at);
     if (isTrial !== undefined) subscription.isTrial = isTrial;
     if (scrape_balance !== undefined) subscription.scrape_balance = scrape_balance;
 
     subscription.updated_at = new Date();
+
     await this.subscriptionsRepository.save(subscription);
 
+    /**
+     * 🔁 Atualiza o cache no Redis
+     */
     const cacheKey = `user-subscription-${subscription.userId}`;
+
+    // 1️⃣ Invalida o cache antigo
     await RedisCache.invalidate(cacheKey);
-    console.log('[ADMIN] Cache invalidado:', cacheKey);
+    console.log('[ADMIN] Cache antigo invalidado:', cacheKey);
+
+    // 2️⃣ Grava o novo cache com os dados atualizados
+    await RedisCache.save(cacheKey, { subscription });
+    console.log('[ADMIN] Cache regravado com assinatura atualizada:', subscription.id);
+
+    return subscription;
   }
 }

@@ -1,3 +1,4 @@
+import '@shared/container';
 import 'reflect-metadata';
 import { container } from 'tsyringe';
 import dataSource from '../shared/infra/typeorm/data-source';
