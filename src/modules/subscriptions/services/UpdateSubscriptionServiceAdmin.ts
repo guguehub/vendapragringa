@@ -29,16 +29,18 @@ export default class UpdateSubscriptionServiceAdmin {
       throw new AppError('Subscription not found');
     }
 
-    console.log('[ADMIN] Atualizando assinatura:', subscription.id);
+    console.log(`\n[ADMIN] Atualizando assinatura ${subscription.id} (usuário: ${subscription.userId})`);
+
+    // 🧩 Tier anterior (para log)
+    const prevTier = subscription.tier;
+    const prevBalance = subscription.scrape_balance || 0;
 
     /**
      * 🔹 Atualiza o tier e saldo acumulado
      */
     if (tier) {
-      const previousBalance = subscription.scrape_balance || 0;
-
       const bonusMap: Record<SubscriptionTier, number> = {
-        [SubscriptionTier.FREE]: 0,
+        [SubscriptionTier.FREE]: 10,
         [SubscriptionTier.BRONZE]: 100,
         [SubscriptionTier.SILVER]: 300,
         [SubscriptionTier.GOLD]: 600,
@@ -46,20 +48,25 @@ export default class UpdateSubscriptionServiceAdmin {
       };
 
       const bonus = bonusMap[tier] ?? 0;
-
-      subscription.scrape_balance = previousBalance + bonus;
+      subscription.scrape_balance = prevBalance + bonus;
       subscription.tier = tier;
 
-      // Se for plano vitalício ou gratuito, não expira
+      // Se for plano vitalício ou gratuito → não expira
       if ([SubscriptionTier.FREE, SubscriptionTier.INFINITY].includes(tier)) {
         subscription.expires_at = null;
       } else {
-        // Caso contrário, renova por 1 ano
-        subscription.expires_at = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
+        // Renova por 1 ano a partir de agora
+        const oneYearLater = new Date();
+        oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+        subscription.expires_at = oneYearLater;
       }
 
-      // 🔸 Atualiza também o tier do usuário e suas quotas
+      // Atualiza tier e quotas do usuário
       await this.upgradeUserTierService.execute(subscription.userId, tier);
+
+      console.log(
+        `[ADMIN] Tier alterado: ${prevTier} → ${tier}. Bônus aplicado: ${bonus}. Saldo anterior: ${prevBalance}, atual: ${subscription.scrape_balance}`,
+      );
     }
 
     /**
@@ -71,7 +78,7 @@ export default class UpdateSubscriptionServiceAdmin {
     if (isTrial !== undefined) subscription.isTrial = isTrial;
     if (scrape_balance !== undefined) subscription.scrape_balance = scrape_balance;
 
-    subscription.updated_at = new Date();
+    subscription.updated_at = new Date(Date.now());
 
     await this.subscriptionsRepository.save(subscription);
 
@@ -80,13 +87,19 @@ export default class UpdateSubscriptionServiceAdmin {
      */
     const cacheKey = `user-subscription-${subscription.userId}`;
 
-    // 1️⃣ Invalida o cache antigo
-    await RedisCache.invalidate(cacheKey);
-    console.log('[ADMIN] Cache antigo invalidado:', cacheKey);
+    try {
+      // 1️⃣ Invalida o cache antigo
+      await RedisCache.invalidate(cacheKey);
+      console.log(`[ADMIN] Cache antigo invalidado: ${cacheKey}`);
 
-    // 2️⃣ Grava o novo cache com os dados atualizados
-    await RedisCache.save(cacheKey, { subscription });
-    console.log('[ADMIN] Cache regravado com assinatura atualizada:', subscription.id);
+      // 2️⃣ Regrava cache atualizado
+      await RedisCache.save(cacheKey, { subscription });
+      console.log(`[ADMIN] Cache atualizado para assinatura: ${subscription.id}`);
+    } catch (err) {
+      console.error('[ADMIN] ⚠️ Falha ao atualizar cache Redis:', err);
+    }
+
+    console.log('[ADMIN] ✅ Assinatura atualizada com sucesso.\n');
 
     return subscription;
   }

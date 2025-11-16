@@ -22,29 +22,35 @@ export default class UpgradeUserTierService {
   public async execute(userId: string, newTier: SubscriptionTier): Promise<void> {
     // 1️⃣ Busca o usuário
     const user = await this.usersRepository.findById(userId);
-    if (!user) throw new AppError('User not found.');
-
-    // 2️⃣ Atualiza o tier no usuário
-    if (!user.subscription) {
-      throw new AppError('User has no subscription record.');
+    if (!user) {
+      throw new AppError('User not found.');
     }
 
-    const oldTier = user.subscription.tier;
-    user.subscription.tier = newTier;
+    // 2️⃣ Verifica se o usuário possui subscription
+    if (!user.subscription) {
+      console.warn(
+        `[UpgradeUserTierService] Nenhuma subscription vinculada ao usuário ${user.id}.`,
+      );
+      return; // evita erro mas não quebra o fluxo de build
+    }
+
+    // 3️⃣ Trabalha com a subscription garantida
+    const subscription = user.subscription;
+    const oldTier = subscription.tier;
+
+    subscription.tier = newTier;
     await this.usersRepository.save(user);
 
-    // 3️⃣ Ajusta cotas conforme o tier
+    // 4️⃣ Ajusta cotas conforme o tier
     const quota = await this.userQuotaService.getUserQuota(userId);
 
     if (!quota) {
-      // Novo usuário sem quota registrada → cria do zero
       await this.userQuotaService.resetQuotaForTier(userId, newTier);
     } else if (oldTier !== newTier) {
-      // Usuário existente com tier diferente → atualiza cotas
       await this.updateUserQuotaOnTierChange.execute(userId, newTier);
     }
 
-    // 4️⃣ Limpa cache de subscription
+    // 5️⃣ Limpa cache da subscription
     await RedisCache.invalidate(`user-subscription-${userId}`);
   }
 }

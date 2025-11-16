@@ -9,7 +9,7 @@ import UpgradeUserTierService from '@modules/users/services/UpgradeUserTierServi
 
 interface IRequest {
   userId: string;
-  tier: string;
+  tier: SubscriptionTier;
 }
 
 @injectable()
@@ -23,13 +23,7 @@ export default class UpgradeSubscriptionServiceUser {
   ) {}
 
   public async execute({ userId, tier }: IRequest): Promise<Subscription> {
-    if (!tier || typeof tier !== 'string') {
-      throw new AppError('Tier is required', 400);
-    }
-
-    const normalizedTier = tier.toLowerCase() as SubscriptionTier;
-
-    if (!Object.values(SubscriptionTier).includes(normalizedTier)) {
+    if (!tier || !Object.values(SubscriptionTier).includes(tier)) {
       throw new AppError(`Invalid tier: ${tier}`, 400);
     }
 
@@ -48,23 +42,22 @@ export default class UpgradeSubscriptionServiceUser {
     }
 
     const previousBalance = subscription.scrape_balance || 0;
-    const bonus =
-      normalizedTier === SubscriptionTier.BRONZE
-        ? 100
-        : normalizedTier === SubscriptionTier.SILVER
-        ? 300
-        : normalizedTier === SubscriptionTier.GOLD
-        ? 600
-        : normalizedTier === SubscriptionTier.INFINITY
-        ? 999999
-        : 0;
+    const bonusMap: Record<SubscriptionTier, number> = {
+      [SubscriptionTier.FREE]: 10,
+      [SubscriptionTier.BRONZE]: 100,
+      [SubscriptionTier.SILVER]: 300,
+      [SubscriptionTier.GOLD]: 600,
+      [SubscriptionTier.INFINITY]: 999999,
+    };
+
+    const bonus = bonusMap[tier] ?? 0;
 
     subscription.scrape_balance = previousBalance + bonus;
-    subscription.tier = normalizedTier;
+    subscription.tier = tier;
     subscription.status = SubscriptionStatus.ACTIVE;
     subscription.updated_at = new Date();
 
-    if ([SubscriptionTier.FREE, SubscriptionTier.INFINITY].includes(normalizedTier)) {
+    if ([SubscriptionTier.FREE, SubscriptionTier.INFINITY].includes(tier)) {
       subscription.expires_at = null;
     } else {
       subscription.expires_at = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
@@ -73,11 +66,16 @@ export default class UpgradeSubscriptionServiceUser {
     await this.subscriptionsRepository.save(subscription);
 
     // 🔸 Atualiza quotas e tier do usuário
-    await this.upgradeUserTierService.execute(userId, normalizedTier);
+    await this.upgradeUserTierService.execute(userId, tier);
 
-    // 🔹 Limpa cache
-    const cacheKey = `user-subscription-${userId}`;
-    await RedisCache.invalidate(cacheKey);
+    // 🔹 Atualiza cache
+    try {
+      const cacheKey = `user-subscription-${userId}`;
+      await RedisCache.invalidate(cacheKey);
+      console.log(`[USER] Cache invalidado: ${cacheKey}`);
+    } catch (err) {
+      console.error('[USER] ⚠️ Falha ao invalidar cache:', err);
+    }
 
     console.log('[USER] Upgrade concluído. Novo saldo:', subscription.scrape_balance);
     return subscription;
