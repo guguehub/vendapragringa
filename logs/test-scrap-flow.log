@@ -45,3 +45,130 @@
 {
   "message": "Status de raspagem resetado para user@teste.com"
 }
+
+===========================================================
+6️⃣  RASPAGEM LOGADA DENTRO DA COTA
+
+===========================================================
+{
+  "message": "✅ Scrap API ativa e operacional",
+  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
+  "subscription": "free"
+}
+
+===========================================================
+7️⃣  ESTOURANDO COTA — (rodando várias raspagens até erro)
+
+===========================================================
+➡️ Raspagem #1
+{
+  "message": "✅ Scrap API ativa e operacional",
+  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
+  "subscription": "free"
+}
+➡️ Raspagem #2
+{
+  "message": "✅ Scrap API ativa e operacional",
+  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
+  "subscription": "free"
+}
+➡️ Raspagem #3
+{
+  "message": "✅ Scrap API ativa e operacional",
+  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
+  "subscription": "free"
+}
+➡️ Raspagem #4
+{
+  "message": "✅ Scrap API ativa e operacional",
+  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
+  "subscription": "free"
+}
+➡️ Raspagem #5
+{
+  "message": "✅ Scrap API ativa e operacional",
+  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
+  "subscription": "free"
+}
+➡️ Raspagem #6
+{
+  "message": "✅ Scrap API ativa e operacional",
+  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
+  "subscription": "free"
+}
+➡️ Raspagem #7
+{
+  "message": "✅ Scrap API ativa e operacional",
+  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
+  "subscription": "free"
+}
+➡️ Raspagem #8
+{
+  "message": "✅ Scrap API ativa e operacional",
+  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
+  "subscription": "free"
+}
+
+===========================================================
+📊 RESULTADOS DAS RASPAGENS
+✅ Sucesso: 8
+🚫 Bloqueadas: 0
+🔢 Total tentadas: 8
+
+===========================================================
+8️⃣  LISTANDO ITENS CRIADOS
+
+===========================================================
+[
+  {
+    "id": "de8d6494-755e-498d-9ec8-f78eb15bb834",
+    "title": "Exemplo de Item 2",
+    "description": "Descrição do item 2",
+    "price": "20.50",
+    "shippingPrice": null,
+    "status": "ready",
+    "itemStatus": null,
+    "soldCount": null,
+    "condition": null,
+    "externalId": "OLX98765",
+    "marketplace": "olx",
+    "itemLink": null,
+    "images": [],
+    "isDraft": false,
+    "isSynced": false,
+    "supplier": null,
+    "created_at": "2025-11-17T14:37:08.007Z",
+    "updated_at": "2025-11-17T14:37:08.007Z"
+  },
+  {
+    "id": "4d609845-1a3b-479d-81f5-65e43d068e85",
+    "title": "Exemplo de Item 1",
+    "description": "Descrição do item 1",
+    "price": "10.99",
+    "shippingPrice": null,
+    "status": "ready",
+    "itemStatus": null,
+    "soldCount": null,
+    "condition": null,
+    "externalId": "ML123456",
+    "marketplace": "mercadolivre",
+    "itemLink": null,
+    "images": [],
+    "isDraft": false,
+    "isSynced": false,
+    "supplier": null,
+    "created_at": "2025-11-17T14:37:07.996Z",
+    "updated_at": "2025-11-17T14:37:07.996Z"
+  }
+]
+
+===========================================================
+9️⃣  VERIFICANDO STATUS DE COTA DO USUÁRIO (pós-teste)
+
+===========================================================
+
+===========================================================
+✅ TESTE FINALIZADO COM SUCESSO!
+
+===========================================================
+📁 Log salvo em: ./logs/test-scrap-flow.log
