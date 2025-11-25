@@ -1,3 +1,4 @@
+// src/modules/user_quota/infra/http/controllers/UserQuotaController.ts
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 import UserQuotaService from '@modules/user_quota/services/UserQuotaService';
@@ -10,9 +11,6 @@ export default class UserQuotaController {
     this.service = container.resolve(UserQuotaService);
   }
 
-  /**
-   * Checa se o usuário ainda possui quota disponível
-   */
   public async checkQuota(req: Request, res: Response): Promise<Response> {
     const userId = req.user?.id;
     const tier: SubscriptionTier | undefined = req.user?.subscription?.tier;
@@ -23,32 +21,25 @@ export default class UserQuotaController {
 
     try {
       const allowed = await this.service.checkQuota(userId, tier);
-      return res.status(200).json({ allowed });
+      return res.status(200).json({ allowed, tier });
     } catch (err: any) {
-      return res.status(err.statusCode || 400).json({ message: err.message || 'Erro ao verificar quota.' });
+      return res.status(err.statusCode || 400).json({ message: err.message });
     }
   }
 
-  /**
-   * Consome uma unidade da quota do usuário
-   */
   public async consume(req: Request, res: Response): Promise<Response> {
     const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ message: 'Usuário não autenticado.' });
-    }
+    if (!userId) return res.status(401).json({ message: 'Usuário não autenticado.' });
 
     try {
       await this.service.consumeScrape(userId);
+      console.log(`[QuotaController] ✅ Quota consumida para user ${userId}`);
       return res.status(200).json({ message: 'Quota consumida com sucesso.' });
     } catch (err: any) {
-      return res.status(err.statusCode || 400).json({ message: err.message || 'Erro ao consumir quota.' });
+      return res.status(err.statusCode || 400).json({ message: err.message });
     }
   }
 
-  /**
-   * Reseta o daily bonus do usuário
-   */
   public async resetBonus(req: Request, res: Response): Promise<Response> {
     const userId = req.user?.id;
     const { amount } = req.body;
@@ -61,7 +52,7 @@ export default class UserQuotaController {
       await this.service.resetBonus(userId, amount);
       return res.status(200).json({ message: 'Daily bonus resetado com sucesso.' });
     } catch (err: any) {
-      return res.status(err.statusCode || 400).json({ message: err.message || 'Erro ao resetar daily bonus.' });
+      return res.status(err.statusCode || 400).json({ message: err.message });
     }
   }
 }

@@ -1,3 +1,4 @@
+// src/modules/scrap/infra/http/routes/scrap.routes.ts
 import { Router } from 'express';
 import { ScrapController } from '../controllers/ScrapController';
 import identifyUser from '@shared/infra/http/middlewares/identifyUser';
@@ -12,8 +13,6 @@ const orchestrator = new ScrapOrchestratorService();
 
 /**
  * ✅ Diagnóstico / Health-check
- * Permite testar se o módulo está ativo e os middlewares funcionam.
- * Retorna status e assinatura do usuário autenticado (se houver).
  */
 scrapRoutes.get(
   '/',
@@ -25,12 +24,13 @@ scrapRoutes.get(
       message: '✅ Scrap API ativa e operacional',
       user: req.user?.id || null,
       subscription: req.user?.subscription?.tier || 'none',
+      scrape_balance: req.user?.subscription?.scrape_balance ?? 0,
     });
   },
 );
 
 /**
- * 🧩 Rota de raspagem anônima (1x por sessão, não salva no banco)
+ * 🧩 Raspagem anônima (única)
  */
 scrapRoutes.get('/once', async (req, res) => {
   if ((req as any).session?.scrapedOnce) {
@@ -48,14 +48,16 @@ scrapRoutes.get('/once', async (req, res) => {
 
   try {
     const result = await orchestrator.processUrls([url]);
+    console.log(`[SCRAPER][ONCE] ${url} -> ${result[0]?.title || 'sem título'}`);
     return res.json(result[0]);
   } catch (err: any) {
+    console.error('[SCRAPER][ERRO]', err);
     return res.status(500).json({ error: err.message || 'Erro ao processar URL' });
   }
 });
 
 /**
- * 🔐 Rota autenticada — scraping completo e registro no banco
+ * 🔐 Rota autenticada — raspagem completa e registro no banco
  */
 scrapRoutes.post(
   '/',
@@ -63,7 +65,22 @@ scrapRoutes.post(
   isAuthenticated,
   populateSubscription,
   CheckUserItemLimitMiddleware,
-  (req, res) => scrapController.scrapeUrls(req, res),
+  async (req, res) => {
+    try {
+      const result = await scrapController.scrapeUrls(req, res);
+      // resposta com detalhes
+      return res.json({
+        message: '✅ Raspagem realizada com sucesso',
+        user: req.user?.id,
+        tier: req.user?.subscription?.tier,
+        saldo_atual: req.user?.subscription?.scrape_balance,
+        items: result,
+      });
+    } catch (err: any) {
+      console.error('[SCRAP][ERRO]', err);
+      return res.status(500).json({ error: err.message || 'Erro ao processar raspagem' });
+    }
+  },
 );
 
 export default scrapRoutes;
