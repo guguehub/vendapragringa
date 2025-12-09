@@ -1,3 +1,4 @@
+// src/modules/scrap/infra/http/controllers/ScrapController.ts
 import { Request, Response } from "express";
 import { container } from "tsyringe";
 import { ScrapOrchestratorService } from "../../../services/ScrapOrchestratorService";
@@ -20,6 +21,7 @@ export class ScrapController {
     const user = req.user!;
     const userTier: SubscriptionTier = user.subscription?.tier ?? SubscriptionTier.FREE;
 
+    // 🔹 Limite de URLs por plano
     const limits: Record<SubscriptionTier, number> = {
       [SubscriptionTier.FREE]: 5,
       [SubscriptionTier.BRONZE]: 10,
@@ -37,16 +39,34 @@ export class ScrapController {
     const scrapOrchestratorService = container.resolve(ScrapOrchestratorService);
 
     try {
+      // 🔹 Verifica quota disponível
       await userQuotaService.checkQuota(user.id, userTier);
+
+      // 🔹 Executa raspagem
       const results = await scrapOrchestratorService.processUrls(urls, {
         id: user.id,
         tier: userTier,
       });
 
-      return res.json(results);
-    } catch (error) {
+      // 🔹 Busca saldo atualizado da quota (corrigido)
+      const quota = await userQuotaService.getUserQuota(user.id);
+
+      return res.status(200).json({
+        message: "✅ Raspagem concluída com sucesso",
+        user: user.id,
+        tier: userTier,
+        saldo_restante: quota.scrape_balance,
+        total_itens: results.length,
+        results, // retorna detalhes completos do item raspado
+      });
+    } catch (error: any) {
       console.error("❌ Erro durante raspagem:", error);
-      throw new AppError("Falha durante o processo de raspagem.", 500);
+
+      const status = error instanceof AppError ? error.statusCode : 500;
+      const message =
+        error instanceof AppError ? error.message : "Falha durante o processo de raspagem.";
+
+      return res.status(status).json({ error: message });
     }
   }
 }

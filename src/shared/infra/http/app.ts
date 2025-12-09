@@ -1,68 +1,98 @@
-import "reflect-metadata"; // necessário para TSyringe e TypeORM
-import "../../../shared/container"; // registrar todos os providers antes de usar controllers
-import "../typeorm/data-source";
+// src/shared/infra/http/app.ts
 
-import '@shared/infra/cron'; // ✅ Importa e inicializa todos os CRONs
+import 'reflect-metadata';
+import '../../../shared/container';
+import '../typeorm/data-source';
+import '@shared/infra/cron';
 
-import express, { NextFunction, Request, Response } from "express";
-import "express-async-errors";
-import cors from "cors";
-import session from "express-session";
-import { errors } from "celebrate";
-import routes from "./routes";
-import AppError from "../../../shared/errors/AppError";
-import uploadConfig from "@config/upload";
-import rateLimiter from "./middlewares/rateLimiter";
-import errorHandler from "./middlewares/errorHandler";
+import express, { NextFunction, Request, Response } from 'express';
+import 'express-async-errors';
+import cors from 'cors';
+import session from 'express-session';
+import { errors } from 'celebrate';
 
-// Cron de daily bonus
-//import { scheduleDailyBonus } from "../cron/dailyBonus.cron";
+import routes from './routes';
+import AppError from '../../../shared/errors/AppError';
+import uploadConfig from '@config/upload';
+import rateLimiter from './middlewares/rateLimiter';
+import errorHandler from './middlewares/errorHandler';
 
 const app = express();
 
-// Inicializa cron de daily bonus
-//scheduleDailyBonus();
-
-// Configuração de sessão (necessária para /scrap/once)
+/**
+ * 🧩 Sessão — usada por rotas específicas (ex: /scrap/once)
+ */
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "default_secret",
+    secret: process.env.SESSION_SECRET || 'default_secret',
     resave: false,
     saveUninitialized: true,
-    cookie: { maxAge: 1000 * 60 * 60 }, // 1h
-  })
+    cookie: {
+      maxAge: 1000 * 60 * 60, // 1h
+    },
+  }),
 );
 
+/**
+ * 🌐 CORS e JSON parser
+ */
 app.use(cors());
 app.use(express.json());
-app.use(rateLimiter);
-app.use("/files", express.static(uploadConfig.directory));
 
-// ROTAS
+/**
+ * 🚦 Rate limiter — protege contra abuso de requisições
+ */
+app.use(rateLimiter);
+
+/**
+ * 📂 Servir arquivos estáticos (ex: uploads de avatar)
+ */
+app.use('/files', express.static(uploadConfig.directory));
+
+/**
+ * 🚀 Rotas principais da aplicação
+ *
+ * As rotas internas já possuem seus middlewares de autenticação
+ * e o populateSubscription é aplicado internamente, após o ensureAuthenticated.
+ */
 app.use(routes);
 
-// Celebrate errors
+/**
+ * ⚠️ Tratamento de erros de validação do Celebrate (Joi)
+ */
 app.use(errors());
 
-// Middleware global de tratamento de erros
+/**
+ * 🛑 Middleware global para capturar exceções do AppError
+ * e falhas inesperadas de runtime.
+ */
 app.use(
-  (error: Error, request: Request, response: Response, next: NextFunction) => {
+  (
+    error: Error,
+    request: Request,
+    response: Response,
+    _next: NextFunction,
+  ) => {
     if (error instanceof AppError) {
       return response.status(error.statusCode).json({
-        status: "error",
+        status: 'error',
         message: error.message,
       });
     }
 
-    console.error(error); // log completo no servidor
+    console.error('🔥 [Unhandled Error]:', error);
+
     return response.status(500).json({
-      status: "error",
-      message: "Internal server error",
+      status: 'error',
+      message: 'Internal server error',
     });
-  }
+  },
 );
 
-// Se necessário, também pode usar um middleware final de errorHandler separado
+/**
+ * 🚒 Middleware final customizado
+ * (para logs ou ajustes globais após o tratamento principal)
+ */
 app.use(errorHandler);
 
 export { app };

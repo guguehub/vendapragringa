@@ -7,21 +7,31 @@ declare global {
       user: {
         id: string;
         is_admin?: boolean;
+
+        /** 🔹 Informações de cota de raspagem (UserQuota) */
+        quota?: {
+          scrape_balance: number;
+          total_scrapes_used: number;
+        };
+
+        /** 🔹 Informações da assinatura (Subscription) */
         subscription?: {
           id: string;
-          status: SubscriptionStatus; // ✅ enum correto
+          status: SubscriptionStatus;
           tier: SubscriptionTier;
           start_date: string | null;
           expires_at: string | null;
           isTrial: boolean;
           cancelled_at: string | null;
           userId: string;
-          created_at: string | null; // ✅ aceita null
-          updated_at: string | null; // ✅ aceita null
-          scrape_balance: number;        // ✅ adicionados
-          total_scrapes_used: number;    // ✅ adicionados
+          created_at: string | null;
+          updated_at: string | null;
+          scrape_balance: number;
+          total_scrapes_used: number;
         } | null;
       };
+
+      /** 🔹 Sessão express (para raspagem anônima) */
       session?: {
         scrapedOnce?: boolean;
         [key: string]: any;
@@ -29,3 +39,5 @@ declare global {
     }
   }
 }
+
+export {};

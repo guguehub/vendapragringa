@@ -1,8 +1,9 @@
 // src/modules/scrap/infra/http/routes/scrap.routes.ts
+
 import { Router } from 'express';
 import { ScrapController } from '../controllers/ScrapController';
-import identifyUser from '@shared/infra/http/middlewares/identifyUser';
 import isAuthenticated from '@shared/infra/http/middlewares/isAuthenticated';
+import identifyUser from '@shared/infra/http/middlewares/identifyUser';
 import populateSubscription from '@shared/infra/http/middlewares/populateSubscription';
 import { CheckUserItemLimitMiddleware } from '@shared/infra/http/middlewares/CheckUserItemLimitMiddleware';
 import { ScrapOrchestratorService } from '@modules/scrap/services/ScrapOrchestratorService';
@@ -13,29 +14,34 @@ const orchestrator = new ScrapOrchestratorService();
 
 /**
  * ✅ Diagnóstico / Health-check
+ * Retorna informações básicas sobre o usuário logado e o estado da API.
  */
 scrapRoutes.get(
   '/',
-  identifyUser,
   isAuthenticated,
+  identifyUser,
   populateSubscription,
   async (req, res) => {
     return res.status(200).json({
       message: '✅ Scrap API ativa e operacional',
       user: req.user?.id || null,
       subscription: req.user?.subscription?.tier || 'none',
-      scrape_balance: req.user?.subscription?.scrape_balance ?? 0,
+      scrape_balance: req.user?.quota?.scrape_balance ?? 0,
     });
   },
 );
 
 /**
- * 🧩 Raspagem anônima (única)
+ * 🧩 Raspagem anônima (sem login)
+ * Permite uma única raspagem por sessão.
  */
 scrapRoutes.get('/once', async (req, res) => {
-  if ((req as any).session?.scrapedOnce) {
+  const session = (req as any).session;
+
+  if (session?.scrapedOnce) {
     return res.status(403).json({
-      message: 'Você já utilizou sua raspagem gratuita. Faça login para salvar e continuar.',
+      message:
+        'Você já utilizou sua raspagem gratuita. Faça login para salvar e continuar.',
     });
   }
 
@@ -44,7 +50,7 @@ scrapRoutes.get('/once', async (req, res) => {
     return res.status(400).json({ error: "Parâmetro 'url' é obrigatório" });
   }
 
-  (req as any).session.scrapedOnce = true;
+  session.scrapedOnce = true;
 
   try {
     const result = await orchestrator.processUrls([url]);
@@ -52,33 +58,31 @@ scrapRoutes.get('/once', async (req, res) => {
     return res.json(result[0]);
   } catch (err: any) {
     console.error('[SCRAPER][ERRO]', err);
-    return res.status(500).json({ error: err.message || 'Erro ao processar URL' });
+    return res
+      .status(500)
+      .json({ error: err.message || 'Erro ao processar URL' });
   }
 });
 
 /**
- * 🔐 Rota autenticada — raspagem completa e registro no banco
+ * 🔐 Rota autenticada — raspagem completa e registro no banco.
+ * Requer assinatura e respeita limites de quota e tier.
  */
 scrapRoutes.post(
   '/',
-  identifyUser,
   isAuthenticated,
+  identifyUser,
   populateSubscription,
   CheckUserItemLimitMiddleware,
   async (req, res) => {
     try {
-      const result = await scrapController.scrapeUrls(req, res);
-      // resposta com detalhes
-      return res.json({
-        message: '✅ Raspagem realizada com sucesso',
-        user: req.user?.id,
-        tier: req.user?.subscription?.tier,
-        saldo_atual: req.user?.subscription?.scrape_balance,
-        items: result,
-      });
+      // ✅ O controller já retorna a resposta JSON formatada.
+      return await scrapController.scrapeUrls(req, res);
     } catch (err: any) {
       console.error('[SCRAP][ERRO]', err);
-      return res.status(500).json({ error: err.message || 'Erro ao processar raspagem' });
+      return res
+        .status(500)
+        .json({ error: err.message || 'Erro ao processar raspagem' });
     }
   },
 );

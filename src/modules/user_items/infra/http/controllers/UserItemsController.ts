@@ -1,3 +1,4 @@
+// src/modules/user_items/infra/http/controllers/UserItemsController.ts
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 
@@ -9,14 +10,13 @@ import ListUserItemsService from '@modules/user_items/services/ListUserItemsServ
 import ShowUserItemService from '@modules/user_items/services/ShowUserItemService';
 import UpdateUserItemService from '@modules/user_items/services/UpdateUserItemService';
 import DeleteUserItemService from '@modules/user_items/services/DeleteUserItemService';
+import UserQuotaService from '@modules/user_quota/services/UserQuotaService';
 
 export default class UserItemsController {
   // GET /user_items
   public async index(request: Request, response: Response): Promise<Response> {
     const userId = request.user?.id;
-    if (!userId) {
-      return response.status(401).json({ message: 'Usuário não autenticado.' });
-    }
+    if (!userId) return response.status(401).json({ message: 'Usuário não autenticado.' });
 
     const service = container.resolve(ListUserItemsService);
     const items = await service.execute(userId);
@@ -28,9 +28,7 @@ export default class UserItemsController {
   public async show(request: Request, response: Response): Promise<Response> {
     const { id } = request.params;
     const userId = request.user?.id;
-    if (!userId) {
-      return response.status(401).json({ message: 'Usuário não autenticado.' });
-    }
+    if (!userId) return response.status(401).json({ message: 'Usuário não autenticado.' });
 
     const service = container.resolve(ShowUserItemService);
     const item = await service.execute(id, userId);
@@ -41,12 +39,9 @@ export default class UserItemsController {
   // POST /user_items
   public async create(request: Request, response: Response): Promise<Response> {
     const userId = request.user?.id;
-    if (!userId) {
-      return response.status(401).json({ message: 'Usuário não autenticado.' });
-    }
+    if (!userId) return response.status(401).json({ message: 'Usuário não autenticado.' });
 
     const dto = Object.assign(new CreateUserItemDTO(), request.body);
-
     const data: ICreateUserItemDTO = {
       user_id: userId,
       item_id: dto.item_id,
@@ -76,8 +71,15 @@ export default class UserItemsController {
       item_profit_brl: dto.item_profit_brl,
     };
 
-    const service = container.resolve(CreateUserItemService);
-    const userItem = await service.execute(data);
+    const quotaService = container.resolve(UserQuotaService);
+    const createUserItemService = container.resolve(CreateUserItemService);
+
+    // ✅ Consome 1 slot de item da quota antes de criar
+    await quotaService.consumeItemSlot(userId);
+
+    const userItem = await createUserItemService.execute(data);
+
+    console.log(`[USER_ITEM] 🧾 Item criado para user:${userId} - item_id:${userItem.id}`);
 
     return response.status(201).json(userItem);
   }
@@ -86,9 +88,7 @@ export default class UserItemsController {
   public async update(request: Request, response: Response): Promise<Response> {
     const { id } = request.params;
     const userId = request.user?.id;
-    if (!userId) {
-      return response.status(401).json({ message: 'Usuário não autenticado.' });
-    }
+    if (!userId) return response.status(401).json({ message: 'Usuário não autenticado.' });
 
     const service = container.resolve(UpdateUserItemService);
     const updated = await service.execute(id, userId, request.body);
@@ -100,9 +100,7 @@ export default class UserItemsController {
   public async delete(request: Request, response: Response): Promise<Response> {
     const { id } = request.params;
     const userId = request.user?.id;
-    if (!userId) {
-      return response.status(401).json({ message: 'Usuário não autenticado.' });
-    }
+    if (!userId) return response.status(401).json({ message: 'Usuário não autenticado.' });
 
     const service = container.resolve(DeleteUserItemService);
     await service.execute(id, userId);

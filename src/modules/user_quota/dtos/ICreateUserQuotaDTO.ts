@@ -6,4 +6,5 @@ export interface ICreateUserQuotaDTO {
   scrape_balance?: number;
   item_limit?: number;
   daily_bonus_count?: number;
+
 }

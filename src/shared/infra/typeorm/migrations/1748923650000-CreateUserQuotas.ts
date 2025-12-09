@@ -2,7 +2,6 @@ import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm
 
 export class CreateUserQuotas1748923650000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Criação da tabela
     await queryRunner.createTable(
       new Table({
         name: 'user_quotas',
@@ -63,7 +62,6 @@ export class CreateUserQuotas1748923650000 implements MigrationInterface {
       }),
     );
 
-    // Criação da foreign key para user
     await queryRunner.createForeignKey(
       'user_quotas',
       new TableForeignKey({
@@ -78,10 +76,7 @@ export class CreateUserQuotas1748923650000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Remoção da foreign key
     await queryRunner.dropForeignKey('user_quotas', 'UserQuotaUser');
-
-    // Remoção da tabela
     await queryRunner.dropTable('user_quotas');
   }
 }

@@ -7,4 +7,11 @@ export interface IScrapedItem {
   url: string;
   itemId: string | null;
   errorDetails?: string;
+
+  // 🔹 Campos adicionais opcionais (sem erro se ausentes)
+  marketplace?: string;
+  condition?: string;
+  shippingPrice?: number | null;
+  soldCount?: number | null;
+  images?: string[] | null;
 }

@@ -1,3 +1,4 @@
+// src/modules/user_quota/infra/typeorm/entities/UserQuota.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -21,22 +22,22 @@ class UserQuota {
   @JoinColumn({ name: 'user_id' })
   user?: User;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: 'int', default: 0, nullable: false })
   scrape_count: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: 'int', default: 0, nullable: false })
   scrape_balance: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: 'int', default: 0, nullable: false })
   item_limit: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: 'int', default: 0, nullable: false })
   daily_bonus_count: number;
 
-  @Column({ type: 'int', default: 100 })
+  @Column({ type: 'int', default: 100, nullable: false })
   saved_items_limit: number;
 
-  @Column({ type: 'int', default: 200 })
+  @Column({ type: 'int', default: 200, nullable: false })
   scrape_logs_limit: number;
 
   @CreateDateColumn()

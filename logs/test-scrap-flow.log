@@ -52,8 +52,9 @@
 ===========================================================
 {
   "message": "✅ Scrap API ativa e operacional",
-  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
-  "subscription": "free"
+  "user": "90ce23d3-ae8d-4728-a9ca-58112852c12c",
+  "subscription": "free",
+  "scrape_balance": 0
 }
 
 ===========================================================
@@ -63,50 +64,58 @@
 ➡️ Raspagem #1
 {
   "message": "✅ Scrap API ativa e operacional",
-  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
-  "subscription": "free"
+  "user": "90ce23d3-ae8d-4728-a9ca-58112852c12c",
+  "subscription": "free",
+  "scrape_balance": 0
 }
 ➡️ Raspagem #2
 {
   "message": "✅ Scrap API ativa e operacional",
-  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
-  "subscription": "free"
+  "user": "90ce23d3-ae8d-4728-a9ca-58112852c12c",
+  "subscription": "free",
+  "scrape_balance": 0
 }
 ➡️ Raspagem #3
 {
   "message": "✅ Scrap API ativa e operacional",
-  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
-  "subscription": "free"
+  "user": "90ce23d3-ae8d-4728-a9ca-58112852c12c",
+  "subscription": "free",
+  "scrape_balance": 0
 }
 ➡️ Raspagem #4
 {
   "message": "✅ Scrap API ativa e operacional",
-  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
-  "subscription": "free"
+  "user": "90ce23d3-ae8d-4728-a9ca-58112852c12c",
+  "subscription": "free",
+  "scrape_balance": 0
 }
 ➡️ Raspagem #5
 {
   "message": "✅ Scrap API ativa e operacional",
-  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
-  "subscription": "free"
+  "user": "90ce23d3-ae8d-4728-a9ca-58112852c12c",
+  "subscription": "free",
+  "scrape_balance": 0
 }
 ➡️ Raspagem #6
 {
   "message": "✅ Scrap API ativa e operacional",
-  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
-  "subscription": "free"
+  "user": "90ce23d3-ae8d-4728-a9ca-58112852c12c",
+  "subscription": "free",
+  "scrape_balance": 0
 }
 ➡️ Raspagem #7
 {
   "message": "✅ Scrap API ativa e operacional",
-  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
-  "subscription": "free"
+  "user": "90ce23d3-ae8d-4728-a9ca-58112852c12c",
+  "subscription": "free",
+  "scrape_balance": 0
 }
 ➡️ Raspagem #8
 {
   "message": "✅ Scrap API ativa e operacional",
-  "user": "7db9d475-871a-4f5c-97c0-15ecb58409a4",
-  "subscription": "free"
+  "user": "90ce23d3-ae8d-4728-a9ca-58112852c12c",
+  "subscription": "free",
+  "scrape_balance": 0
 }
 
 ===========================================================
@@ -121,7 +130,27 @@
 ===========================================================
 [
   {
-    "id": "de8d6494-755e-498d-9ec8-f78eb15bb834",
+    "id": "614e5a2e-6557-4f1b-8fa4-9cfc269af65c",
+    "title": "Sem título",
+    "description": null,
+    "price": "0.00",
+    "shippingPrice": null,
+    "status": "ready",
+    "itemStatus": "error",
+    "soldCount": null,
+    "condition": null,
+    "externalId": null,
+    "marketplace": null,
+    "itemLink": "https://produto.mercadolivre.com.br/MLB-123456789",
+    "images": [],
+    "isDraft": true,
+    "isSynced": false,
+    "supplier": null,
+    "created_at": "2025-11-29T00:18:41.572Z",
+    "updated_at": "2025-11-29T00:18:41.572Z"
+  },
+  {
+    "id": "c33cf6a5-5ef2-4df5-91ea-e99dd2bb116c",
     "title": "Exemplo de Item 2",
     "description": "Descrição do item 2",
     "price": "20.50",
@@ -137,11 +166,11 @@
     "isDraft": false,
     "isSynced": false,
     "supplier": null,
-    "created_at": "2025-11-17T14:37:08.007Z",
-    "updated_at": "2025-11-17T14:37:08.007Z"
+    "created_at": "2025-11-29T00:08:04.483Z",
+    "updated_at": "2025-11-29T00:08:04.483Z"
   },
   {
-    "id": "4d609845-1a3b-479d-81f5-65e43d068e85",
+    "id": "9dd0a7ba-d4d1-4c2d-91f3-53196346edc8",
     "title": "Exemplo de Item 1",
     "description": "Descrição do item 1",
     "price": "10.99",
@@ -157,8 +186,8 @@
     "isDraft": false,
     "isSynced": false,
     "supplier": null,
-    "created_at": "2025-11-17T14:37:07.996Z",
-    "updated_at": "2025-11-17T14:37:07.996Z"
+    "created_at": "2025-11-29T00:08:04.353Z",
+    "updated_at": "2025-11-29T00:08:04.353Z"
   }
 ]
 

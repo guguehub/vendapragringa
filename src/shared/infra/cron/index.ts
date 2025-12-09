@@ -1,4 +1,5 @@
 // src/shared/infra/cron/index.ts
+require('tsconfig-paths/register');
 import { scheduleMonthlyQuota } from './monthlyQuota.cron';
 import { scheduleDailyBonus } from './dailyBonus.cron';
 

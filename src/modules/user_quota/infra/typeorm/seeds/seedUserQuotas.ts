@@ -1,8 +1,9 @@
+// src/modules/user_quota/infra/typeorm/seeds/seedUserQuotas.ts
 import 'reflect-metadata';
 import { container } from 'tsyringe';
 import '@shared/container';
 
-import dataSource from '../../../../../shared/infra/typeorm/data-source';
+import dataSource from '@shared/infra/typeorm/data-source';
 import CreateUserQuotaService from '@modules/user_quota/services/CreateUserQuotaService';
 import UsersRepository from '@modules/users/infra/typeorm/repositories/UsersRepository';
 import UserQuotasRepository from '../repositories/UserQuotaRepository';
@@ -17,7 +18,6 @@ export default async function seedUserQuotas(): Promise<void> {
   const createUserQuota = container.resolve(CreateUserQuotaService);
 
   const users = await usersRepository.findAll();
-
   let createdCount = 0;
 
   for (const user of users) {
@@ -37,12 +37,9 @@ export default async function seedUserQuotas(): Promise<void> {
   }
 
   console.log(`🎯 [Seed] ${createdCount} quotas criadas com sucesso!`);
-
   await dataSource.destroy();
 }
 
 seedUserQuotas()
   .then(() => console.log('🌱 [Seed] seedUserQuotas finalizada com sucesso!'))
-  .catch(err => {
-    console.error('❌ Erro ao executar seedUserQuotas:', err);
-  });
+  .catch(err => console.error('❌ Erro ao executar seedUserQuotas:', err));

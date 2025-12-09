@@ -6,7 +6,6 @@ export default interface IUserQuotaRepository {
   create(data: ICreateUserQuotaDTO): Promise<UserQuota>;
   findByUserId(user_id: string): Promise<UserQuota | null>;
   save(quota: UserQuota): Promise<UserQuota>;
-  update(quota: UserQuota): Promise<UserQuota>;
   incrementScrapeCount(user_id: string): Promise<void>;
-  resetDailyBonus(user_id: string, amount: number): Promise<void>; // ✅ ajustado
+  resetDailyBonus(user_id: string, amount: number): Promise<void>;
 }

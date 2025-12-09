@@ -68,8 +68,8 @@ export default async function isAuthenticated(
     }
 
     req.user = {
-      ...cachedUser,
-      subscription: undefined, // será populado depois
+  ...cachedUser,
+  subscription: (cachedUser as any).subscription ?? undefined,
     };
 
     console.log('REQ USER (após autenticação):', req.user);

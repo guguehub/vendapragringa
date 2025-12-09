@@ -1,6 +1,8 @@
 // src/shared/infra/cron/monthlyQuota.cron.ts
 import 'reflect-metadata';
 import '@shared/container';
+import dataSource from '@shared/infra/typeorm/data-source';
+
 import { container } from 'tsyringe';
 import cron from 'node-cron';
 import chalk from 'chalk';

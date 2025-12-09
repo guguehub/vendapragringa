@@ -36,6 +36,7 @@ export default class UserQuotaService {
         scrape_count: 0,
         item_limit: 0,
       });
+
       await this.userQuotaRepository.save(quota);
     }
 
@@ -68,11 +69,7 @@ export default class UserQuotaService {
   public async consumeScrape(user_id: string, item_id?: string): Promise<void> {
     const quota = await this.getUserQuota(user_id);
 
-    const before = {
-      daily_bonus_count: quota.daily_bonus_count,
-      scrape_balance: quota.scrape_balance,
-      scrape_count: quota.scrape_count,
-    };
+    const before = { ...quota };
 
     if (quota.daily_bonus_count <= 0 && quota.scrape_balance <= 0) {
       throw new AppError('No remaining quota to consume.');
@@ -91,33 +88,16 @@ export default class UserQuotaService {
     quota.scrape_count += 1;
     await this.userQuotaRepository.save(quota);
 
-    const after = {
-      daily_bonus_count: quota.daily_bonus_count,
-      scrape_balance: quota.scrape_balance,
-      scrape_count: quota.scrape_count,
-    };
-
     console.log(`[UserQuotaService] 💰 Quota consumida de ${source}`);
-    console.log(`[UserQuotaService] Antes:`, before);
-    console.log(`[UserQuotaService] Depois:`, after);
+    console.table({
+      before_daily_bonus: before.daily_bonus_count,
+      after_daily_bonus: quota.daily_bonus_count,
+      before_balance: before.scrape_balance,
+      after_balance: quota.scrape_balance,
+      total_used: quota.scrape_count,
+    });
 
-    /** 🔸 Atualiza caches */
-    const cacheUser = `user:${user_id}`;
-    const cacheSub = `user-subscription-${user_id}`;
-    const cachedUser = await RedisCache.recover<any>(cacheUser);
-    const cachedSub = await RedisCache.recover<{ subscription: any }>(cacheSub);
-
-    if (cachedUser?.subscription) {
-      cachedUser.subscription.scrape_balance = quota.scrape_balance;
-      cachedUser.subscription.total_scrapes_used = quota.scrape_count;
-      await RedisCache.save(cacheUser, cachedUser, 300);
-    }
-
-    if (cachedSub?.subscription) {
-      cachedSub.subscription.scrape_balance = quota.scrape_balance;
-      cachedSub.subscription.total_scrapes_used = quota.scrape_count;
-      await RedisCache.save(cacheSub, cachedSub, 300);
-    }
+    await this.updateCache(user_id, quota);
 
     /** 🔸 Cria log */
     const log: ICreateItemScrapeLogDTO = {
@@ -130,10 +110,40 @@ export default class UserQuotaService {
     await this.createItemScrapeLogService.execute(log);
   }
 
+  /** 🔹 Consome 1 slot de item (ao salvar UserItem) */
+  public async consumeItemSlot(user_id: string): Promise<void> {
+    const quota = await this.getUserQuota(user_id);
+
+    if (quota.item_limit <= 0) {
+      await this.createItemScrapeLogService.execute({
+        user_id,
+        item_id: '',
+        action: ItemScrapeAction.QUOTA_EXCEEDED,
+        details: 'User reached item creation limit',
+      });
+      throw new AppError('Item limit reached for your plan.');
+    }
+
+    const before = quota.item_limit;
+    quota.item_limit -= 1;
+
+    await this.userQuotaRepository.save(quota);
+    await this.updateCache(user_id, quota);
+
+    console.log(`[UserQuotaService] 📦 Slot de item consumido`);
+    console.table({ before, after: quota.item_limit });
+
+    await this.createItemScrapeLogService.execute({
+      user_id,
+      item_id: '',
+      action: ItemScrapeAction.ITEM_SLOT_USED,
+      details: 'Item slot consumed after saving UserItem',
+    });
+  }
+
   /** 🔹 Atualiza ou reseta a quota conforme o tier */
   public async resetQuotaForTier(user_id: string, tier: SubscriptionTier): Promise<void> {
     const quota = await this.getUserQuota(user_id);
-
     const maxScrapes = SubscriptionTierScrapeLimits[tier];
     const itemLimit = SubscriptionTierLimits[tier];
 
@@ -146,25 +156,9 @@ export default class UserQuotaService {
     quota.item_limit = itemLimit;
 
     await this.userQuotaRepository.save(quota);
-
     console.log(`[UserQuotaService] ♻️ Quota resetada para tier ${tier}: +${maxScrapes}`);
 
-    const cacheUser = `user:${user_id}`;
-    const cacheSub = `user-subscription-${user_id}`;
-    const cachedUser = await RedisCache.recover<any>(cacheUser);
-    const cachedSub = await RedisCache.recover<{ subscription: any }>(cacheSub);
-
-    if (cachedUser?.subscription) {
-      cachedUser.subscription.scrape_balance = quota.scrape_balance;
-      cachedUser.subscription.total_scrapes_used = quota.scrape_count;
-      await RedisCache.save(cacheUser, cachedUser, 300);
-    }
-
-    if (cachedSub?.subscription) {
-      cachedSub.subscription.scrape_balance = quota.scrape_balance;
-      cachedSub.subscription.total_scrapes_used = quota.scrape_count;
-      await RedisCache.save(cacheSub, cachedSub, 300);
-    }
+    await this.updateCache(user_id, quota);
   }
 
   /** 🔹 Adiciona bônus manual */
@@ -174,9 +168,7 @@ export default class UserQuotaService {
     const quota = await this.getUserQuota(user_id);
     quota.scrape_balance += amount;
     await this.userQuotaRepository.save(quota);
-
-    await RedisCache.invalidate(`user:${user_id}`);
-    await RedisCache.invalidate(`user-subscription-${user_id}`);
+    await this.updateCache(user_id, quota);
 
     await this.createItemScrapeLogService.execute({
       user_id,
@@ -193,9 +185,7 @@ export default class UserQuotaService {
     const quota = await this.getUserQuota(user_id);
     quota.daily_bonus_count = amount;
     await this.userQuotaRepository.save(quota);
-
-    await RedisCache.invalidate(`user:${user_id}`);
-    await RedisCache.invalidate(`user-subscription-${user_id}`);
+    await this.updateCache(user_id, quota);
 
     await this.createItemScrapeLogService.execute({
       user_id,
@@ -203,5 +193,28 @@ export default class UserQuotaService {
       action: ItemScrapeAction.DAILY_BONUS_RESET,
       details: `Daily bonus reset to ${amount}`,
     });
+  }
+
+  /** 🔧 Atualiza caches de quota e assinatura */
+  private async updateCache(user_id: string, quota: UserQuota): Promise<void> {
+    const cacheUser = `user:${user_id}`;
+    const cacheSub = `user-subscription-${user_id}`;
+
+    const cachedUser = await RedisCache.recover<any>(cacheUser);
+    const cachedSub = await RedisCache.recover<{ subscription: any }>(cacheSub);
+
+    if (cachedUser?.subscription) {
+      cachedUser.subscription.scrape_balance = quota.scrape_balance;
+      cachedUser.subscription.total_scrapes_used = quota.scrape_count;
+      cachedUser.subscription.item_limit = quota.item_limit;
+      await RedisCache.save(cacheUser, cachedUser, 300);
+    }
+
+    if (cachedSub?.subscription) {
+      cachedSub.subscription.scrape_balance = quota.scrape_balance;
+      cachedSub.subscription.total_scrapes_used = quota.scrape_count;
+      cachedSub.subscription.item_limit = quota.item_limit;
+      await RedisCache.save(cacheSub, cachedSub, 300);
+    }
   }
 }

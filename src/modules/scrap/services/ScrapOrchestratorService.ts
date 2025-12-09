@@ -1,7 +1,7 @@
 import { container } from "tsyringe";
 import AppDataSource from "@shared/infra/typeorm/data-source";
-import { RedisCacheProvider } from "@shared/cache/RedisCacheProvider";
 import AppError from "@shared/errors/AppError";
+import { RedisCacheProvider } from "@shared/cache/RedisCacheProvider";
 
 import { MercadoLivreScraper } from "../infra/scrapy/mercadoLivre.scraper";
 import { IScrapedItem } from "../domain/models/IScrapedItem";
@@ -14,16 +14,43 @@ export class ScrapOrchestratorService {
   private scraper = new MercadoLivreScraper();
   private cache = new RedisCacheProvider();
 
+  /**
+   * 🔹 Mapper seguro de IScrapedItem → Partial<Item>
+   */
+  private mapScrapedToItem(scraped: IScrapedItem, userId?: string): Partial<Item> {
+  return {
+    title: scraped.title ?? "Sem título",
+    description: scraped.description ?? undefined,
+    price: scraped.price && !isNaN(Number(scraped.price)) ? Number(scraped.price) : 0,
+    itemLink: scraped.url,
+    itemStatus: scraped.itemStatus ?? "unknown",
+    createdBy: userId ?? "system",
+    lastScrapedAt: new Date(),
+    importStage: "draft",
+    isDraft: true,
+    status: "ready",
+  };
+}
+
+
+  /**
+   * 🔹 Processa uma lista de URLs e retorna IScrapedItem[]
+   * @param urls URLs a serem raspadas
+   * @param user Opcional: usuário autenticado com ID e Tier
+   */
   async processUrls(
     urls: string[],
-    user?: { id: string; tier: SubscriptionTier },
+    user?: { id: string; tier: SubscriptionTier }
   ): Promise<IScrapedItem[]> {
     const results: IScrapedItem[] = [];
     const itemRepository = AppDataSource.getRepository(Item);
     const userQuotaService = user ? container.resolve(UserQuotaService) : null;
 
     if (user && userQuotaService) {
+      // 🔹 Checa quota de raspagem
       await userQuotaService.checkQuota(user.id, user.tier);
+
+      // 🔹 Checa limite total de itens criados
       const existingCount = await itemRepository.count({ where: { createdBy: user.id } });
       const maxAllowed = SubscriptionTierLimits[user.tier] ?? SubscriptionTierLimits[SubscriptionTier.FREE];
       if (existingCount >= maxAllowed) {
@@ -38,7 +65,8 @@ export class ScrapOrchestratorService {
       if (!scrapedItem) {
         try {
           scrapedItem = await this.scraper.scrape(url);
-          await this.cache.set(cacheKey, scrapedItem, 12 * 60 * 60);
+          await this.cache.set(cacheKey, scrapedItem, 12 * 60 * 60); // 12h
+          console.log(`[SCRAPER] Raspagem concluída e cache atualizado: ${url}`);
         } catch (err) {
           console.error(`[SCRAPER ERROR] Falha ao raspar ${url}:`, err);
           continue;
@@ -49,10 +77,11 @@ export class ScrapOrchestratorService {
 
       if (user && scrapedItem && userQuotaService) {
         try {
+          // 🔹 Consome 1 raspagem
           await userQuotaService.consumeScrape(user.id);
-          console.log(`[QUOTA] Consumo registrado para usuário ${user.id}`);
+          console.log(`[QUOTA] Raspagem consumida para usuário ${user.id}`);
 
-          // 🔹 LOG saldo atualizado após consumo
+          // 🔹 Log saldo atualizado
           const subscriptionCacheKey = `user-subscription-${user.id}`;
           const cachedSub: any = await this.cache.get(subscriptionCacheKey);
           if (cachedSub?.subscription) {
@@ -63,21 +92,18 @@ export class ScrapOrchestratorService {
         }
       }
 
-      if (user && scrapedItem) {
+      if (scrapedItem) {
         try {
-          const newItem = itemRepository.create({
-            title: scrapedItem.title || "Sem título",
-            price: scrapedItem.price && !isNaN(Number(scrapedItem.price)) ? Number(scrapedItem.price) : 0,
-            itemLink: scrapedItem.url,
-            createdBy: user.id,
-          });
+          // 🔹 Criação de Item agnóstico
+          const newItem = itemRepository.create(this.mapScrapedToItem(scrapedItem, user?.id));
           await itemRepository.save(newItem);
+          console.log(`[DB] Item salvo: ${scrapedItem.title ?? 'Sem título'}`);
         } catch (err) {
-          console.error(`[DB ERROR] Falha ao salvar item (${url}) para usuário ${user.id}:`, err);
+          console.error(`[DB ERROR] Falha ao salvar item (${url}):`, err);
         }
-      }
 
-      if (scrapedItem) results.push(scrapedItem);
+        results.push(scrapedItem);
+      }
     }
 
     console.log(`✅ Raspagem concluída: ${results.length} itens processados.`);
