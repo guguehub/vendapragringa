@@ -1,4 +1,3 @@
-// src/modules/subscriptions/infra/http/controllers/SubscriptionController.ts
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
@@ -13,31 +12,30 @@ import { UpdateSubscriptionDto } from '@modules/subscriptions/dtos/update-subscr
 
 export default class SubscriptionController {
   /**
-   * Cria uma nova assinatura (somente admin)
+   * 🧩 Criação de assinatura (somente admin)
    */
   public async create(request: Request, response: Response): Promise<Response> {
     try {
       const { userId, tier } = request.body as CreateSubscriptionDto;
-
       if (!userId) throw new AppError('UserId is required for creating subscription', 400);
 
       const createService = container.resolve(CreateSubscriptionService);
       const subscription = await createService.execute({ userId, tier });
 
-      // Atualiza cache após criação
+      // ✅ Atualiza cache após criação
       const checkStatusService = container.resolve(CheckSubscriptionStatusService);
       await checkStatusService.execute(userId);
 
       return response.status(201).json(subscription);
-    } catch (error: unknown) {
-      if (error instanceof AppError)
-        return response.status(error.statusCode).json({ error: error.message });
-      return response.status(500).json({ error: 'Internal server error' });
+    } catch (error: any) {
+      const message = error instanceof AppError ? error.message : 'Internal server error';
+      const status = error instanceof AppError ? error.statusCode : 500;
+      return response.status(status).json({ error: message });
     }
   }
 
   /**
-   * Upgrade ou downgrade de tier da assinatura do usuário logado
+   * ⚙️ Upgrade / downgrade da assinatura do usuário autenticado
    */
   public async upgrade(request: Request, response: Response): Promise<Response> {
     try {
@@ -50,7 +48,7 @@ export default class SubscriptionController {
       const upgradeService = container.resolve(UpgradeSubscriptionServiceUser);
       const subscription = await upgradeService.execute({ userId, tier });
 
-      // Atualiza cache usando userId
+      // ✅ Revalida assinatura e atualiza caches
       const checkStatusService = container.resolve(CheckSubscriptionStatusService);
       const subscriptionStatus = await checkStatusService.execute(userId);
 
@@ -58,15 +56,15 @@ export default class SubscriptionController {
         message: `Subscription tier updated to "${subscription.tier}" successfully`,
         subscription: subscriptionStatus.subscription,
       });
-    } catch (error: unknown) {
-      if (error instanceof AppError)
-        return response.status(error.statusCode).json({ error: error.message });
-      return response.status(500).json({ error: 'Internal server error' });
+    } catch (error: any) {
+      const message = error instanceof AppError ? error.message : 'Internal server error';
+      const status = error instanceof AppError ? error.statusCode : 500;
+      return response.status(status).json({ error: message });
     }
   }
 
   /**
-   * Update geral da assinatura (somente admin)
+   * 🔧 Atualização manual (somente admin)
    */
   public async update(request: Request, response: Response): Promise<Response> {
     try {
@@ -86,7 +84,7 @@ export default class SubscriptionController {
         scrape_balance,
       });
 
-      // Atualiza cache e retorna a assinatura atualizada
+      // ✅ Revalida assinatura e atualiza caches
       const checkStatusService = container.resolve(CheckSubscriptionStatusService);
       const subscriptionStatus = await checkStatusService.execute(updatedSubscription.userId);
 
@@ -94,10 +92,10 @@ export default class SubscriptionController {
         message: 'Subscription updated successfully',
         subscription: subscriptionStatus.subscription,
       });
-    } catch (error: unknown) {
-      if (error instanceof AppError)
-        return response.status(error.statusCode).json({ error: error.message });
-      return response.status(500).json({ error: 'Internal server error' });
+    } catch (error: any) {
+      const message = error instanceof AppError ? error.message : 'Internal server error';
+      const status = error instanceof AppError ? error.statusCode : 500;
+      return response.status(status).json({ error: message });
     }
   }
 }

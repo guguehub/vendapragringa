@@ -68,13 +68,15 @@ export default class UpgradeSubscriptionServiceUser {
     // 🔸 Atualiza quotas e tier do usuário
     await this.upgradeUserTierService.execute(userId, tier);
 
-    // 🔹 Atualiza cache
+    // 🔹 Atualiza cache (invalida os dois níveis)
     try {
-      const cacheKey = `user-subscription-${userId}`;
-      await RedisCache.invalidate(cacheKey);
-      console.log(`[USER] Cache invalidado: ${cacheKey}`);
+      const cacheUser = `user:${userId}`;
+      const cacheSub = `user-subscription-${userId}`;
+      await RedisCache.invalidate(cacheUser);
+      await RedisCache.invalidate(cacheSub);
+      console.log(`[USER] Cache invalidado: ${cacheUser} e ${cacheSub}`);
     } catch (err) {
-      console.error('[USER] ⚠️ Falha ao invalidar cache:', err);
+      console.error('[USER] ⚠️ Falha ao invalidar caches:', err);
     }
 
     console.log('[USER] Upgrade concluído. Novo saldo:', subscription.scrape_balance);

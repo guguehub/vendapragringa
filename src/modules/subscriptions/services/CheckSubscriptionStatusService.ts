@@ -1,4 +1,3 @@
-// src/modules/subscriptions/services/CheckSubscriptionStatusService.ts
 import { inject, injectable } from 'tsyringe';
 import RedisCache from '@shared/cache/RedisCache';
 import { ISubscriptionRepository } from '../domain/repositories/ISubscriptionsRepository';
@@ -23,9 +22,12 @@ class CheckSubscriptionStatusService {
     if (subscription.status === SubscriptionStatus.CANCELLED) return false;
     if (subscription.tier === SubscriptionTier.INFINITY) return true;
     if (!subscription.expires_at) return false;
-    const expires = subscription.expires_at instanceof Date
-      ? subscription.expires_at
-      : new Date(subscription.expires_at);
+
+    const expires =
+      subscription.expires_at instanceof Date
+        ? subscription.expires_at
+        : new Date(subscription.expires_at);
+
     return expires.getTime() > Date.now();
   }
 
@@ -50,13 +52,10 @@ class CheckSubscriptionStatusService {
       }
     }
 
-    // 🔹 Campos de quota para compatibilidade com populateSubscription
     normalized.scrape_balance = normalized.scrape_balance ?? 0;
     normalized.total_scrapes_used = normalized.total_scrapes_used ?? 0;
 
-    // 🔹 LOG da subscription normalizada
     console.log('[CheckSubscriptionStatusService] subscription normalizada:', normalized);
-
     return normalized as Subscription;
   }
 
@@ -64,27 +63,51 @@ class CheckSubscriptionStatusService {
     const cacheKey = `user-subscription-${userId}`;
     const cached = await RedisCache.recover<CheckResult>(cacheKey);
 
-    if (cached) {
-      const normalizedSubscription = this.normalizeSubscriptionDates(cached.subscription as any);
-      return {
-        isActive: cached.isActive,
-        tier: cached.tier,
-        subscription: normalizedSubscription,
-      };
+    // 1️⃣ Validação segura do cache existente
+    if (cached?.subscription) {
+      const normalized = this.normalizeSubscriptionDates(cached.subscription);
+      if (normalized) {
+        const stillActive = this.isActive(normalized);
+
+        if (stillActive && normalized.tier !== SubscriptionTier.FREE) {
+          console.log(`[CACHE VALID] ${cacheKey} — Tier: ${normalized.tier}`);
+          return {
+            isActive: stillActive,
+            tier: normalized.tier,
+            subscription: normalized,
+          };
+        }
+
+        // 🔸 Caso seja tier FREE ou expirado → cache inválido
+        console.log(`[CACHE INVALID] ${cacheKey} — invalidando cache antigo`);
+        await RedisCache.invalidate(cacheKey);
+      }
     }
 
+    // 2️⃣ Cache inválido → busca assinatura no banco
     const subscription = await this.subscriptionsRepository.findActiveByUserId(userId);
-    const normalized = this.normalizeSubscriptionDates(subscription as any);
+    const normalized = this.normalizeSubscriptionDates(subscription);
 
     const result: CheckResult = normalized
       ? { isActive: this.isActive(normalized), tier: normalized.tier, subscription: normalized }
       : { isActive: false, tier: SubscriptionTier.FREE, subscription: undefined };
 
-    await RedisCache.save(
-      cacheKey,
-      result,
-      result.subscription?.tier === SubscriptionTier.INFINITY ? undefined : 3600,
-    );
+    // 3️⃣ Atualiza cache de assinatura
+    await RedisCache.save(cacheKey, result, 300);
+    console.log(`[CACHE UPDATE] ${cacheKey} salvo com tier ${result.tier}`);
+
+    // 4️⃣ Sincroniza cache principal (user:<id>) para alinhamento com populateSubscription
+    try {
+      const userCacheKey = `user:${userId}`;
+      const cachedUser = await RedisCache.recover<any>(userCacheKey);
+      if (cachedUser) {
+        cachedUser.subscription = result.subscription;
+        await RedisCache.save(userCacheKey, cachedUser, 300);
+        console.log(`[CACHE SYNC] ${userCacheKey} sincronizado com assinatura ${result.tier}`);
+      }
+    } catch (err) {
+      console.warn('[CheckSubscriptionStatusService] ⚠️ Falha ao sincronizar cache principal:', err);
+    }
 
     return result;
   }

@@ -17,6 +17,11 @@ export default function identifyUser(
 ): void {
   const authHeader = req.headers.authorization;
 
+  // ⚙️ Se o usuário já foi autenticado e req.user existe, não faz nada
+  if (req.user?.id) {
+    return next();
+  }
+
   if (authHeader) {
     const [, token] = authHeader.split(' ');
 
@@ -27,10 +32,11 @@ export default function identifyUser(
       ) as ITokenPayload;
 
       req.user = {
+        ...(req.user || {}),
         id: decoded.sub,
       };
     } catch {
-      // Invalid token; proceed without attaching user info
+      // Token inválido — apenas ignora e segue sem usuário
     }
   }
 

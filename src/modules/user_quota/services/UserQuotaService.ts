@@ -1,4 +1,3 @@
-// src/modules/user_quota/services/UserQuotaService.ts
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 import IUserQuotaRepository from '../domain/repositories/IUserQuotaRepository';
@@ -36,7 +35,6 @@ export default class UserQuotaService {
         scrape_count: 0,
         item_limit: 0,
       });
-
       await this.userQuotaRepository.save(quota);
     }
 
@@ -68,7 +66,6 @@ export default class UserQuotaService {
   /** 🔹 Consome 1 raspagem do saldo */
   public async consumeScrape(user_id: string, item_id?: string): Promise<void> {
     const quota = await this.getUserQuota(user_id);
-
     const before = { ...quota };
 
     if (quota.daily_bonus_count <= 0 && quota.scrape_balance <= 0) {
@@ -76,7 +73,6 @@ export default class UserQuotaService {
     }
 
     let source: 'DAILY_BONUS' | 'SCRAPE_BALANCE';
-
     if (quota.daily_bonus_count > 0) {
       quota.daily_bonus_count -= 1;
       source = 'DAILY_BONUS';
@@ -99,7 +95,6 @@ export default class UserQuotaService {
 
     await this.updateCache(user_id, quota);
 
-    /** 🔸 Cria log */
     const log: ICreateItemScrapeLogDTO = {
       user_id,
       item_id: item_id ?? '',
@@ -193,6 +188,19 @@ export default class UserQuotaService {
       action: ItemScrapeAction.DAILY_BONUS_RESET,
       details: `Daily bonus reset to ${amount}`,
     });
+  }
+
+  /** 🧩 Novo: método público para atualizar manualmente o cache */
+  public async refreshCache(user_id: string): Promise<void> {
+    const quota = await this.getUserQuota(user_id);
+    if (!quota) return;
+
+    try {
+      await this.updateCache(user_id, quota);
+      console.log(`[UserQuotaService] ♻️ Cache atualizado manualmente para user:${user_id}`);
+    } catch (error) {
+      console.error(`[UserQuotaService] ⚠️ Falha ao atualizar cache manualmente:`, error);
+    }
   }
 
   /** 🔧 Atualiza caches de quota e assinatura */

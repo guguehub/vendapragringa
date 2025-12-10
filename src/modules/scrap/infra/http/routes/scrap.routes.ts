@@ -1,5 +1,4 @@
 // src/modules/scrap/infra/http/routes/scrap.routes.ts
-
 import { Router } from 'express';
 import { ScrapController } from '../controllers/ScrapController';
 import isAuthenticated from '@shared/infra/http/middlewares/isAuthenticated';
@@ -19,8 +18,8 @@ const orchestrator = new ScrapOrchestratorService();
 scrapRoutes.get(
   '/',
   isAuthenticated,
+  populateSubscription, // ← antes do identifyUser
   identifyUser,
-  populateSubscription,
   async (req, res) => {
     return res.status(200).json({
       message: '✅ Scrap API ativa e operacional',
@@ -66,17 +65,25 @@ scrapRoutes.get('/once', async (req, res) => {
 
 /**
  * 🔐 Rota autenticada — raspagem completa e registro no banco.
- * Requer assinatura e respeita limites de quota e tier.
+ *
+ * Esta rota realiza a raspagem *com login*, respeitando:
+ * - o tier da assinatura (via ensureTier ou subscription.tier)
+ * - o saldo de quota (`scrape_balance`)
+ * - o limite de itens por usuário
+ *
+ * O controller orquestra toda a lógica:
+ *  - registra no banco o histórico da raspagem
+ *  - consome o saldo (`scrape_balance -= 1`)
+ *  - retorna os dados do produto/URL processado
  */
 scrapRoutes.post(
   '/',
   isAuthenticated,
-  identifyUser,
   populateSubscription,
+  identifyUser,
   CheckUserItemLimitMiddleware,
   async (req, res) => {
     try {
-      // ✅ O controller já retorna a resposta JSON formatada.
       return await scrapController.scrapeUrls(req, res);
     } catch (err: any) {
       console.error('[SCRAP][ERRO]', err);

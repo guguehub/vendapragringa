@@ -1,15 +1,12 @@
-// src/shared/infra/http/middlewares/populateSubscription.ts
-
 import { Request, Response, NextFunction } from 'express';
 import { container } from 'tsyringe';
-
 import CheckSubscriptionStatusService from '@modules/subscriptions/services/CheckSubscriptionStatusService';
 import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
-import RedisCache from '@shared/cache/RedisCache';
 import { SubscriptionStatus } from '@modules/subscriptions/enums/subscription-status.enum';
+import RedisCache from '@shared/cache/RedisCache';
 
 /**
- * 🔹 Converte valores para ISO string (para uso seguro no cache e JSON)
+ * 🔹 Converte valores em ISO para serialização segura
  */
 function toISO(value: any): string | null {
   if (!value) return null;
@@ -25,9 +22,8 @@ function toISO(value: any): string | null {
 }
 
 /**
- * 🧩 Middleware que popula req.user.subscription
- * Carrega do cache Redis se disponível, caso contrário, busca no banco via serviço
- * Também sincroniza o cache principal (user:<id>) para manter consistência
+ * 🧩 Middleware que garante que req.user.subscription esteja sincronizado
+ * com o cache Redis (user-subscription:<id>) e o cache principal (user:<id>).
  */
 export default async function populateSubscription(
   req: Request,
@@ -38,52 +34,43 @@ export default async function populateSubscription(
   if (!user) return next();
 
   const cacheKey = `user-subscription-${user.id}`;
+  const userCacheKey = `user:${user.id}`;
+
   console.log(`\n[populateSubscription] 🚀 Iniciando para user:${user.id}`);
 
   try {
     /**
-     * 1️⃣ Tenta obter do cache de assinatura primeiro
+     * 1️⃣ Tenta recuperar do cache de assinatura
      */
     const cached = await RedisCache.recover<{ subscription: any }>(cacheKey);
 
     if (cached?.subscription) {
       console.log(`[CACHE HIT] ${cacheKey} — Tier: ${cached.subscription.tier}`);
-
       user.subscription = cached.subscription;
 
-      // 🔁 Sincroniza também o cache principal do usuário
-      try {
-        const userCacheKey = `user:${user.id}`;
-        const cachedUser = await RedisCache.recover<any>(userCacheKey);
-
-        if (cachedUser) {
-          cachedUser.subscription = cached.subscription;
-          await RedisCache.save(userCacheKey, cachedUser);
-          console.log(`[CACHE SYNC] ${userCacheKey} atualizado com assinatura ${cached.subscription.tier}`);
-        }
-      } catch (cacheErr) {
-        console.warn('[populateSubscription] ⚠️ Falha ao sincronizar cache principal do usuário:', cacheErr);
+      // 🔁 Sincroniza também o cache principal
+      const cachedUser = await RedisCache.recover<any>(userCacheKey);
+      if (cachedUser) {
+        cachedUser.subscription = cached.subscription;
+        await RedisCache.save(userCacheKey, cachedUser, 300);
+        console.log(`[CACHE SYNC] ${userCacheKey} atualizado com assinatura ${cached.subscription.tier}`);
       }
 
+      // ✅ Sincroniza req.user para a requisição atual
+      req.user.subscription = user.subscription;
       return next();
     }
 
     /**
-     * 2️⃣ Se não há cache, busca via serviço
+     * 2️⃣ CACHE MISS → Buscar via serviço
      */
+    console.log(`[CACHE MISS] Nenhuma assinatura encontrada em cache, consultando serviço...`);
     const checkSubscriptionStatus = container.resolve(CheckSubscriptionStatusService);
     const result = await checkSubscriptionStatus.execute(user.id);
     const subscription = result?.subscription ?? null;
 
-    console.log('[populateSubscription] 🔍 Resultado do serviço:', {
-      found: !!subscription,
-      tier: subscription?.tier,
-      status: subscription?.status,
-      expires_at: subscription?.expires_at,
-    });
-
     /**
-     * 3️⃣ Popula o objeto user.subscription
+     * 3️⃣ Normaliza e popula o objeto de assinatura
      */
     user.subscription = subscription
       ? {
@@ -100,29 +87,36 @@ export default async function populateSubscription(
           scrape_balance: subscription.scrape_balance ?? 0,
           total_scrapes_used: subscription.total_scrapes_used ?? 0,
         }
-      : null;
+      : {
+          id: '',
+          status: SubscriptionStatus.ACTIVE,
+          tier: SubscriptionTier.FREE,
+          start_date: null,
+          expires_at: null,
+          isTrial: false,
+          cancelled_at: null,
+          userId: user.id,
+          created_at: null,
+          updated_at: null,
+          scrape_balance: 0,
+          total_scrapes_used: 0,
+        };
 
     /**
-     * 4️⃣ Atualiza cache de assinatura
+     * 4️⃣ Atualiza caches de forma sincronizada
      */
-    await RedisCache.save(cacheKey, { subscription: user.subscription });
-    console.log(`[CACHE UPDATE] ${cacheKey} atualizado com tier ${subscription?.tier ?? 'null'}`);
+    await RedisCache.save(cacheKey, { subscription: user.subscription }, 300);
+    console.log(`[CACHE UPDATE] ${cacheKey} salvo com tier ${user.subscription.tier}`);
 
-    /**
-     * 5️⃣ Sincroniza cache principal (user:<id>)
-     */
-    try {
-      const userCacheKey = `user:${user.id}`;
-      const cachedUser = await RedisCache.recover<any>(userCacheKey);
-
-      if (cachedUser) {
-        cachedUser.subscription = user.subscription;
-        await RedisCache.save(userCacheKey, cachedUser);
-        console.log(`[CACHE SYNC] ${userCacheKey} sincronizado com assinatura ${subscription?.tier ?? 'null'}`);
-      }
-    } catch (cacheErr) {
-      console.warn('[populateSubscription] ⚠️ Falha ao sincronizar cache principal do usuário:', cacheErr);
+    const cachedUser = await RedisCache.recover<any>(userCacheKey);
+    if (cachedUser) {
+      cachedUser.subscription = user.subscription;
+      await RedisCache.save(userCacheKey, cachedUser, 300);
+      console.log(`[CACHE SYNC] ${userCacheKey} sincronizado com assinatura ${user.subscription.tier}`);
     }
+
+    // ✅ Garante que req.user está atualizado
+    req.user.subscription = user.subscription;
 
     return next();
   } catch (error) {
