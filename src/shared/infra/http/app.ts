@@ -3,7 +3,7 @@
 import 'reflect-metadata';
 import '../../../shared/container';
 import '../typeorm/data-source';
-import '@shared/infra/cron';
+//import '@shared/infra/cron';
 
 import express, { NextFunction, Request, Response } from 'express';
 import 'express-async-errors';

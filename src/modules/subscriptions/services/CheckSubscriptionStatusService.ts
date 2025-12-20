@@ -4,10 +4,12 @@ import { ISubscriptionRepository } from '../domain/repositories/ISubscriptionsRe
 import { Subscription } from '../infra/typeorm/entities/Subscription';
 import { SubscriptionTier } from '../enums/subscription-tier.enum';
 import { SubscriptionStatus } from '../enums/subscription-status.enum';
+import IUserQuotaRepository from '@modules/user_quota/domain/repositories/IUserQuotaRepository';
 
 type CheckResult = {
   isActive: boolean;
   tier: SubscriptionTier;
+  bonus_today?: number; // ✅ novo campo
   subscription: Subscription | undefined;
 };
 
@@ -16,6 +18,9 @@ class CheckSubscriptionStatusService {
   constructor(
     @inject('SubscriptionRepository')
     private subscriptionsRepository: ISubscriptionRepository,
+
+    @inject('UserQuotasRepository')
+    private userQuotaRepository: IUserQuotaRepository, // ✅ injetado para buscar bonus_today
   ) {}
 
   private isActive(subscription: Subscription): boolean {
@@ -74,6 +79,7 @@ class CheckSubscriptionStatusService {
           return {
             isActive: stillActive,
             tier: normalized.tier,
+            bonus_today: cached.bonus_today ?? 0,
             subscription: normalized,
           };
         }
@@ -84,24 +90,42 @@ class CheckSubscriptionStatusService {
       }
     }
 
-    // 2️⃣ Cache inválido → busca assinatura no banco
+    // 2️⃣ Cache inválido → busca assinatura e quota no banco
     const subscription = await this.subscriptionsRepository.findActiveByUserId(userId);
     const normalized = this.normalizeSubscriptionDates(subscription);
 
+    // ✅ Busca o bônus diário atual
+    const quota = await this.userQuotaRepository.findByUserId(userId);
+    const bonusToday = quota?.daily_bonus_count ?? 0;
+
     const result: CheckResult = normalized
-      ? { isActive: this.isActive(normalized), tier: normalized.tier, subscription: normalized }
-      : { isActive: false, tier: SubscriptionTier.FREE, subscription: undefined };
+      ? {
+          isActive: this.isActive(normalized),
+          tier: normalized.tier,
+          bonus_today: bonusToday,
+          subscription: normalized,
+        }
+      : {
+          isActive: false,
+          tier: SubscriptionTier.FREE,
+          bonus_today: bonusToday,
+          subscription: undefined,
+        };
 
     // 3️⃣ Atualiza cache de assinatura
     await RedisCache.save(cacheKey, result, 300);
-    console.log(`[CACHE UPDATE] ${cacheKey} salvo com tier ${result.tier}`);
+    console.log(`[CACHE UPDATE] ${cacheKey} salvo com tier ${result.tier} (bonus_today=${bonusToday})`);
 
-    // 4️⃣ Sincroniza cache principal (user:<id>) para alinhamento com populateSubscription
+    // 4️⃣ Sincroniza cache principal (user:<id>)
     try {
       const userCacheKey = `user:${userId}`;
       const cachedUser = await RedisCache.recover<any>(userCacheKey);
       if (cachedUser) {
         cachedUser.subscription = result.subscription;
+        cachedUser.quota = {
+          ...(cachedUser.quota || {}),
+          bonus_today: bonusToday,
+        };
         await RedisCache.save(userCacheKey, cachedUser, 300);
         console.log(`[CACHE SYNC] ${userCacheKey} sincronizado com assinatura ${result.tier}`);
       }

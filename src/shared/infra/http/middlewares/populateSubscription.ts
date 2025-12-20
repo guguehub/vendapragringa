@@ -1,3 +1,5 @@
+// src/shared/infra/http/middlewares/populateSubscription.ts
+
 import { Request, Response, NextFunction } from 'express';
 import { container } from 'tsyringe';
 import CheckSubscriptionStatusService from '@modules/subscriptions/services/CheckSubscriptionStatusService';
@@ -12,7 +14,6 @@ function toISO(value: any): string | null {
   if (!value) return null;
   if (typeof value === 'string') return value;
   if (value instanceof Date) return value.toISOString();
-
   try {
     const parsed = new Date(value);
     return !Number.isNaN(parsed.getTime()) ? parsed.toISOString() : null;
@@ -22,8 +23,8 @@ function toISO(value: any): string | null {
 }
 
 /**
- * 🧩 Middleware que garante que req.user.subscription esteja sincronizado
- * com o cache Redis (user-subscription:<id>) e o cache principal (user:<id>).
+ * 🧩 Middleware que garante que req.user.subscription e req.user.quota
+ * estejam sempre sincronizados com o Redis e com o estado real no banco.
  */
 export default async function populateSubscription(
   req: Request,
@@ -52,12 +53,28 @@ export default async function populateSubscription(
       const cachedUser = await RedisCache.recover<any>(userCacheKey);
       if (cachedUser) {
         cachedUser.subscription = cached.subscription;
+
+        // ⚙️ Sincroniza quota do usuário com a assinatura (saldo real)
+        cachedUser.quota = {
+          ...(cachedUser.quota ?? {}),
+          scrape_balance: cached.subscription.scrape_balance ?? 0,
+          total_scrapes_used: cached.subscription.total_scrapes_used ?? 0,
+        };
+
         await RedisCache.save(userCacheKey, cachedUser, 300);
-        console.log(`[CACHE SYNC] ${userCacheKey} atualizado com assinatura ${cached.subscription.tier}`);
+        console.log(
+          `[CACHE SYNC] ${userCacheKey} sincronizado com assinatura ${cached.subscription.tier} (saldo: ${cached.subscription.scrape_balance})`,
+        );
       }
 
-      // ✅ Sincroniza req.user para a requisição atual
-      req.user.subscription = user.subscription;
+      // ✅ Sincroniza req.user em tempo real
+      req.user.subscription = cached.subscription;
+      req.user.quota = {
+        ...(req.user.quota ?? {}),
+        scrape_balance: cached.subscription.scrape_balance ?? 0,
+        total_scrapes_used: cached.subscription.total_scrapes_used ?? 0,
+      };
+
       return next();
     }
 
@@ -111,12 +128,26 @@ export default async function populateSubscription(
     const cachedUser = await RedisCache.recover<any>(userCacheKey);
     if (cachedUser) {
       cachedUser.subscription = user.subscription;
+
+      cachedUser.quota = {
+        ...(cachedUser.quota ?? {}),
+        scrape_balance: user.subscription.scrape_balance ?? 0,
+        total_scrapes_used: user.subscription.total_scrapes_used ?? 0,
+      };
+
       await RedisCache.save(userCacheKey, cachedUser, 300);
-      console.log(`[CACHE SYNC] ${userCacheKey} sincronizado com assinatura ${user.subscription.tier}`);
+      console.log(
+        `[CACHE SYNC] ${userCacheKey} sincronizado com assinatura ${user.subscription.tier} (saldo: ${user.subscription.scrape_balance})`,
+      );
     }
 
     // ✅ Garante que req.user está atualizado
     req.user.subscription = user.subscription;
+    req.user.quota = {
+      ...(req.user.quota ?? {}),
+      scrape_balance: user.subscription.scrape_balance ?? 0,
+      total_scrapes_used: user.subscription.total_scrapes_used ?? 0,
+    };
 
     return next();
   } catch (error) {

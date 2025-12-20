@@ -1,27 +1,52 @@
-import { inject, injectable } from 'tsyringe';
-import AppError from '@shared/errors/AppError';
-import IUserQuotaRepository from '../domain/repositories/IUserQuotaRepository';
-import UserQuota from '../infra/typeorm/entities/UserQuota';
+import { inject, injectable } from "tsyringe";
+import AppError from "@shared/errors/AppError";
+import IUserQuotaRepository from "../domain/repositories/IUserQuotaRepository";
+import UserQuota from "../infra/typeorm/entities/UserQuota";
 
-import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
-import { SubscriptionTierScrapeLimits } from '@modules/subscriptions/enums/subscription-tier-scrape-limits.enum';
-import { SubscriptionTierLimits } from '@modules/subscriptions/enums/subscription-limits.enum';
+import { SubscriptionTier } from "@modules/subscriptions/enums/subscription-tier.enum";
+import { SubscriptionTierScrapeLimits } from "@modules/subscriptions/enums/subscription-tier-scrape-limits.enum";
+import { SubscriptionTierLimits } from "@modules/subscriptions/enums/subscription-limits.enum";
 
-import CreateItemScrapeLogService from '@modules/item_scrape_log/services/CreateItemScrapeLogService';
-import { ItemScrapeAction } from '@modules/item_scrape_log/enums/item-scrape-action.enum';
-import { ICreateItemScrapeLogDTO } from '@modules/item_scrape_log/dtos/ICreateItemScrapeLogDTO';
+import CreateItemScrapeLogService from "@modules/item_scrape_log/services/CreateItemScrapeLogService";
+import { ItemScrapeAction } from "@modules/item_scrape_log/enums/item-scrape-action.enum";
 
-import RedisCache from '@shared/cache/RedisCache';
+import RedisCache from "@shared/cache/RedisCache";
+
+// 🎨 Cores ANSI para logs visuais
+const color = {
+  green: (msg: string) => `\x1b[32m${msg}\x1b[0m`,
+  yellow: (msg: string) => `\x1b[33m${msg}\x1b[0m`,
+  red: (msg: string) => `\x1b[31m${msg}\x1b[0m`,
+  cyan: (msg: string) => `\x1b[36m${msg}\x1b[0m`,
+};
 
 @injectable()
 export default class UserQuotaService {
   constructor(
-    @inject('UserQuotasRepository')
+    @inject("UserQuotasRepository")
     private userQuotaRepository: IUserQuotaRepository,
 
     @inject(CreateItemScrapeLogService)
-    private createItemScrapeLogService: CreateItemScrapeLogService,
+    private createItemScrapeLogService: CreateItemScrapeLogService
   ) {}
+
+  public async consumeItemSlot(userId: string): Promise<void> {
+    const quota = await this.userQuotaRepository.findByUserId(userId);
+
+    if (!quota) {
+      throw new AppError('Quota do usuário não encontrada', 404);
+    }
+
+    if (quota.item_limit <= 0) {
+      throw new AppError('Limite de itens atingido', 403);
+    }
+
+    quota.item_limit -= 1;
+
+    await this.userQuotaRepository.save(quota);
+
+    console.log(`[UserQuotaService] 💾 Slot de item consumido para user:${userId} | restante:${quota.item_limit}`);
+  }
 
   /** 🔹 Busca ou cria quota do usuário */
   public async getUserQuota(user_id: string): Promise<UserQuota> {
@@ -53,87 +78,66 @@ export default class UserQuotaService {
     if (remaining <= 0 || quota.scrape_count >= maxScrapes) {
       await this.createItemScrapeLogService.execute({
         user_id,
-        item_id: '',
+        item_id: "",
         action: ItemScrapeAction.QUOTA_EXCEEDED,
-        details: 'User reached daily scraping limit',
+        details: "User reached daily scraping limit",
       });
-      throw new AppError('Daily scraping limit reached.');
+      throw new AppError("Daily scraping limit reached.");
     }
 
     return true;
   }
 
-  /** 🔹 Consome 1 raspagem do saldo */
-  public async consumeScrape(user_id: string, item_id?: string): Promise<void> {
+  /** 🔹 Consome múltiplas raspagens */
+  public async consume(user_id: string, amount: number = 1): Promise<void> {
+    if (amount <= 0) throw new AppError("Invalid consume amount.");
+
     const quota = await this.getUserQuota(user_id);
     const before = { ...quota };
 
-    if (quota.daily_bonus_count <= 0 && quota.scrape_balance <= 0) {
-      throw new AppError('No remaining quota to consume.');
+    let totalToConsume = amount;
+    let consumedFromBonus = 0;
+    let consumedFromBalance = 0;
+
+    while (totalToConsume > 0) {
+      if (quota.daily_bonus_count > 0) {
+        quota.daily_bonus_count--;
+        consumedFromBonus++;
+      } else if (quota.scrape_balance > 0) {
+        quota.scrape_balance--;
+        consumedFromBalance++;
+      } else {
+        throw new AppError("No remaining quota to consume.");
+      }
+
+      quota.scrape_count++;
+      totalToConsume--;
     }
 
-    let source: 'DAILY_BONUS' | 'SCRAPE_BALANCE';
-    if (quota.daily_bonus_count > 0) {
-      quota.daily_bonus_count -= 1;
-      source = 'DAILY_BONUS';
-    } else {
-      quota.scrape_balance -= 1;
-      source = 'SCRAPE_BALANCE';
-    }
-
-    quota.scrape_count += 1;
     await this.userQuotaRepository.save(quota);
+    await this.syncSubscriptionCache(user_id, quota);
 
-    console.log(`[UserQuotaService] 💰 Quota consumida de ${source}`);
+    console.log(color.green(`[UserQuotaService] 💰 Consumo realizado com sucesso`));
     console.table({
-      before_daily_bonus: before.daily_bonus_count,
-      after_daily_bonus: quota.daily_bonus_count,
-      before_balance: before.scrape_balance,
-      after_balance: quota.scrape_balance,
-      total_used: quota.scrape_count,
+      solicitadas: amount,
+      usadas_bonus: consumedFromBonus,
+      usadas_balance: consumedFromBalance,
+      saldo_anterior: before.scrape_balance,
+      saldo_atual: quota.scrape_balance,
+      total_usadas: quota.scrape_count,
     });
-
-    await this.updateCache(user_id, quota);
-
-    const log: ICreateItemScrapeLogDTO = {
-      user_id,
-      item_id: item_id ?? '',
-      action: ItemScrapeAction.SCRAPE_USED,
-      details: `Quota consumed from: ${source}`,
-    };
-
-    await this.createItemScrapeLogService.execute(log);
-  }
-
-  /** 🔹 Consome 1 slot de item (ao salvar UserItem) */
-  public async consumeItemSlot(user_id: string): Promise<void> {
-    const quota = await this.getUserQuota(user_id);
-
-    if (quota.item_limit <= 0) {
-      await this.createItemScrapeLogService.execute({
-        user_id,
-        item_id: '',
-        action: ItemScrapeAction.QUOTA_EXCEEDED,
-        details: 'User reached item creation limit',
-      });
-      throw new AppError('Item limit reached for your plan.');
-    }
-
-    const before = quota.item_limit;
-    quota.item_limit -= 1;
-
-    await this.userQuotaRepository.save(quota);
-    await this.updateCache(user_id, quota);
-
-    console.log(`[UserQuotaService] 📦 Slot de item consumido`);
-    console.table({ before, after: quota.item_limit });
 
     await this.createItemScrapeLogService.execute({
       user_id,
-      item_id: '',
-      action: ItemScrapeAction.ITEM_SLOT_USED,
-      details: 'Item slot consumed after saving UserItem',
+      item_id: "",
+      action: ItemScrapeAction.SCRAPE_USED,
+      details: `Consumed ${amount} scrape(s) (${consumedFromBonus} bonus, ${consumedFromBalance} balance)`,
     });
+  }
+
+  /** 🔹 Consome uma raspagem apenas */
+  public async consumeScrape(user_id: string): Promise<void> {
+    return this.consume(user_id, 1);
   }
 
   /** 🔹 Atualiza ou reseta a quota conforme o tier */
@@ -143,17 +147,23 @@ export default class UserQuotaService {
     const itemLimit = SubscriptionTierLimits[tier];
 
     if (!maxScrapes) throw new AppError(`No scrape limit found for tier: ${tier}`);
-    if (itemLimit === undefined)
-      throw new AppError(`No item limit found for tier: ${tier}`);
+    if (itemLimit === undefined) throw new AppError(`No item limit found for tier: ${tier}`);
 
-    quota.scrape_balance = (quota.scrape_balance ?? 0) + maxScrapes;
+    // 🟢 Atualiza os limites conforme o plano
+    quota.scrape_balance = maxScrapes;
     quota.daily_bonus_count = maxScrapes;
     quota.item_limit = itemLimit;
+    quota.scrape_count = 0;
 
     await this.userQuotaRepository.save(quota);
-    console.log(`[UserQuotaService] ♻️ Quota resetada para tier ${tier}: +${maxScrapes}`);
+    await this.refreshCache(user_id); // 🔥 garante sincronização imediata do cache
 
-    await this.updateCache(user_id, quota);
+    console.log(color.cyan(`[UserQuotaService] ♻️ Quota resetada para tier ${tier}`));
+    console.table({
+      scrapes: maxScrapes,
+      itens: itemLimit,
+      user_id,
+    });
   }
 
   /** 🔹 Adiciona bônus manual */
@@ -162,59 +172,60 @@ export default class UserQuotaService {
 
     const quota = await this.getUserQuota(user_id);
     quota.scrape_balance += amount;
+
     await this.userQuotaRepository.save(quota);
-    await this.updateCache(user_id, quota);
+    await this.syncSubscriptionCache(user_id, quota);
 
     await this.createItemScrapeLogService.execute({
       user_id,
-      item_id: '',
+      item_id: "",
       action: ItemScrapeAction.SCRAPE_BONUS,
       details: `Added ${amount} bonus scrapes`,
     });
+
+    console.log(color.green(`[UserQuotaService] 🎁 Adicionado bônus de ${amount} raspagens`));
   }
 
   /** 🔹 Reseta bônus diário */
   public async resetBonus(user_id: string, amount: number): Promise<void> {
-    if (amount < 0) throw new AppError('Invalid bonus amount.');
+    if (amount < 0) throw new AppError("Invalid bonus amount.");
 
     const quota = await this.getUserQuota(user_id);
+    const before = quota.daily_bonus_count;
+
     quota.daily_bonus_count = amount;
     await this.userQuotaRepository.save(quota);
-    await this.updateCache(user_id, quota);
+    await this.syncSubscriptionCache(user_id, quota);
+
+    console.log(color.yellow(`[UserQuotaService] 🎯 Bônus diário resetado`));
+    console.table({
+      antes: before,
+      depois: quota.daily_bonus_count,
+      user_id,
+    });
 
     await this.createItemScrapeLogService.execute({
       user_id,
-      item_id: '',
+      item_id: "",
       action: ItemScrapeAction.DAILY_BONUS_RESET,
       details: `Daily bonus reset to ${amount}`,
     });
   }
 
-  /** 🧩 Novo: método público para atualizar manualmente o cache */
-  public async refreshCache(user_id: string): Promise<void> {
-    const quota = await this.getUserQuota(user_id);
-    if (!quota) return;
-
-    try {
-      await this.updateCache(user_id, quota);
-      console.log(`[UserQuotaService] ♻️ Cache atualizado manualmente para user:${user_id}`);
-    } catch (error) {
-      console.error(`[UserQuotaService] ⚠️ Falha ao atualizar cache manualmente:`, error);
-    }
-  }
-
-  /** 🔧 Atualiza caches de quota e assinatura */
-  private async updateCache(user_id: string, quota: UserQuota): Promise<void> {
+  /** 🔹 Atualiza cache e subscription após qualquer alteração de quota */
+  private async syncSubscriptionCache(user_id: string, quota: UserQuota): Promise<void> {
     const cacheUser = `user:${user_id}`;
     const cacheSub = `user-subscription-${user_id}`;
 
     const cachedUser = await RedisCache.recover<any>(cacheUser);
     const cachedSub = await RedisCache.recover<{ subscription: any }>(cacheSub);
 
-    if (cachedUser?.subscription) {
-      cachedUser.subscription.scrape_balance = quota.scrape_balance;
-      cachedUser.subscription.total_scrapes_used = quota.scrape_count;
-      cachedUser.subscription.item_limit = quota.item_limit;
+    if (cachedUser) {
+      cachedUser.quota = {
+        scrape_balance: quota.scrape_balance,
+        total_scrapes_used: quota.scrape_count,
+        item_limit: quota.item_limit,
+      };
       await RedisCache.save(cacheUser, cachedUser, 300);
     }
 
@@ -224,5 +235,14 @@ export default class UserQuotaService {
       cachedSub.subscription.item_limit = quota.item_limit;
       await RedisCache.save(cacheSub, cachedSub, 300);
     }
+  }
+
+  /** 🧩 Atualiza manualmente o cache (debug/manual) */
+  public async refreshCache(user_id: string): Promise<void> {
+    const quota = await this.getUserQuota(user_id);
+    if (!quota) return;
+
+    await this.syncSubscriptionCache(user_id, quota);
+    console.log(color.green(`[UserQuotaService] 🔄 Cache sincronizado para ${user_id}`));
   }
 }

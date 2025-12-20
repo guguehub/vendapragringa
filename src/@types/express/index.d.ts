@@ -12,6 +12,8 @@ declare global {
         quota?: {
           scrape_balance: number;
           total_scrapes_used: number;
+                item_limit?: number; // ✅ adiciona aqui
+
         };
 
         /** 🔹 Informações da assinatura (Subscription) */

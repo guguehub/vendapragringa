@@ -14,25 +14,29 @@ const orchestrator = new ScrapOrchestratorService();
 /**
  * ✅ Diagnóstico / Health-check
  * Retorna informações básicas sobre o usuário logado e o estado da API.
+ *
+ * - Garante autenticação
+ * - Carrega o usuário e sua assinatura atual
+ * - Mostra o saldo de raspagens disponíveis
  */
 scrapRoutes.get(
   '/',
   isAuthenticated,
-  populateSubscription, // ← antes do identifyUser
-  identifyUser,
+  identifyUser, // 1️⃣ Decodifica o token JWT e anexa req.user
+  populateSubscription, // 2️⃣ Popula assinatura e sincroniza quota com Redis
   async (req, res) => {
     return res.status(200).json({
       message: '✅ Scrap API ativa e operacional',
       user: req.user?.id || null,
       subscription: req.user?.subscription?.tier || 'none',
-      scrape_balance: req.user?.quota?.scrape_balance ?? 0,
+      scrape_balance: req.user?.subscription?.scrape_balance ?? 0,
     });
   },
 );
 
 /**
  * 🧩 Raspagem anônima (sem login)
- * Permite uma única raspagem por sessão.
+ * Permite apenas uma raspagem por sessão (para demonstração gratuita).
  */
 scrapRoutes.get('/once', async (req, res) => {
   const session = (req as any).session;
@@ -40,26 +44,26 @@ scrapRoutes.get('/once', async (req, res) => {
   if (session?.scrapedOnce) {
     return res.status(403).json({
       message:
-        'Você já utilizou sua raspagem gratuita. Faça login para salvar e continuar.',
+        'Você já utilizou sua raspagem gratuita. Faça login para continuar.',
     });
   }
 
   const { url } = req.query;
   if (!url || typeof url !== 'string') {
-    return res.status(400).json({ error: "Parâmetro 'url' é obrigatório" });
+    return res.status(400).json({ error: "Parâmetro 'url' é obrigatório." });
   }
 
   session.scrapedOnce = true;
 
   try {
     const result = await orchestrator.processUrls([url]);
-    console.log(`[SCRAPER][ONCE] ${url} -> ${result[0]?.title || 'sem título'}`);
+    console.log(`[SCRAPER][ONCE] ${url} → ${result[0]?.title || 'sem título'}`);
     return res.json(result[0]);
   } catch (err: any) {
     console.error('[SCRAPER][ERRO]', err);
     return res
       .status(500)
-      .json({ error: err.message || 'Erro ao processar URL' });
+      .json({ error: err.message || 'Erro ao processar a URL.' });
   }
 });
 
@@ -67,29 +71,31 @@ scrapRoutes.get('/once', async (req, res) => {
  * 🔐 Rota autenticada — raspagem completa e registro no banco.
  *
  * Esta rota realiza a raspagem *com login*, respeitando:
- * - o tier da assinatura (via ensureTier ou subscription.tier)
- * - o saldo de quota (`scrape_balance`)
- * - o limite de itens por usuário
+ *  - O tier da assinatura (via subscription.tier)
+ *  - O saldo de quota (`scrape_balance`)
+ *  - O limite de itens por usuário (`CheckUserItemLimitMiddleware`)
  *
- * O controller orquestra toda a lógica:
- *  - registra no banco o histórico da raspagem
- *  - consome o saldo (`scrape_balance -= 1`)
- *  - retorna os dados do produto/URL processado
+ * O controller (`ScrapController`) é responsável por:
+ *  - Validar URLs
+ *  - Verificar e consumir saldo de quota
+ *  - Executar a raspagem via `ScrapOrchestratorService`
+ *  - Registrar logs e atualizar caches
  */
 scrapRoutes.post(
   '/',
-  isAuthenticated,
-  populateSubscription,
-  identifyUser,
-  CheckUserItemLimitMiddleware,
+  isAuthenticated, // 1️⃣ Garante que o token JWT é válido
+  identifyUser, // 2️⃣ Adiciona req.user.id (decodificado do token)
+  populateSubscription, // 3️⃣ Popula assinatura + sincroniza saldo/quotas
+  CheckUserItemLimitMiddleware, // 4️⃣ Verifica se o usuário não excedeu o limite de itens
   async (req, res) => {
     try {
+      // Controller centraliza a orquestração da raspagem
       return await scrapController.scrapeUrls(req, res);
     } catch (err: any) {
       console.error('[SCRAP][ERRO]', err);
       return res
         .status(500)
-        .json({ error: err.message || 'Erro ao processar raspagem' });
+        .json({ error: err.message || 'Erro ao processar raspagem.' });
     }
   },
 );

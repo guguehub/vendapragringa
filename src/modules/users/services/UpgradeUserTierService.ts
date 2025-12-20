@@ -1,3 +1,4 @@
+// src/modules/subscriptions/services/UpgradeUserTierService.ts
 import { injectable, inject } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 import RedisCache from '@shared/cache/RedisCache';
@@ -7,7 +8,6 @@ import { ISubscriptionRepository } from '@modules/subscriptions/domain/repositor
 import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier.enum';
 
 import UserQuotaService from '@modules/user_quota/services/UserQuotaService';
-import UpdateUserQuotaOnTierChangeService from '@modules/user_quota/services/UpdateUserQuotaOnTierChangeService';
 
 @injectable()
 export default class UpgradeUserTierService {
@@ -20,9 +20,6 @@ export default class UpgradeUserTierService {
 
     @inject(UserQuotaService)
     private userQuotaService: UserQuotaService,
-
-    @inject(UpdateUserQuotaOnTierChangeService)
-    private updateUserQuotaOnTierChange: UpdateUserQuotaOnTierChangeService,
   ) {}
 
   public async execute(userId: string, newTier: SubscriptionTier): Promise<void> {
@@ -33,7 +30,7 @@ export default class UpgradeUserTierService {
     // 2️⃣ Busca a assinatura
     const subscription = await this.subscriptionsRepository.findByUserId(userId);
     if (!subscription) {
-      console.warn(`[UpgradeUserTierService] Nenhuma subscription vinculada ao usuário ${user.id}.`);
+      console.warn(`[UpgradeUserTierService] ⚠️ Nenhuma assinatura vinculada ao usuário ${user.id}.`);
       return;
     }
 
@@ -42,43 +39,35 @@ export default class UpgradeUserTierService {
 
     await this.subscriptionsRepository.save(subscription);
 
-    // 3️⃣ Ajusta quotas conforme o novo tier
-    const quota = await this.userQuotaService.getUserQuota(userId);
+    // 3️⃣ Reseta quotas conforme o novo tier (garante valores corretos e sincronizados)
+    await this.userQuotaService.resetQuotaForTier(userId, newTier);
 
-    if (!quota) {
-      await this.userQuotaService.resetQuotaForTier(userId, newTier);
-    } else if (oldTier !== newTier) {
-      await this.updateUserQuotaOnTierChange.execute(userId, newTier);
-    }
-
-    // 🔁 4️⃣ Sincroniza saldo entre assinatura e quota
+    // 4️⃣ Sincroniza saldo com a assinatura
     try {
-      const quotaData = await this.userQuotaService.getUserQuota(userId);
+      const quota = await this.userQuotaService.getUserQuota(userId);
 
-      if (quotaData) {
-        const oldBalance = quotaData.scrape_balance;
-        quotaData.scrape_balance =
-          subscription.scrape_balance ?? quotaData.scrape_balance ?? 0;
+      if (quota) {
+        const oldBalance = quota.scrape_balance;
+        const subscriptionBalance = subscription.scrape_balance ?? oldBalance ?? 0;
+        quota.scrape_balance = subscriptionBalance;
 
-        // ⚙️ Atualiza cache de quota antes de invalidar o restante
         await this.userQuotaService.refreshCache(userId);
 
         console.log(
-          `[UpgradeUserTierService] 💰 Saldo sincronizado: subscription = ${subscription.scrape_balance ?? 0} → quota: ${oldBalance} → ${quotaData.scrape_balance}`,
+          `[UpgradeUserTierService] 💰 Saldo sincronizado: subscription = ${subscriptionBalance} | quota: ${oldBalance} → ${quota.scrape_balance}`,
         );
       }
     } catch (err) {
       console.error('[UpgradeUserTierService] ⚠️ Falha ao sincronizar saldo de quota:', err);
     }
 
-    // 5️⃣ Invalida e RECONSTRÓI o cache completo
+    // 5️⃣ Limpa e reconstrói o cache completo
     try {
-      await RedisCache.invalidate(`user-subscription-${userId}`);
       await RedisCache.invalidate(`user:${userId}`);
+      await RedisCache.invalidate(`user-subscription-${userId}`);
 
       console.log(`[UpgradeUserTierService] 🧹 Cache invalidado para user:${userId}`);
 
-      // 🆕 reconstrução: popula novamente a subscription e quota no cache
       await this.userQuotaService.refreshCache(userId);
       console.log(`[UpgradeUserTierService] 🔁 Cache recarregado com saldo atualizado para user:${userId}`);
     } catch (err) {

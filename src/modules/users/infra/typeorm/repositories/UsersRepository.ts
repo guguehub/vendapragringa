@@ -61,6 +61,12 @@ class UsersRepository implements IUsersRepository {
 
     return users;
   }
+
+  async findAllWithSubscriptions(): Promise<User[]> {
+  return this.ormRepository.find({
+    relations: ['subscriptions'], // 👈 aqui é plural!
+  });
+}
 }
 
 export default UsersRepository;
