@@ -1,3 +1,4 @@
+// src/modules/subscriptions/infra/http/controllers/CheckSubscriptionStatusController.ts
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
@@ -26,11 +27,11 @@ export default class CheckSubscriptionStatusController {
     const quota = await userQuotaRepository.findByUserId(userId);
 
     // 📊 4️⃣ Cálculos consolidados
-    const saldo_disponivel = quota
+    const saldo_diario = quota
       ? (quota.scrape_balance || 0) + (quota.daily_bonus_count || 0)
       : 0;
 
-    const limite_plano =
+    const limite_mensal =
       SubscriptionTierScrapeLimits[subscriptionStatus.tier as SubscriptionTier] || 0;
 
     // 🎁 5️⃣ Define bônus futuro com base no plano
@@ -41,15 +42,22 @@ export default class CheckSubscriptionStatusController {
       [SubscriptionTier.GOLD]: 8,
       [SubscriptionTier.INFINITY]: 9999,
     };
-    const bonus_amount_next = DailyBonusPerTier[subscriptionStatus.tier as SubscriptionTier] || 0;
 
-    // ⏰ 6️⃣ Próximo bônus diário: próxima meia-noite
+    const proximo_bonus_quantidade =
+      DailyBonusPerTier[subscriptionStatus.tier as SubscriptionTier] || 0;
+
+    // ⏰ 6️⃣ Próximo bônus diário (meia-noite local)
     const now = new Date();
     const next_bonus_at = new Date(now);
     next_bonus_at.setHours(24, 0, 0, 0);
 
-    // 🧾 7️⃣ Mensagem explicativa
-    const mensagem_formatada = `💰 Você tem ${saldo_disponivel} raspagens disponíveis hoje (de um total de ${limite_plano} do seu plano ${subscriptionStatus.tier.toUpperCase()}). Próximo bônus de +${bonus_amount_next} raspagens em ${next_bonus_at.toLocaleString()}`;
+    const next_bonus_local = next_bonus_at.toLocaleString('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+      hour12: false,
+    });
+
+    // 🧾 7️⃣ Mensagem explicativa com formatação clara
+    const mensagem_formatada = `💰 Você tem ${saldo_diario} raspagens disponíveis hoje (de um total de ${limite_mensal} do seu plano ${subscriptionStatus.tier.toUpperCase()}). Próximo bônus de +${proximo_bonus_quantidade} raspagens em ${next_bonus_local}.`;
 
     // 🎯 8️⃣ Monta resposta final
     const result = {
@@ -65,16 +73,16 @@ export default class CheckSubscriptionStatusController {
           }
         : null,
       resumo: {
-        saldo_disponivel,
-        limite_plano,
-        bonus_amount_next,
+        saldo_diario,
+        limite_mensal,
+        proximo_bonus_quantidade,
         next_bonus_at,
         mensagem_formatada,
       },
     };
 
     console.log(
-      `[CheckSubscriptionStatusController] ✅ user:${userId} | plano:${result.tier} | saldo:${saldo_disponivel}/${limite_plano} | next_bonus:+${bonus_amount_next} @${next_bonus_at.toISOString()}`,
+      `[CheckSubscriptionStatusController] ✅ user:${userId} | plano:${result.tier} | saldo:${saldo_diario}/${limite_mensal} | next_bonus:+${proximo_bonus_quantidade} @${next_bonus_at.toISOString()}`,
     );
 
     return response.status(200).json(result);

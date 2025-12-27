@@ -14,23 +14,23 @@ import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier
  */
 const DailyBonusPerTier: Record<SubscriptionTier, number> = {
   [SubscriptionTier.FREE]: 3,
-  [SubscriptionTier.BRONZE]: 0,
-  [SubscriptionTier.SILVER]: 5,
-  [SubscriptionTier.GOLD]: 8,
-  [SubscriptionTier.INFINITY]: 9999,
+  [SubscriptionTier.BRONZE]: 5, // bronze não recebe bônus diário
+  [SubscriptionTier.SILVER]: 10,
+  [SubscriptionTier.GOLD]: 15,
+  [SubscriptionTier.INFINITY]: 9999, // ilimitado (modo teste)
 };
 
 /**
  * 🔁 Função principal para aplicar bônus diário
  */
-export async function runDailyBonusOnce(autoMode = false) {
-  console.log(chalk.cyan(`\n⏰ Executando Daily Bonus (${autoMode ? 'modo automático' : 'manual'})...`));
+export async function runDailyBonusOnce() {
+  console.log(chalk.cyan(`\n⏰ Executando bônus diário (manual ou agendado)...`));
 
   let totalUsuarios = 0;
   let totalBonusAplicado = 0;
 
   try {
-    // 🧩 Inicializa conexão apenas se necessário
+    // 🧩 Inicializa conexão com o banco, se necessário
     if (!dataSource.isInitialized) {
       await dataSource.initialize();
       console.log(chalk.gray('📡 DataSource inicializado pelo Daily Bonus CRON.'));
@@ -52,12 +52,12 @@ export async function runDailyBonusOnce(autoMode = false) {
 
         console.log(
           chalk.greenBright(
-            `✅ ${bonusAmount} raspagens adicionadas para usuário ${user.email ?? user.id} (${tier})`
+            `🎁 +${bonusAmount} raspagens adicionadas para ${user.email ?? user.id} (${tier})`
           )
         );
       } else {
         console.log(
-          chalk.gray(`- Usuário ${user.email ?? user.id} (${tier}) não possui bônus diário.`)
+          chalk.gray(`- ${user.email ?? user.id} (${tier}) não possui bônus diário.`)
         );
       }
     }
@@ -65,25 +65,19 @@ export async function runDailyBonusOnce(autoMode = false) {
     console.log(chalk.yellow('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
     console.log(
       chalk.green(
-        `🎯 Daily Bonus finalizado — ${totalUsuarios} usuários beneficiados, total de ${totalBonusAplicado} raspagens adicionadas.`
+        `🎯 Bônus diário concluído — ${totalUsuarios} usuários beneficiados, total de ${totalBonusAplicado} raspagens adicionadas.`
       )
     );
     console.log(chalk.yellow('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'));
   } catch (error) {
-    console.error(chalk.red('❌ Erro ao aplicar Daily Bonus:'), error);
-  } finally {
-    /**
-     * 💡 Somente destrói a conexão se estiver rodando manualmente (fora do app).
-     * Quando integrado ao servidor, não fecha o pool do TypeORM.
-     */
-    if (!autoMode && dataSource.isInitialized) {
-      await dataSource.destroy().catch(() => {});
-    }
+    console.error(chalk.red('❌ Erro ao aplicar bônus diário:'), error);
   }
 }
 
 /**
  * 🕒 Agendamento automático (modo teste ou diário)
+ * - testMode = true → executa a cada 30s
+ * - testMode = false → executa diariamente às 00:00
  */
 export function scheduleDailyBonus(testMode = false) {
   const schedule = testMode ? '*/30 * * * * *' : '0 0 * * *';
@@ -92,16 +86,14 @@ export function scheduleDailyBonus(testMode = false) {
   console.log(chalk.cyan(`🚀 Daily Bonus agendado: ${modeText}`));
 
   cron.schedule(schedule, async () => {
-    console.log(chalk.gray('\n🕐 Executando ciclo agendado de Daily Bonus...'));
-    await runDailyBonusOnce(true); // ✅ autoMode = true → não destrói o DataSource
+    console.log(chalk.gray('\n🕐 Executando ciclo agendado de bônus diário...'));
+    await runDailyBonusOnce();
   });
 }
 
 /**
- * 🚀 Execução direta via linha de comando (modo manual)
- * Exemplo:
- *   npx ts-node -r tsconfig-paths/register src/shared/infra/cron/dailyBonus.cron.ts
+ * 🚀 Execução direta via linha de comando
  */
 if (require.main === module) {
-  runDailyBonusOnce(false); // ✅ manual → com destroy no final
+  runDailyBonusOnce();
 }
