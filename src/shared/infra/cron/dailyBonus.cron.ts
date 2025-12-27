@@ -11,29 +11,26 @@ import { SubscriptionTier } from '@modules/subscriptions/enums/subscription-tier
 
 /**
  * 🎁 Configuração de bônus diário (em raspagens)
- *
- * Estes valores são adicionados ao saldo total (scrape_balance),
- * não apenas ao limite diário.
  */
 const DailyBonusPerTier: Record<SubscriptionTier, number> = {
   [SubscriptionTier.FREE]: 3,
-  [SubscriptionTier.BRONZE]: 0, // bronze não recebe bônus diário
+  [SubscriptionTier.BRONZE]: 0,
   [SubscriptionTier.SILVER]: 5,
   [SubscriptionTier.GOLD]: 8,
-  [SubscriptionTier.INFINITY]: 9999, // ilimitado
+  [SubscriptionTier.INFINITY]: 9999,
 };
 
 /**
  * 🔁 Função principal para aplicar bônus diário
  */
-export async function runDailyBonusOnce() {
-  console.log(chalk.cyan(`\n⏰ Executando Daily Bonus (modo manual ou agendado)...`));
+export async function runDailyBonusOnce(autoMode = false) {
+  console.log(chalk.cyan(`\n⏰ Executando Daily Bonus (${autoMode ? 'modo automático' : 'manual'})...`));
 
   let totalUsuarios = 0;
   let totalBonusAplicado = 0;
 
   try {
-    // 🧩 Inicializa conexão com o banco, se necessário
+    // 🧩 Inicializa conexão apenas se necessário
     if (!dataSource.isInitialized) {
       await dataSource.initialize();
       console.log(chalk.gray('📡 DataSource inicializado pelo Daily Bonus CRON.'));
@@ -42,7 +39,6 @@ export async function runDailyBonusOnce() {
     const usersRepository = new UsersRepository();
     const resetDailyBonusService = container.resolve(ResetDailyBonusService);
 
-    // Busca usuários com relação de assinatura
     const users = await usersRepository.findAllWithSubscriptions();
 
     for (const user of users) {
@@ -76,7 +72,11 @@ export async function runDailyBonusOnce() {
   } catch (error) {
     console.error(chalk.red('❌ Erro ao aplicar Daily Bonus:'), error);
   } finally {
-    if (dataSource.isInitialized) {
+    /**
+     * 💡 Somente destrói a conexão se estiver rodando manualmente (fora do app).
+     * Quando integrado ao servidor, não fecha o pool do TypeORM.
+     */
+    if (!autoMode && dataSource.isInitialized) {
       await dataSource.destroy().catch(() => {});
     }
   }
@@ -84,8 +84,6 @@ export async function runDailyBonusOnce() {
 
 /**
  * 🕒 Agendamento automático (modo teste ou diário)
- * - testMode = true → executa a cada 30s
- * - testMode = false → executa diariamente às 00:00
  */
 export function scheduleDailyBonus(testMode = false) {
   const schedule = testMode ? '*/30 * * * * *' : '0 0 * * *';
@@ -95,15 +93,15 @@ export function scheduleDailyBonus(testMode = false) {
 
   cron.schedule(schedule, async () => {
     console.log(chalk.gray('\n🕐 Executando ciclo agendado de Daily Bonus...'));
-    await runDailyBonusOnce();
+    await runDailyBonusOnce(true); // ✅ autoMode = true → não destrói o DataSource
   });
 }
 
 /**
- * 🚀 Execução direta via linha de comando
+ * 🚀 Execução direta via linha de comando (modo manual)
  * Exemplo:
  *   npx ts-node -r tsconfig-paths/register src/shared/infra/cron/dailyBonus.cron.ts
  */
 if (require.main === module) {
-  runDailyBonusOnce();
+  runDailyBonusOnce(false); // ✅ manual → com destroy no final
 }
