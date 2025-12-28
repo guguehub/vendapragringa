@@ -43,13 +43,14 @@
     "seed:all": "yarn seed:users && yarn seed:missing-subscriptions && yarn seed:user-quotas && yarn seed:shipping && yarn seed:suppliers && yarn seed:items && yarn seed:user-items && yarn seed:plans",
 
 "test:quota": "ts-node -r tsconfig-paths/register src/scripts/testQuotaFlow.ts",
+"test:parallel": "ts-node -r tsconfig-paths/register src/scripts/testQuotaFlowParallel.ts",
       "test:scrap": "bash ./scripts/test-scrap-flow.sh",
       "test:tier": "bash ./scripts/test-tier-flow.sh",
 
       "cron:test":  "ts-node -r tsconfig-paths/register src/shared/infra/cron/index.ts",
       "cron:daily": "ts-node -r tsconfig-paths/register src/shared/infra/cron/dailyBonus.cron.ts",
   "cron:daily:test": "ts-node -r tsconfig-paths/register src/shared/infra/cron/index.ts",
-  "cron:monthly": "ts-node src/shared/infra/cron/monthlyQuota.cron.ts",
+  "cron:monthly": "ts-node -r tsconfig-paths/register src/shared/infra/cron/monthlyQuota.cron.ts",
   "redis:flush": "docker exec -it vendapragringa-redis redis-cli FLUSHALL",
   "typeorm:migration:subscriptions": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run --dataSource ./src/shared/infra/typeorm/data-source.ts"
 

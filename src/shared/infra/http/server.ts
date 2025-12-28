@@ -12,6 +12,8 @@ dataSource.initialize().then(() => {
       `server started on port ${process.env.PORT || 3333} ooobaa!🏆 `,
     );
   });
+   // ✅ Inicializa os crons somente depois que o DB está pronto
+  import('@shared/infra/cron');
 });
 console.log(expressListEndpoints(app));
 
