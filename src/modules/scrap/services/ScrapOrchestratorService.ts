@@ -14,30 +14,23 @@ export class ScrapOrchestratorService {
   private scraper = new MercadoLivreScraper();
   private cache = new RedisCacheProvider();
 
-  /**
-   * 🔹 Mapper seguro de IScrapedItem → Partial<Item>
-   */
+  /** 🔹 Mapper seguro IScrapedItem → Partial<Item> */
   private mapScrapedToItem(scraped: IScrapedItem, userId?: string): Partial<Item> {
-  return {
-    title: scraped.title ?? "Sem título",
-    description: scraped.description ?? undefined,
-    price: scraped.price && !isNaN(Number(scraped.price)) ? Number(scraped.price) : 0,
-    itemLink: scraped.url,
-    itemStatus: scraped.itemStatus ?? "unknown",
-    createdBy: userId ?? "system",
-    lastScrapedAt: new Date(),
-    importStage: "draft",
-    isDraft: true,
-    status: "ready",
-  };
-}
+    return {
+      title: scraped.title ?? "Sem título",
+      description: scraped.description ?? undefined,
+      price: scraped.price && !isNaN(Number(scraped.price)) ? Number(scraped.price) : 0,
+      itemLink: scraped.url,
+      itemStatus: scraped.itemStatus ?? "unknown",
+      createdBy: userId ?? "system",
+      lastScrapedAt: new Date(),
+      importStage: "draft",
+      isDraft: true,
+      status: "ready",
+    };
+  }
 
-
-  /**
-   * 🔹 Processa uma lista de URLs e retorna IScrapedItem[]
-   * @param urls URLs a serem raspadas
-   * @param user Opcional: usuário autenticado com ID e Tier
-   */
+  /** 🔹 Fluxo híbrido de scraping */
   async processUrls(
     urls: string[],
     user?: { id: string; tier: SubscriptionTier }
@@ -46,11 +39,10 @@ export class ScrapOrchestratorService {
     const itemRepository = AppDataSource.getRepository(Item);
     const userQuotaService = user ? container.resolve(UserQuotaService) : null;
 
+    // 🔹 1. Verificação inicial de saldo e limite
     if (user && userQuotaService) {
-      // 🔹 Checa quota de raspagem
       await userQuotaService.checkQuota(user.id, user.tier);
 
-      // 🔹 Checa limite total de itens criados
       const existingCount = await itemRepository.count({ where: { createdBy: user.id } });
       const maxAllowed = SubscriptionTierLimits[user.tier] ?? SubscriptionTierLimits[SubscriptionTier.FREE];
       if (existingCount >= maxAllowed) {
@@ -58,55 +50,45 @@ export class ScrapOrchestratorService {
       }
     }
 
+    // 🔹 2. Processamento das URLs
     for (const url of urls) {
       const cacheKey = `scraped:${url}`;
       let scrapedItem: IScrapedItem | null = await this.cache.get<IScrapedItem>(cacheKey);
 
-      if (!scrapedItem) {
-        try {
+      try {
+        // 🔸 Busca cache ou executa scraping
+        if (!scrapedItem) {
           scrapedItem = await this.scraper.scrape(url);
           await this.cache.set(cacheKey, scrapedItem, 12 * 60 * 60); // 12h
-          console.log(`[SCRAPER] Raspagem concluída e cache atualizado: ${url}`);
-        } catch (err) {
-          console.error(`[SCRAPER ERROR] Falha ao raspar ${url}:`, err);
-          continue;
+          console.log(`[SCRAPER] ✅ Raspagem concluída: ${url}`);
+        } else {
+          console.log(`[CACHE HIT] ${url}`);
         }
-      } else {
-        console.log(`[CACHE HIT] ${url}`);
-      }
 
-      if (user && scrapedItem && userQuotaService) {
-        try {
-          // 🔹 Consome 1 raspagem
-          await userQuotaService.consumeScrape(user.id);
-          console.log(`[QUOTA] Raspagem consumida para usuário ${user.id}`);
-
-          // 🔹 Log saldo atualizado
-          const subscriptionCacheKey = `user-subscription-${user.id}`;
-          const cachedSub: any = await this.cache.get(subscriptionCacheKey);
-          if (cachedSub?.subscription) {
-            console.log(`[QUOTA STATUS] userId: ${user.id}, saldo: ${cachedSub.subscription.scrape_balance}, total usados: ${cachedSub.subscription.total_scrapes_used}`);
-          }
-        } catch (err) {
-          console.error(`[QUOTA ERROR] Falha ao consumir quota para ${user.id}:`, err);
-        }
-      }
-
-      if (scrapedItem) {
-        try {
-          // 🔹 Criação de Item agnóstico
+        // 🔸 Salva item no banco
+        if (scrapedItem) {
           const newItem = itemRepository.create(this.mapScrapedToItem(scrapedItem, user?.id));
           await itemRepository.save(newItem);
-          console.log(`[DB] Item salvo: ${scrapedItem.title ?? 'Sem título'}`);
-        } catch (err) {
-          console.error(`[DB ERROR] Falha ao salvar item (${url}):`, err);
+          results.push(scrapedItem);
+          console.log(`[DB] 💾 Item salvo: ${scrapedItem.title ?? "Sem título"}`);
         }
 
-        results.push(scrapedItem);
-      }
+        // 🔸 Se usuário autenticado → consome saldo (apenas 1x ao fim de sucesso)
+        if (user && userQuotaService) {
+          await userQuotaService.consumeScrape(user.id);
+          console.log(`[QUOTA] 💰 Consumo registrado para ${user.id}`);
+        }
+      } catch (err) {
+  const message = err instanceof Error ? err.message : String(err);
+  console.error(`[SCRAPER ERROR] Falha ao processar ${url}:`, message);
+  if (user && userQuotaService) {
+    await userQuotaService.logScrapeError(user.id, `Falha ao raspar ${url}: ${message}`);
+  }
+  continue;
+}
     }
 
-    console.log(`✅ Raspagem concluída: ${results.length} itens processados.`);
+    console.log(`✅ Raspagem finalizada: ${results.length} item(s) processado(s).`);
     return results;
   }
 }

@@ -11,7 +11,6 @@ import CreateItemScrapeLogService from "@modules/item_scrape_log/services/Create
 import { ItemScrapeAction } from "@modules/item_scrape_log/enums/item-scrape-action.enum";
 import RedisCache from "@shared/cache/RedisCache";
 
-// 🎨 Cores ANSI para logs visuais
 const color = {
   green: (msg: string) => `\x1b[32m${msg}\x1b[0m`,
   yellow: (msg: string) => `\x1b[33m${msg}\x1b[0m`,
@@ -29,22 +28,6 @@ export default class UserQuotaService {
     private createItemScrapeLogService: CreateItemScrapeLogService
   ) {}
 
-  /** 🔹 Consome um slot de item salvo */
-  public async consumeItemSlot(userId: string): Promise<void> {
-    const quota = await this.userQuotaRepository.findByUserId(userId);
-    if (!quota) throw new AppError("Quota do usuário não encontrada", 404);
-
-    if (quota.item_limit <= 0)
-      throw new AppError("Limite de itens atingido", 403);
-
-    quota.item_limit -= 1;
-    await this.userQuotaRepository.save(quota);
-
-    console.log(
-      `[UserQuotaService] 💾 Slot de item consumido | user:${userId} | restante:${quota.item_limit}`
-    );
-  }
-
   /** 🔹 Busca ou cria quota do usuário */
   public async getUserQuota(user_id: string): Promise<UserQuota> {
     let quota = await this.userQuotaRepository.findByUserId(user_id);
@@ -61,13 +44,23 @@ export default class UserQuotaService {
     return quota;
   }
 
-  /** 🔹 Checa se o usuário ainda tem raspagens disponíveis com base no tier */
-  public async checkQuota(
-    user_id: string,
-    tier: SubscriptionTier
-  ): Promise<boolean> {
+  /** 🔹 Consome 1 slot de item (para criação de user_items) */
+  public async consumeItemSlot(user_id: string): Promise<void> {
     const quota = await this.getUserQuota(user_id);
-    if (tier === SubscriptionTier.INFINITY) return true;
+    if (quota.item_limit <= 0)
+      throw new AppError("Limite de itens atingido para este plano.", 403);
+
+    quota.item_limit -= 1;
+    await this.userQuotaRepository.save(quota);
+    await this.syncSubscriptionCache(user_id, quota);
+
+    console.log(color.green(`[UserQuotaService] 💾 Slot de item consumido | restante: ${quota.item_limit}`));
+  }
+
+  /** 🔹 Checa quota de raspagem (sem consumir) */
+  public async checkQuota(user_id: string, tier: SubscriptionTier): Promise<void> {
+    const quota = await this.getUserQuota(user_id);
+    if (tier === SubscriptionTier.INFINITY) return;
 
     const maxScrapes = SubscriptionTierScrapeLimits[tier];
     const remaining = quota.daily_bonus_count + quota.scrape_balance;
@@ -75,50 +68,30 @@ export default class UserQuotaService {
     if (remaining <= 0 || quota.scrape_count >= maxScrapes) {
       await this.createItemScrapeLogService.execute({
         user_id,
-        item_id: "",
         action: ItemScrapeAction.QUOTA_EXCEEDED,
-        details: "User reached daily scraping limit",
+        details: "User reached scraping limit (checkQuota)",
       });
-      throw new AppError("Daily scraping limit reached.");
+      throw new AppError("Limite de raspagens atingido.", 403);
     }
 
-    return true;
+    console.log(color.cyan(`[UserQuotaService] ✅ checkQuota aprovado | user:${user_id} | saldo:${remaining}`));
   }
 
-  /** 🔹 Consome múltiplas raspagens */
-  public async consume(user_id: string, amount: number = 1): Promise<void> {
-    if (amount <= 0) throw new AppError("Invalid consume amount.");
-
+  /** 🔹 Consome 1 raspagem (fluxo híbrido) */
+  public async consumeScrape(user_id: string): Promise<void> {
     const quota = await this.getUserQuota(user_id);
     const before = { ...quota };
 
-    let totalToConsume = amount;
-    let consumedFromBonus = 0;
-    let consumedFromBalance = 0;
+    if (quota.daily_bonus_count > 0) quota.daily_bonus_count--;
+    else if (quota.scrape_balance > 0) quota.scrape_balance--;
+    else throw new AppError("Sem saldo disponível para consumir.", 403);
 
-    while (totalToConsume > 0) {
-      if (quota.daily_bonus_count > 0) {
-        quota.daily_bonus_count--;
-        consumedFromBonus++;
-      } else if (quota.scrape_balance > 0) {
-        quota.scrape_balance--;
-        consumedFromBalance++;
-      } else {
-        throw new AppError("No remaining quota to consume.");
-      }
-
-      quota.scrape_count++;
-      totalToConsume--;
-    }
-
+    quota.scrape_count++;
     await this.userQuotaRepository.save(quota);
     await this.syncSubscriptionCache(user_id, quota);
 
-    console.log(color.green(`[UserQuotaService] 💰 Consumo realizado com sucesso`));
+    console.log(color.green(`[UserQuotaService] 💰 1 raspagem consumida com sucesso`));
     console.table({
-      solicitadas: amount,
-      usadas_bonus: consumedFromBonus,
-      usadas_balance: consumedFromBalance,
       saldo_anterior: before.scrape_balance,
       saldo_atual: quota.scrape_balance,
       total_usadas: quota.scrape_count,
@@ -126,30 +99,31 @@ export default class UserQuotaService {
 
     await this.createItemScrapeLogService.execute({
       user_id,
-      item_id: "",
       action: ItemScrapeAction.SCRAPE_USED,
-      details: `Consumed ${amount} scrape(s) (${consumedFromBonus} bonus, ${consumedFromBalance} balance)`,
+      details: "1 scrape consumed successfully",
     });
   }
 
-  /** 🔹 Consome uma raspagem */
-  public async consumeScrape(user_id: string): Promise<void> {
-    return this.consume(user_id, 1);
+  /** 🔹 Registra erro sem consumo */
+  public async logScrapeError(user_id: string, details: string): Promise<void> {
+    await this.createItemScrapeLogService.execute({
+      user_id,
+      action: ItemScrapeAction.SCRAPE_ERROR,
+      details,
+    });
+    console.log(color.red(`[UserQuotaService] ❌ Erro registrado: ${details}`));
   }
 
-  /** 🔹 Reseta quota conforme tier (upgrade de plano) */
-  public async resetQuotaForTier(
-    user_id: string,
-    tier: SubscriptionTier
-  ): Promise<void> {
+  /** 🔹 Reseta quotas conforme novo tier (upgrade de plano) */
+  public async resetQuotaForTier(user_id: string, tier: SubscriptionTier): Promise<void> {
     const quota = await this.getUserQuota(user_id);
     const maxScrapes = SubscriptionTierScrapeLimits[tier];
     const itemLimit = SubscriptionTierLimits[tier];
 
     if (!maxScrapes)
-      throw new AppError(`No scrape limit found for tier: ${tier}`);
+      throw new AppError(`Nenhum limite de raspagens definido para tier ${tier}`);
     if (itemLimit === undefined)
-      throw new AppError(`No item limit found for tier: ${tier}`);
+      throw new AppError(`Nenhum limite de itens definido para tier ${tier}`);
 
     quota.scrape_balance = maxScrapes;
     quota.daily_bonus_count = maxScrapes;
@@ -160,20 +134,13 @@ export default class UserQuotaService {
     await this.refreshCache(user_id);
 
     console.log(color.cyan(`[UserQuotaService] ♻️ Quota resetada para tier ${tier}`));
-    console.table({
-      scrapes: maxScrapes,
-      itens: itemLimit,
-      user_id,
-    });
   }
 
-  /** 🔹 Recarga mensal de raspagens (executado pelo CRON mensal) */
+  /** 🔹 Recarga mensal automática (CRON) */
   public async resetMonthlyQuota(user_id: string, amount: number): Promise<void> {
     if (amount <= 0) return;
 
     const quota = await this.getUserQuota(user_id);
-    const saldoAntes = quota.scrape_balance;
-
     quota.scrape_balance = amount;
     quota.daily_bonus_count = 0;
     quota.scrape_count = 0;
@@ -181,69 +148,33 @@ export default class UserQuotaService {
     await this.userQuotaRepository.save(quota);
     await this.syncSubscriptionCache(user_id, quota);
 
-    console.log(color.yellow(`[UserQuotaService] 💰 Recarga mensal aplicada`));
-    console.table({
-      user_id,
-      saldo_antes: saldoAntes,
-      novo_saldo: quota.scrape_balance,
-      raspagens_aplicadas: amount,
-    });
+    console.log(color.yellow(`[UserQuotaService] 💰 Recarga mensal aplicada (+${amount})`));
 
     await this.createItemScrapeLogService.execute({
       user_id,
-      item_id: "",
       action: ItemScrapeAction.MONTHLY_RESET,
       details: `Monthly quota reset to ${amount}`,
     });
   }
 
-  /** 🔹 Adiciona bônus manual */
-  public async addBonusScrapes(user_id: string, amount: number): Promise<void> {
-    if (amount <= 0) return;
-
-    const quota = await this.getUserQuota(user_id);
-    quota.scrape_balance += amount;
-
-    await this.userQuotaRepository.save(quota);
-    await this.syncSubscriptionCache(user_id, quota);
-
-    await this.createItemScrapeLogService.execute({
-      user_id,
-      item_id: "",
-      action: ItemScrapeAction.SCRAPE_BONUS,
-      details: `Added ${amount} bonus scrapes`,
-    });
-
-    console.log(color.green(`[UserQuotaService] 🎁 Adicionado bônus de ${amount} raspagens`));
-  }
-
-  /** 🔹 Reseta bônus diário */
+  /** 🔹 Reseta bônus diário manualmente */
   public async resetBonus(user_id: string, amount: number): Promise<void> {
     if (amount < 0) throw new AppError("Invalid bonus amount.");
 
     const quota = await this.getUserQuota(user_id);
-    const before = quota.daily_bonus_count;
-
     quota.daily_bonus_count = amount;
+
     await this.userQuotaRepository.save(quota);
     await this.syncSubscriptionCache(user_id, quota);
 
-    console.log(color.yellow(`[UserQuotaService] 🎯 Bônus diário resetado`));
-    console.table({
-      antes: before,
-      depois: quota.daily_bonus_count,
-      user_id,
-    });
-
     await this.createItemScrapeLogService.execute({
       user_id,
-      item_id: "",
       action: ItemScrapeAction.DAILY_BONUS_RESET,
       details: `Daily bonus reset to ${amount}`,
     });
   }
 
-  /** 🔹 Atualiza cache e subscription */
+  /** 🔹 Sincroniza caches */
   private async syncSubscriptionCache(user_id: string, quota: UserQuota): Promise<void> {
     const cacheUser = `user:${user_id}`;
     const cacheSub = `user-subscription-${user_id}`;
@@ -268,11 +199,10 @@ export default class UserQuotaService {
     }
   }
 
-  /** 🧩 Atualiza manualmente o cache (debug/manual) */
+  /** 🔹 Atualiza manualmente o cache */
   public async refreshCache(user_id: string): Promise<void> {
     const quota = await this.getUserQuota(user_id);
     if (!quota) return;
-
     await this.syncSubscriptionCache(user_id, quota);
     console.log(color.green(`[UserQuotaService] 🔄 Cache sincronizado para ${user_id}`));
   }

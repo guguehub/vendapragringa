@@ -6,4 +6,6 @@ export enum ItemScrapeAction {
   SCRAPE_BONUS = 'SCRAPE_BONUS', // bônus de raspagem adicionado
   ITEM_SLOT_USED = 'ITEM_SLOT_USED', // slot de item consumido
   MONTHLY_RESET = 'MONTHLY_RESET', // 💰 recarga mensal aplicada
+    SCRAPE_ERROR = "SCRAPE_ERROR", // ✅ novo tipo de log para falhas de raspagem
+
 }

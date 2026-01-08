@@ -8,19 +8,19 @@ import UserQuotaService from "@modules/user_quota/services/UserQuotaService";
 import { SubscriptionTier } from "@modules/subscriptions/enums/subscription-tier.enum";
 
 /**
- * Função utilitária para delay entre requisições
+ * 🔹 Delay utilitário entre requisições
  */
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Limpa e normaliza URL
+ * 🔹 Sanitiza e normaliza URL
  */
 function sanitizeUrl(raw: string): string {
   return raw.replace(/[<>]/g, "").trim();
 }
 
 /**
- * --- Extração de dados do HTML ---
+ * --- EXTRAÇÃO DE CAMPOS HTML ---
  */
 
 function extractTitle($: cheerio.CheerioAPI): string | null {
@@ -215,7 +215,7 @@ export class MercadoLivreScraper implements IScraperService {
   }
 
   /**
-   * Raspagem de múltiplas URLs com controle de cotas
+   * 🔹 Raspagem de múltiplas URLs com controle de cotas (modo híbrido)
    */
   async processUrls(urls: string[], userId?: string, delayMs = 1000): Promise<IScrapedItem[]> {
     const results: IScrapedItem[] = [];
@@ -230,12 +230,16 @@ export class MercadoLivreScraper implements IScraperService {
       console.log(`\n🔎 [Process] ${i + 1}/${urls.length} -> ${u}`);
 
       if (userId) {
-        const quotaOk = await quotaService.checkQuota(userId, SubscriptionTier.FREE); // ou conforme tier real
-        if (!quotaOk) {
-          console.log(`🚫 Limite de raspagens atingido para o usuário ${userId}.`);
+        try {
+          // 🔹 Checa saldo antes (sem consumir ainda)
+          await quotaService.checkQuota(userId, SubscriptionTier.FREE);
+
+          // 🔹 Consome apenas se a raspagem for permitida
+          await quotaService.consumeScrape(userId);
+        } catch (err: any) {
+          console.log(`🚫 Limite de raspagens atingido para o usuário ${userId}: ${err.message}`);
           break;
         }
-        await quotaService.consumeScrape(userId);
       }
 
       await delay(delayMs);
