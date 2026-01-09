@@ -11,6 +11,7 @@ import CreateItemScrapeLogService from "@modules/item_scrape_log/services/Create
 import { ItemScrapeAction } from "@modules/item_scrape_log/enums/item-scrape-action.enum";
 import RedisCache from "@shared/cache/RedisCache";
 
+/** 🎨 Cores ANSI para logs visuais */
 const color = {
   green: (msg: string) => `\x1b[32m${msg}\x1b[0m`,
   yellow: (msg: string) => `\x1b[33m${msg}\x1b[0m`,
@@ -31,6 +32,7 @@ export default class UserQuotaService {
   /** 🔹 Busca ou cria quota do usuário */
   public async getUserQuota(user_id: string): Promise<UserQuota> {
     let quota = await this.userQuotaRepository.findByUserId(user_id);
+
     if (!quota) {
       quota = await this.userQuotaRepository.create({
         user_id,
@@ -39,14 +41,17 @@ export default class UserQuotaService {
         scrape_count: 0,
         item_limit: 0,
       });
+
       await this.userQuotaRepository.save(quota);
     }
+
     return quota;
   }
 
   /** 🔹 Consome 1 slot de item (para criação de user_items) */
   public async consumeItemSlot(user_id: string): Promise<void> {
     const quota = await this.getUserQuota(user_id);
+
     if (quota.item_limit <= 0)
       throw new AppError("Limite de itens atingido para este plano.", 403);
 
@@ -54,7 +59,9 @@ export default class UserQuotaService {
     await this.userQuotaRepository.save(quota);
     await this.syncSubscriptionCache(user_id, quota);
 
-    console.log(color.green(`[UserQuotaService] 💾 Slot de item consumido | restante: ${quota.item_limit}`));
+    console.log(
+      color.green(`[UserQuotaService] 💾 Slot de item consumido | restante: ${quota.item_limit}`)
+    );
   }
 
   /** 🔹 Checa quota de raspagem (sem consumir) */
@@ -74,17 +81,24 @@ export default class UserQuotaService {
       throw new AppError("Limite de raspagens atingido.", 403);
     }
 
-    console.log(color.cyan(`[UserQuotaService] ✅ checkQuota aprovado | user:${user_id} | saldo:${remaining}`));
+    console.log(
+      color.cyan(`[UserQuotaService] ✅ checkQuota aprovado | user:${user_id} | saldo:${remaining}`)
+    );
   }
 
-  /** 🔹 Consome 1 raspagem (fluxo híbrido) */
+  /** 🔹 Consome 1 raspagem (modelo híbrido com saldo visual dinâmico) */
   public async consumeScrape(user_id: string): Promise<void> {
     const quota = await this.getUserQuota(user_id);
     const before = { ...quota };
 
-    if (quota.daily_bonus_count > 0) quota.daily_bonus_count--;
-    else if (quota.scrape_balance > 0) quota.scrape_balance--;
-    else throw new AppError("Sem saldo disponível para consumir.", 403);
+    if (quota.daily_bonus_count > 0) {
+      quota.daily_bonus_count--;
+      quota.scrape_balance--; // 🔹 Atualiza também o saldo total para refletir consumo visual
+    } else if (quota.scrape_balance > 0) {
+      quota.scrape_balance--;
+    } else {
+      throw new AppError("Sem saldo disponível para consumir.", 403);
+    }
 
     quota.scrape_count++;
     await this.userQuotaRepository.save(quota);
@@ -111,6 +125,7 @@ export default class UserQuotaService {
       action: ItemScrapeAction.SCRAPE_ERROR,
       details,
     });
+
     console.log(color.red(`[UserQuotaService] ❌ Erro registrado: ${details}`));
   }
 
@@ -174,7 +189,7 @@ export default class UserQuotaService {
     });
   }
 
-  /** 🔹 Sincroniza caches */
+  /** 🔹 Sincroniza caches (user + subscription) */
   private async syncSubscriptionCache(user_id: string, quota: UserQuota): Promise<void> {
     const cacheUser = `user:${user_id}`;
     const cacheSub = `user-subscription-${user_id}`;

@@ -3,7 +3,7 @@
 import { SubscriptionTier } from './subscription-tier.enum';
 
 export const SubscriptionTierScrapeLimits: Record<SubscriptionTier, number> = {
-  [SubscriptionTier.FREE]: 0,     // nenhum permitido
+  [SubscriptionTier.FREE]: 10,     // nenhum permitido
   [SubscriptionTier.BRONZE]: 5,   // testar estouro (6)
   [SubscriptionTier.SILVER]: 10,  // testar uso parcial (8)
   [SubscriptionTier.GOLD]: 15,    // testar uso parcial (10)
@@ -13,12 +13,6 @@ export const SubscriptionTierScrapeLimits: Record<SubscriptionTier, number> = {
  * Mapeamento de cotas de raspagem por tier.
  * Tipado como Record<SubscriptionTier, number> para permitir
  * indexação segura: SubscriptionTierScrapeLimits[tier]
+ * SEMPRE A J U S T A R SubscriptionTierLimits
 
-export const SubscriptionTierScrapeLimits: Record<SubscriptionTier, number> = {
-  [SubscriptionTier.FREE]: 20,
-  [SubscriptionTier.BRONZE]: 100,
-  [SubscriptionTier.SILVER]: 150,
-  [SubscriptionTier.GOLD]: 300,
-  [SubscriptionTier.INFINITY]: Infinity,
-} as const;
 */

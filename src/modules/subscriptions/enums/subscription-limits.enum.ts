@@ -1,7 +1,7 @@
 import { SubscriptionTier } from './subscription-tier.enum';
 
 export const SubscriptionTierLimits: Record<SubscriptionTier, number> = {
-  [SubscriptionTier.FREE]: 1,     // apenas 1 item salvo permitido
+  [SubscriptionTier.FREE]: 3,     // apenas 1 item salvo permitido
   [SubscriptionTier.BRONZE]: 5,   // testar limite e estouro (6)
   [SubscriptionTier.SILVER]: 10,  // testar uso parcial (8)
   [SubscriptionTier.GOLD]: 15,    // testar uso parcial (10)
