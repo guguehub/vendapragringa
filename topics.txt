@@ -1,0 +1,41 @@
+🔮 7️⃣ Pequenos aprimoramentos opcionais
+
+Se quiser lapidar:
+
+Na resposta do Orchestrator
+→ adicionar total_itens_usuario (contagem global).
+
+Na checagem de itens repetidos
+→ usar itemId único para não recontar o mesmo produto (evita “falsos positivos” de limite).
+
+Na exibição do saldo em status
+→ exibir scrape_balance + daily_bonus_count como saldo total (já faz, mas vale manter coerência visual).
+
+
+
+
+itens subscription
+total_itens_usuario💡 Se você quiser que o plano FREE continue testável (sem erro na 2ª raspagem)
+
+Basta ajustar esse outro enum:
+
+// src/modules/subscriptions/enums/subscription-limits.enum.ts
+export const SubscriptionTierLimits: Record<SubscriptionTier, number> = {
+  [SubscriptionTier.FREE]: 10,   // antes era 1
+  [SubscriptionTier.BRONZE]: 50,
+  [SubscriptionTier.SILVER]: 150,
+  [SubscriptionTier.GOLD]: 300,
+  [SubscriptionTier.INFINITY]: 9999,
+} as const;
+
+
+SCRAPE LIMIT
+Para um fluxo de testes realista e evitar confusão:
+
+export const SubscriptionTierScrapeLimits: Record<SubscriptionTier, number> = {
+  [SubscriptionTier.FREE]: 10,     // 10 raspagens base mensais (mínimo)
+  [SubscriptionTier.BRONZE]: 50,   // 50 raspagens
+  [SubscriptionTier.SILVER]: 150,  // 150 raspagens
+  [SubscriptionTier.GOLD]: 300,    // 300 raspagens
+  [SubscriptionTier.INFINITY]: 9999,
+} as const;
